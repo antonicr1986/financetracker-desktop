@@ -46,7 +46,8 @@ public class StringsTests
             .ToList();
 
         Assert.NotEmpty(keys);
-        Assert.Empty(keys.Where(k => !Strings.Es.ContainsKey(k)));
+        // Assert.All dice que clave falta, no solo que la lista no esta vacia.
+        Assert.All(keys, k => Assert.True(Strings.Es.ContainsKey(k), $"Falta la clave '{k}' en Strings.Es"));
     }
 
     /// <summary>Sube desde bin/ hasta encontrar la carpeta del proyecto de la aplicacion.</summary>
