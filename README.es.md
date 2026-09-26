@@ -431,7 +431,8 @@ incorrecta" o "sesión caducada" según la llamada.
 ## 🔄 Automatización
 
 - **CI** en cada push y pull request, en `windows-latest` porque WPF solo
-  compila en Windows: compilación, pruebas y la aplicación publicada,
+  compila en Windows: comprobación de formato con `dotnet format` frente a
+  `.editorconfig` (lint), compilación, pruebas y la aplicación publicada,
   descargable desde la propia ejecución.
 - El número de pruebas se escribe en el resumen de la ejecución, y **cero
   pruebas hace fallar el build**: unas pruebas que dejan de ejecutarse sin

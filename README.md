@@ -409,7 +409,8 @@ password" or "session expired" depending on the call.
 ## 🔄 Automation
 
 - **CI** on every push and pull request, on `windows-latest` because WPF only
-  builds on Windows: build, tests, and the published app, downloadable from the
+  builds on Windows: a formatting check with `dotnet format` against
+  `.editorconfig` (lint), build, tests, and the published app, downloadable from the
   run itself.
 - The test count is written to the run summary, and **zero tests fails the
   build**: tests that silently stop running are worse than red ones.

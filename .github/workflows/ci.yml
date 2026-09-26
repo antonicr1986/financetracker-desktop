@@ -49,6 +49,12 @@ jobs:
       - name: Restore
         run: dotnet restore
 
+      # Lint: falla si algun fichero C# no sigue el .editorconfig (espacios,
+      # sangria, lineas finales...). Solo comprueba; en local se arregla con
+      # "dotnet format". No revisa XAML: dotnet format solo entiende C#.
+      - name: Lint
+        run: dotnet format --no-restore --verify-no-changes --verbosity diagnostic
+
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
