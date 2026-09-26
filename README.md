@@ -3,6 +3,7 @@
 **English** · [Español](README.es.md)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/antonicr1986/financetracker-desktop/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/antonicr1986/financetracker-desktop/actions)
+[![Release](https://img.shields.io/github/v/release/antonicr1986/financetracker-desktop?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/antonicr1986/financetracker-desktop/releases/latest)
 ![.NET](https://img.shields.io/badge/.NET-8-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
 ![WPF](https://img.shields.io/badge/WPF-MVVM-0078D4?style=for-the-badge&logo=windows&logoColor=white)
 
@@ -16,13 +17,15 @@ and [financetracker-android](https://github.com/antonicr1986/financetracker-andr
 from a different platform. This one closes the circle in the same language as
 the API: C# on both ends.
 
-> 🚧 **Work in progress.** It is being built step by step; the list below is
-> what works today.
-
 There is a **public demo account**, the same one the web and Android clients
-use, reachable in one click from the sign-in screen. The API sleeps after 20 minutes of inactivity, so
-the first sign-in of the day can take a while as the app service and the
-database wake up — the window says so while it waits.
+use, reachable in one click from the sign-in screen. The API sleeps after 20
+minutes of inactivity, so the first sign-in of the day can take a while as the
+app service and the database wake up — the window says so while it waits.
+
+**[Download the latest version](https://github.com/antonicr1986/financetracker-desktop/releases/latest)**
+— a single `.exe` for Windows 10 or 11 (64-bit), with .NET bundled inside, so
+there is nothing to install. It is not code-signed, so the first time Windows
+SmartScreen may warn: choose **More info** and then **Run anyway**.
 
 ## ✨ What it does
 
@@ -108,8 +111,7 @@ database wake up — the window says so while it waits.
 
 ## 🗺️ Next
 
-A session that survives closing the app, screenshots in this README, and a
-release with the executable on every version tag.
+A session that survives closing the app, and screenshots in this README.
 
 ## 🧰 Stack
 
@@ -349,6 +351,12 @@ password" or "session expired" depending on the call.
   run itself.
 - The test count is written to the run summary, and **zero tests fails the
   build**: tests that silently stop running are worse than red ones.
+- **Release** on every version tag (`v1.2.3`): runs the tests, publishes a
+  single self-contained executable with the version taken from the tag, checks
+  that the version really reached the file's properties, and publishes a
+  GitHub Release with the `.exe` and a changelog since the previous tag — the
+  same delivery model as the Android client. The version is never edited by
+  hand.
 - **Secret scanning** with gitleaks across the full history, with the same
   configuration as the other repositories in this project plus a rule for
   credentials written by hand in C#.

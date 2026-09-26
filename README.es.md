@@ -3,6 +3,7 @@
 [English](README.md) · **Español**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/antonicr1986/financetracker-desktop/ci.yml?branch=main&style=for-the-badge&label=CI&logo=githubactions&logoColor=white)](https://github.com/antonicr1986/financetracker-desktop/actions)
+[![Release](https://img.shields.io/github/v/release/antonicr1986/financetracker-desktop?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/antonicr1986/financetracker-desktop/releases/latest)
 ![.NET](https://img.shields.io/badge/.NET-8-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
 ![WPF](https://img.shields.io/badge/WPF-MVVM-0078D4?style=for-the-badge&logo=windows&logoColor=white)
 
@@ -16,13 +17,16 @@ y [financetracker-android](https://github.com/antonicr1986/financetracker-androi
 negocio desde una plataforma distinta. Este cierra el círculo en el mismo
 lenguaje que la API: C# en los dos extremos.
 
-> 🚧 **En desarrollo.** Se está construyendo paso a paso; la lista de abajo es
-> lo que funciona hoy.
-
 Hay una **cuenta de demostración pública**, la misma que usan la web y Android,
-a un clic desde la pantalla de acceso. La API se duerme tras 20
-minutos sin uso, así que el primer acceso del día puede tardar mientras se
-despiertan el servicio y la base de datos — la ventana lo avisa mientras espera.
+a un clic desde la pantalla de acceso. La API se duerme tras 20 minutos sin uso,
+así que el primer acceso del día puede tardar mientras se despiertan el
+servicio y la base de datos — la ventana lo avisa mientras espera.
+
+**[Descargar la última versión](https://github.com/antonicr1986/financetracker-desktop/releases/latest)**
+— un solo `.exe` para Windows 10 u 11 (64 bits), con .NET incluido dentro, así
+que no hay nada que instalar. No está firmado, así que la primera vez Windows
+SmartScreen puede avisar: elige **Más información** y luego **Ejecutar de todas
+formas**.
 
 ## ✨ Qué hace
 
@@ -115,8 +119,7 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
 
 ## 🗺️ Lo siguiente
 
-Una sesión que sobreviva a cerrar la aplicación, capturas en este README, y
-una release con el ejecutable en cada etiqueta de versión.
+Una sesión que sobreviva a cerrar la aplicación, y capturas en este README.
 
 ## 🧰 Tecnologías
 
@@ -368,6 +371,12 @@ incorrecta" o "sesión caducada" según la llamada.
 - El número de pruebas se escribe en el resumen de la ejecución, y **cero
   pruebas hace fallar el build**: unas pruebas que dejan de ejecutarse sin
   avisar son peores que unas en rojo.
+- **Release** en cada etiqueta de versión (`v1.2.3`): pasa las pruebas, publica
+  un único ejecutable autocontenido con la versión sacada de la etiqueta,
+  comprueba que la versión ha llegado de verdad a las propiedades del archivo,
+  y publica una Release de GitHub con el `.exe` y un changelog desde la
+  etiqueta anterior — el mismo modelo de entrega que la app Android. La versión
+  nunca se edita a mano.
 - **Escaneo de secretos** con gitleaks sobre todo el historial, con la misma
   configuración que el resto de repositorios del proyecto y una regla más para
   credenciales escritas a mano en C#.

@@ -1,0 +1,111 @@
+name: Release
+
+# Se lanza al subir una etiqueta de version, por ejemplo:
+#   git tag v1.0.0 && git push origin v1.0.0
+# Publica una Release de GitHub con el ejecutable y el changelog desde la
+# version anterior. Mismo modelo que la app Android: lo que se entrega es un
+# instalable versionado, no un despliegue.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+# Crear la Release necesita escribir en el repo. Solo este workflow lo pide.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: release
+    # WPF solo compila en Windows.
+    runs-on: windows-latest
+    defaults:
+      run:
+        # Git Bash, que viene en el runner de Windows: los mismos scripts que
+        # en la release de Android.
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # El historial completo y las etiquetas: el changelog se calcula
+          # desde la etiqueta anterior.
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Read the version from the tag
+        run: |
+          tag="$GITHUB_REF_NAME"
+          if [[ ! "$tag" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::The tag '$tag' is not of the form vMAJOR.MINOR.PATCH"
+            exit 1
+          fi
+          echo "VERSION=${tag#v}" >> "$GITHUB_ENV"
+
+      # Nada se publica si las pruebas fallan.
+      - name: Test
+        run: dotnet test --configuration Release
+
+      # Un solo .exe autocontenido: lleva .NET dentro, asi que se descarga y se
+      # ejecuta sin instalar nada. La version sale de la etiqueta y queda en
+      # las propiedades del archivo (clic derecho > Propiedades > Detalles).
+      - name: Publish the executable
+        run: |
+          dotnet publish FinanceTracker.Desktop/FinanceTracker.Desktop.csproj \
+            --configuration Release --runtime win-x64 --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:EnableCompressionInSingleFile=true \
+            -p:DebugType=none \
+            -p:Version="$VERSION" \
+            --output publish
+          cp publish/FinanceTracker.Desktop.exe "financetracker-desktop-v$VERSION-win-x64.exe"
+
+      # Si la version no hubiera llegado al ejecutable, se veria 1.0.0 en todas
+      # las releases. Esto lo comprueba antes de publicar.
+      - name: Verify the version in the executable
+        shell: pwsh
+        run: |
+          $file = "financetracker-desktop-v$env:VERSION-win-x64.exe"
+          $info = (Get-Item $file).VersionInfo
+          $size = [math]::Round((Get-Item $file).Length / 1MB, 1)
+          echo "ProductVersion: $($info.ProductVersion)  FileVersion: $($info.FileVersion)  Size: $size MB"
+          if (-not $info.ProductVersion.StartsWith($env:VERSION)) {
+            echo "::error::The executable reports version '$($info.ProductVersion)', expected '$env:VERSION'"
+            exit 1
+          }
+
+      - name: Write the changelog
+        run: |
+          previous=$(git describe --tags --abbrev=0 "$GITHUB_REF_NAME^" 2>/dev/null || true)
+          {
+            echo "## FinanceTracker Desktop $VERSION"
+            echo
+            echo "Download \`financetracker-desktop-v$VERSION-win-x64.exe\` and run it on Windows 10 or 11 (64-bit)."
+            echo "Nothing to install: .NET is bundled inside the file."
+            echo "Sign in with one click on the demo account, or with your own." # gitleaks:allow
+            echo
+            echo "The executable is not code-signed, so Windows SmartScreen may warn the first time:"
+            echo "choose **More info** and then **Run anyway**."
+            echo
+            if [ -n "$previous" ]; then
+              echo "### Changes since $previous"
+              range="$previous..$GITHUB_REF_NAME"
+            else
+              echo "### Changes"
+              range="$GITHUB_REF_NAME"
+            fi
+            echo
+            git log "$range" --no-merges --pretty='- %s'
+          } > release-notes.md
+          cat release-notes.md
+
+      - name: Publish the Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "financetracker-desktop-v$VERSION-win-x64.exe" \
+            --title "FinanceTracker Desktop $VERSION" \
+            --notes-file release-notes.md
