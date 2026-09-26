@@ -44,13 +44,23 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
 - **Edición y borrado de movimientos**: doble clic lo abre relleno en el mismo
   diálogo; borrar pide confirmación antes. Tras guardar, el panel se recarga y
   muestra el mes de ese movimiento.
+- **Temas claro y oscuro**, que se cambian desde la barra superior con los
+  mismos iconos de luna y sol que la web, y se recuerdan entre sesiones.
+  Mientras no se elige, la aplicación sigue el ajuste de Windows, como Android
+  sigue el del teléfono, y lo sigue también si Windows cambia con la aplicación
+  abierta. La barra de título también se oscurece.
+- **La misma estética que la web**: la escala slate de Tailwind, tarjetas
+  blancas sobre fondo gris (tarjetas slate sobre casi negro en oscuro), la
+  acción principal en slate-900 (invertida en oscuro) y una barra superior
+  común a todas las ventanas, con el nombre a la izquierda y el cambio de tema
+  y "Salir" a la derecha — "Salir" deshabilitado en la pantalla de acceso,
+  como en los otros clientes.
 - **Estados de carga, error y vacío**, con botón de reintentar, y un mensaje
   claro cuando la sesión caduca en lugar de volver al acceso sin explicación.
 
 ## 🗺️ Lo siguiente
 
-Presupuestos, desglose por categoría,
-temas claro y oscuro, español e inglés, y una sesión que sobreviva a cerrar la
+Presupuestos, desglose por categoría, español e inglés, y una sesión que sobreviva a cerrar la
 aplicación.
 
 ## 🧰 Tecnologías
@@ -67,7 +77,8 @@ aplicación.
       Models/       Los DTOs de la API, como records
       Services/     Cliente HTTP, sesión, diálogos y el tipo de error
       ViewModels/   La lógica de cada pantalla, sin referencias a controles
-      Views/        Ventanas XAML, con el code-behind casi vacío
+      Themes/       Light.xaml y Dark.xaml (colores), Controls.xaml (plantillas)
+      Views/        Ventanas XAML y la barra superior común, con el code-behind casi vacío
       App.xaml.cs   Crea los servicios y decide qué ventana se ve
     FinanceTracker.Desktop.Tests/
                     Pruebas de los ViewModels, sin ventanas ni red
@@ -121,13 +132,35 @@ corresponde en cada llamada.
 horaria, así que .NET la lee como `DateTimeKind.Unspecified` y no la toca: el
 día 1 de un mes sigue en ese mes esté donde esté el usuario.
 
+**Un tema es un diccionario que se sustituye.** `Light.xaml` y `Dark.xaml`
+definen las mismas claves (`Brush.Surface`, `Brush.Text`, `Brush.Income`…) con
+los colores de la web. Al cambiar, uno reemplaza al otro en los recursos de la
+aplicación, y todo lo que los lee con `{DynamicResource}` se repinta en el acto,
+sin reiniciar ni parpadear. Hasta el icono que muestra el botón de tema es un
+recurso (`Visibility.Moon`/`Visibility.Sun`), igual que la web lo decide en CSS
+y no en código.
+
+**Hubo que rehacer las plantillas de los controles de WPF.** Botones, cajas de
+texto, desplegables, el selector de fecha, las filas de la lista y las barras
+de desplazamiento vienen con el aspecto clásico de Windows y colores fijos, así
+que en oscuro seguirían blancos. `Controls.xaml` da a cada uno una plantilla
+pequeña que toma sus colores del tema, con las esquinas de 8 píxeles de la web.
+La barra de título la pinta Windows, no WPF, así que se oscurece con
+`DwmSetWindowAttribute`.
+
+**La decisión del tema es C# normal.** `ThemePreference` decide qué tema toca
+(el elegido, o el de Windows si no hay elección) sin ninguna referencia a WPF,
+así que tiene pruebas unitarias; `ThemeManager` solo pinta. La elección se
+guarda en `%LocalAppData%\FinanceTracker\settings.json`, aparte de la sesión,
+para que cerrar sesión no la reinicie.
+
 **El tiempo de espera es de 120 segundos, no los 100 por defecto.** Despertar
 el plan gratuito de App Service y la base de datos serverless pausada a la vez
 puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 51 pruebas, sin ventanas ni red.
+`dotnet test` — 58 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -137,6 +170,11 @@ recarga y salta al mes del movimiento mientras que cancelar no recarga. El
 diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por
 tipo, el cuerpo exacto que se envía, edición por id, borrar pregunta antes y no
 hace nada si se dice que no, y los errores de la API dejan el diálogo abierto.
+
+Siete cubren el tema: se sigue a Windows hasta que se elige, el cambio parte
+de lo que se ve y se guarda, una vez elegido se ignora Windows, un valor
+guardado desconocido cuenta como sin elegir, y el archivo de ajustes se guarda
+y se lee bien y vuelve a los valores por defecto si falta o está roto.
 
 Trece cubren las reglas del formulario (importes con coma o punto, el
 separador de miles rechazado por ambiguo, el orden en que se avisan los

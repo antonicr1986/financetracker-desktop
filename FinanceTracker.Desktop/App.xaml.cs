@@ -16,6 +16,9 @@ public partial class App : Application
     private readonly ApiClient api;
     private readonly DialogService dialogs = new();
 
+    /// <summary>Tema de la aplicacion. Estatico porque es uno para todas las ventanas.</summary>
+    public static ThemeManager Theme { get; private set; } = null!;
+
     public App()
     {
         api = new ApiClient(session);
@@ -24,6 +27,11 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Antes de abrir ninguna ventana, para que la primera ya salga con su tema.
+        Theme = new ThemeManager(new ThemePreference(new SettingsStore(), ThemeManager.SystemPrefersDark));
+        Theme.ApplyInitial();
+
         ShowLogin();
     }
 

@@ -3,6 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:FinanceTracker.Desktop">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- [0] Colores: ThemeManager lo cambia por Dark.xaml o Light.xaml. -->
+                <ResourceDictionary Source="Themes/Light.xaml" />
+                <!-- [1] Plantillas de los controles, comunes a los dos temas. -->
+                <ResourceDictionary Source="Themes/Controls.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

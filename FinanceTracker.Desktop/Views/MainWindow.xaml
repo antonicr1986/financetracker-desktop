@@ -4,57 +4,36 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:FinanceTracker.Desktop.ViewModels"
+        xmlns:views="clr-namespace:FinanceTracker.Desktop.Views"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="FinanceTracker" Height="680" Width="960" MinWidth="720" MinHeight="480"
-        WindowStartupLocation="CenterScreen" Background="#E2E8F0">
-
-    <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-
-        <!-- Colores de la web: slate para lo neutro, emerald ingresos, rose gastos. -->
-        <SolidColorBrush x:Key="Income" Color="#059669" />
-        <SolidColorBrush x:Key="Expense" Color="#E11D48" />
-        <SolidColorBrush x:Key="Muted" Color="#64748B" />
-
-        <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="White" />
-            <Setter Property="BorderBrush" Value="#E2E8F0" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="16" />
-        </Style>
-    </Window.Resources>
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Text}">
 
     <DockPanel>
-        <!-- Barra superior blanca, como la web. -->
-        <Border DockPanel.Dock="Top" Background="White" BorderBrush="#E2E8F0"
-                BorderThickness="0,0,0,1" Padding="24,12">
-            <DockPanel>
-                <Button DockPanel.Dock="Right" Content="Salir" Command="{Binding LogoutCommand}"
-                        Padding="16,6" VerticalAlignment="Center" />
-                <StackPanel>
-                    <TextBlock Text="{Binding Greeting}" FontSize="18" FontWeight="SemiBold" />
-                    <TextBlock Text="{Binding Email}" Foreground="{StaticResource Muted}" />
-                </StackPanel>
-            </DockPanel>
-        </Border>
+        <views:TopBar DockPanel.Dock="Top" SignOutCommand="{Binding LogoutCommand}" />
 
         <Grid Margin="24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Selector de mes y recarga -->
-            <DockPanel Grid.Row="0" Margin="0,0,0,16">
+            <!-- Saludo y correo -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,16">
+                <TextBlock Text="{Binding Greeting}" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Email}" Style="{StaticResource MutedText}" />
+            </StackPanel>
+
+            <!-- Selector de mes y acciones -->
+            <DockPanel Grid.Row="1" Margin="0,0,0,16">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button Content="Recargar" Command="{Binding LoadCommand}"
-                            Padding="12,4" Margin="0,0,8,0" />
-                    <!-- Accion principal en slate-900 con texto blanco, como la web. -->
+                    <Button Content="Recargar" Command="{Binding LoadCommand}" Margin="0,0,8,0" />
                     <Button Content="+ Nuevo movimiento" Command="{Binding NewTransactionCommand}"
-                            Padding="12,4" Background="#0F172A" Foreground="White" BorderBrush="#0F172A" />
+                            Style="{StaticResource PrimaryButton}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Mes" VerticalAlignment="Center" Margin="0,0,8,0" />
@@ -64,32 +43,32 @@
             </DockPanel>
 
             <!-- Totales del mes -->
-            <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,16"
+            <UniformGrid Grid.Row="2" Columns="3" Margin="0,0,0,16"
                          Visibility="{Binding HasData, Converter={StaticResource BoolToVisibility}}">
                 <Border Style="{StaticResource Card}" Margin="0,0,8,0">
                     <StackPanel>
-                        <TextBlock Text="Ingresos" Foreground="{StaticResource Muted}" />
+                        <TextBlock Text="Ingresos" Style="{StaticResource MutedText}" />
                         <TextBlock Text="{Binding IncomeText}" FontSize="22" FontWeight="SemiBold"
-                                   Foreground="{StaticResource Income}" />
+                                   Foreground="{DynamicResource Brush.Income}" />
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource Card}" Margin="4,0">
                     <StackPanel>
-                        <TextBlock Text="Gastos" Foreground="{StaticResource Muted}" />
+                        <TextBlock Text="Gastos" Style="{StaticResource MutedText}" />
                         <TextBlock Text="{Binding ExpenseText}" FontSize="22" FontWeight="SemiBold"
-                                   Foreground="{StaticResource Expense}" />
+                                   Foreground="{DynamicResource Brush.Expense}" />
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource Card}" Margin="8,0,0,0">
                     <StackPanel>
-                        <TextBlock Text="Balance" Foreground="{StaticResource Muted}" />
+                        <TextBlock Text="Balance" Style="{StaticResource MutedText}" />
                         <TextBlock Text="{Binding BalanceText}" FontSize="22" FontWeight="SemiBold">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="#0F172A" />
+                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsBalanceNegative}" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource Expense}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Expense}" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -100,10 +79,9 @@
             </UniformGrid>
 
             <!-- Movimientos del mes -->
-            <Border Grid.Row="2" Style="{StaticResource Card}" Padding="0"
+            <Border Grid.Row="3" Style="{StaticResource Card}" Padding="0"
                     Visibility="{Binding HasData, Converter={StaticResource BoolToVisibility}}">
-                <ListView ItemsSource="{Binding Transactions}" BorderThickness="0"
-                          HorizontalContentAlignment="Stretch">
+                <ListView ItemsSource="{Binding Transactions}">
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:TransactionRow}">
                             <!-- Doble clic abre el movimiento para editarlo. El comando
@@ -124,7 +102,7 @@
                                 <StackPanel>
                                     <TextBlock Text="{Binding Description}" FontWeight="SemiBold"
                                                TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Foreground="{StaticResource Muted}">
+                                    <TextBlock Style="{StaticResource MutedText}">
                                         <Run Text="{Binding Category, Mode=OneWay}" />
                                         <Run Text="·" />
                                         <Run Text="{Binding DateText, Mode=OneWay}" />
@@ -134,10 +112,10 @@
                                            VerticalAlignment="Center" Margin="16,0,0,0">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="{StaticResource Expense}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Expense}" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding IsIncome}" Value="True">
-                                                    <Setter Property="Foreground" Value="{StaticResource Income}" />
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Income}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -150,17 +128,16 @@
             </Border>
 
             <!-- Estados: cargando, error, sin datos -->
-            <StackPanel Grid.Row="1" Grid.RowSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <StackPanel Grid.Row="2" Grid.RowSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <TextBlock Text="Cargando movimientos… la primera vez del día puede tardar un poco."
-                           Foreground="{StaticResource Muted}"
+                           Style="{StaticResource MutedText}"
                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}" />
                 <StackPanel Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource Expense}"
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}"
                                HorizontalAlignment="Center" Margin="0,0,0,12" />
-                    <Button Content="Reintentar" Command="{Binding LoadCommand}"
-                            Padding="16,6" HorizontalAlignment="Center" />
+                    <Button Content="Reintentar" Command="{Binding LoadCommand}" HorizontalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Text="Todavía no tienes movimientos." Foreground="{StaticResource Muted}"
+                <TextBlock Text="Todavía no tienes movimientos." Style="{StaticResource MutedText}"
                            Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
             </StackPanel>
         </Grid>

@@ -1,0 +1,42 @@
+<!-- Barra superior comun a todas las ventanas, como la de la web y Android:
+     nombre a la izquierda; tema y "Salir" a la derecha. "Salir" siempre esta,
+     pero deshabilitado sin sesion. -->
+<UserControl x:Class="FinanceTracker.Desktop.Views.TopBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Border}"
+            BorderThickness="0,0,0,1" Padding="24,10">
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button x:Name="ThemeButton" Style="{StaticResource IconButton}" Click="OnThemeClick"
+                        Margin="0,0,12,0" ToolTip="Cambiar tema" VerticalAlignment="Center">
+                    <Grid Width="16" Height="16">
+                        <!-- Los mismos trazados SVG que ThemeToggle.tsx de la web.
+                             Cual se ve lo decide el tema (Visibility.Moon/Sun), no el codigo. -->
+                        <!-- Viewbox + Canvas de 24x24: el mismo viewBox del SVG, asi
+                             la luna y el sol salen del mismo tamaño. -->
+                        <Viewbox Visibility="{DynamicResource Visibility.Moon}">
+                            <Canvas Width="24" Height="24">
+                                <Path Stroke="{Binding Foreground, ElementName=ThemeButton}" StrokeThickness="2"
+                                      StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                      Data="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+                            </Canvas>
+                        </Viewbox>
+                        <Viewbox Visibility="{DynamicResource Visibility.Sun}">
+                            <Canvas Width="24" Height="24">
+                                <Ellipse Canvas.Left="8" Canvas.Top="8" Width="8" Height="8"
+                                         Stroke="{Binding Foreground, ElementName=ThemeButton}" StrokeThickness="2" />
+                                <Path Stroke="{Binding Foreground, ElementName=ThemeButton}" StrokeThickness="2"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                      Data="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+                            </Canvas>
+                        </Viewbox>
+                    </Grid>
+                </Button>
+                <!-- Ancho fijo, como en Android: no debe cambiar con el idioma. -->
+                <Button x:Name="SignOutButton" Content="Salir" MinWidth="72" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="FinanceTracker" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
+        </DockPanel>
+    </Border>
+</UserControl>

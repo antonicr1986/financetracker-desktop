@@ -1,0 +1,27 @@
+<!-- Tema oscuro. Mismas claves que Light.xaml. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="Brush.Background" Color="#020617" />      <!-- slate-950 -->
+    <SolidColorBrush x:Key="Brush.Surface" Color="#0F172A" />         <!-- slate-900 -->
+    <SolidColorBrush x:Key="Brush.Border" Color="#1E293B" />          <!-- slate-800 -->
+    <SolidColorBrush x:Key="Brush.Text" Color="#F1F5F9" />            <!-- slate-100 -->
+    <SolidColorBrush x:Key="Brush.TextMuted" Color="#94A3B8" />       <!-- slate-400 -->
+    <SolidColorBrush x:Key="Brush.Placeholder" Color="#64748B" />     <!-- slate-500 -->
+    <SolidColorBrush x:Key="Brush.InputBackground" Color="#020617" /> <!-- slate-950 -->
+    <SolidColorBrush x:Key="Brush.InputBorder" Color="#334155" />     <!-- slate-700 -->
+    <SolidColorBrush x:Key="Brush.InputFocus" Color="#64748B" />      <!-- slate-500 -->
+    <SolidColorBrush x:Key="Brush.Hover" Color="#1E293B" />           <!-- slate-800 -->
+    <SolidColorBrush x:Key="Brush.Selected" Color="#334155" />        <!-- slate-700 -->
+    <!-- La accion principal se invierte: clara con texto oscuro. -->
+    <SolidColorBrush x:Key="Brush.Primary" Color="#F1F5F9" />         <!-- slate-100 -->
+    <SolidColorBrush x:Key="Brush.PrimaryHover" Color="#CBD5E1" />    <!-- slate-300 -->
+    <SolidColorBrush x:Key="Brush.OnPrimary" Color="#0F172A" />       <!-- slate-900 -->
+    <SolidColorBrush x:Key="Brush.ScrollThumb" Color="#334155" />     <!-- slate-700 -->
+    <!-- En oscuro, tonos mas claros para que se lean sobre el fondo. -->
+    <SolidColorBrush x:Key="Brush.Income" Color="#34D399" />          <!-- emerald-400 -->
+    <SolidColorBrush x:Key="Brush.Expense" Color="#FB7185" />         <!-- rose-400 -->
+    <SolidColorBrush x:Key="Brush.Error" Color="#FB7185" />           <!-- rose-400 -->
+
+    <Visibility x:Key="Visibility.Moon">Collapsed</Visibility>
+    <Visibility x:Key="Visibility.Sun">Visible</Visibility>
+</ResourceDictionary>

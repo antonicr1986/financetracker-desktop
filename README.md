@@ -42,13 +42,22 @@ database wake up — the window says so while it waits.
 - **Editing and deleting a transaction**: a double click opens it prefilled in
   the same dialog; deleting asks for confirmation first. After saving, the
   dashboard reloads and shows the month of that transaction.
+- **Light and dark themes**, switched from the top bar with the same moon and
+  sun icons as the web client, and remembered between sessions. Until one is
+  chosen the app follows the Windows setting, as the Android client follows
+  the phone's — and keeps following it if Windows changes while the app is
+  open. The title bar turns dark too.
+- **The same look as the web client**: Tailwind's slate scale, white cards on
+  a grey background (slate cards on near-black in dark mode), the main action
+  in slate-900 (inverted in dark mode), and a shared top bar on every window
+  with the name on the left and the theme switch and "Sign out" on the right —
+  "Sign out" disabled on the sign-in screen, as in the other clients.
 - **Loading, error and empty states**, with a retry button, and a clear
   message when the session expires instead of a silent return to sign-in.
 
 ## 🗺️ Next
 
-Budgets, a breakdown by category,
-light and dark themes, Spanish and English, and a session that survives
+Budgets, a breakdown by category, Spanish and English, and a session that survives
 closing the app.
 
 ## 🧰 Stack
@@ -65,7 +74,8 @@ closing the app.
       Models/       The API DTOs, as records
       Services/     HTTP client, session, dialogs and the error type
       ViewModels/   The logic of each screen — no reference to any control
-      Views/        XAML windows, with almost empty code-behind
+      Themes/       Light.xaml and Dark.xaml (colours), Controls.xaml (templates)
+      Views/        XAML windows and the shared top bar, with almost empty code-behind
       App.xaml.cs   Creates the services and decides which window is shown
     FinanceTracker.Desktop.Tests/
                     ViewModel tests, with no window and no network
@@ -116,13 +126,34 @@ call.
 zone, so .NET reads it as `DateTimeKind.Unspecified` and leaves it alone: the
 1st of a month stays in that month wherever the user is.
 
+**A theme is a swapped dictionary.** `Light.xaml` and `Dark.xaml` define the
+same keys (`Brush.Surface`, `Brush.Text`, `Brush.Income`…) with the web's
+colours. Switching replaces one with the other in the application's resources,
+and everything that reads them through `{DynamicResource}` repaints on the
+spot, with no restart and no flash. Even which icon the theme button shows is
+a resource (`Visibility.Moon`/`Visibility.Sun`), the way the web decides it in
+CSS and not in code.
+
+**WPF's own controls had to be re-templated.** Buttons, text boxes, drop-downs,
+the date picker, list rows and scroll bars ship with the classic Windows
+look and fixed colours, so in dark mode they would stay white. `Controls.xaml`
+gives each one a small template that takes its colours from the theme, with
+the web's 8-pixel corners. The title bar is drawn by Windows, not WPF, so it is
+darkened through `DwmSetWindowAttribute`.
+
+**The theme decision is plain C#.** `ThemePreference` decides which theme
+applies (the saved choice, or Windows' setting when there is none) with no
+reference to WPF, so it is unit-tested; `ThemeManager` only paints. The choice
+is kept in `%LocalAppData%\FinanceTracker\settings.json`, apart from the
+session, so signing out does not reset it.
+
 **The timeout is 120 seconds, not the default 100.** Waking the free App
 Service plan and the paused serverless database at the same time can take
 longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 51 tests, with no window and no network.
+`dotnet test` — 58 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -132,6 +163,11 @@ jumps to the saved transaction's month while cancelling does not reload. The
 transaction dialog: defaults for a new one, categories filtered by type, the
 exact input sent, editing by id, delete asking first and doing nothing on "no",
 and API errors keeping the dialog open.
+
+Seven cover the theme: following Windows until a choice is made, toggling
+from whatever is shown and saving it, ignoring Windows once chosen, an unknown
+saved value counting as no choice, and the settings file round-tripping and
+falling back to defaults when missing or broken.
 
 Thirteen cover the form rules (amounts with a comma or a dot, a thousands
 separator rejected as ambiguous, the order in which problems are reported) and
