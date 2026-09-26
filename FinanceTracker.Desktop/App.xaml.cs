@@ -12,8 +12,13 @@ namespace FinanceTracker.Desktop;
 /// </summary>
 public partial class App : Application
 {
-    private readonly ApiClient api = new();
     private readonly Session session = new();
+    private readonly ApiClient api;
+
+    public App()
+    {
+        api = new ApiClient(session);
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -21,9 +26,11 @@ public partial class App : Application
         ShowLogin();
     }
 
-    private void ShowLogin()
+    private void ShowLogin(string? message = null)
     {
         var viewModel = new LoginViewModel(api, session);
+        if (message is not null) viewModel.ErrorMessage = message;
+
         var window = new LoginWindow(viewModel);
         viewModel.LoggedIn += (_, _) =>
         {
@@ -36,14 +43,25 @@ public partial class App : Application
 
     private void ShowMain()
     {
-        var viewModel = new MainViewModel(session);
+        var viewModel = new MainViewModel(session, api);
         var window = new Views.MainWindow(viewModel);
+
         viewModel.LoggedOut += (_, _) =>
         {
             ShowLogin();
             window.Close();
         };
+
+        // Un 401 en el panel no es una contrasena incorrecta: habia un token y
+        // la API lo ha rechazado (caduca a los 60 minutos).
+        viewModel.SessionExpired += (_, _) =>
+        {
+            ShowLogin("Tu sesión ha caducado. Vuelve a iniciar sesión.");
+            window.Close();
+        };
+
         MainWindow = window;
         window.Show();
+        viewModel.LoadCommand.Execute(null);
     }
 }

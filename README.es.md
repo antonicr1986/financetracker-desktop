@@ -28,11 +28,17 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
 
 - **Acceso con JWT** contra la API desplegada, con mensajes claros para una
   contraseña incorrecta y para un fallo de conexión.
-- **Una ventana principal** que saluda al usuario y permite cerrar sesión.
+- **Selector de mes** con todos los meses que tienen datos, del más reciente
+  al más antiguo.
+- **Totales del mes elegido** — ingresos, gastos y balance — calculados en el
+  cliente sobre todo el historial, como en los otros clientes.
+- **Lista de movimientos** con categoría, fecha e importe con signo y color.
+- **Estados de carga, error y vacío**, con botón de reintentar, y un mensaje
+  claro cuando la sesión caduca en lugar de volver al acceso sin explicación.
 
 ## 🗺️ Lo siguiente
 
-Movimientos y totales del mes, alta y edición de movimientos, presupuestos,
+Alta y edición de movimientos, presupuestos,
 temas claro y oscuro, español e inglés, y una sesión que sobreviva a cerrar la
 aplicación.
 
@@ -46,6 +52,7 @@ aplicación.
 ## 📁 Estructura
 
     FinanceTracker.Desktop/
+      Domain/       Agrupación por meses y totales — sin WPF, C# normal
       Models/       Los DTOs de la API, como records
       Services/     Cliente HTTP, sesión y el tipo de error
       ViewModels/   La lógica de cada pantalla, sin referencias a controles
@@ -76,15 +83,31 @@ permite hacer binding de `PasswordBox.Password`, a propósito, para que la
 contraseña no quede en una propiedad enlazable. La ventana se la pasa al
 ViewModel en un manejador de dos líneas.
 
+**Un 401 significa dos cosas distintas.** En el acceso todavía no hay sesión,
+así que es una contraseña incorrecta. En el panel había un token y la API lo
+ha rechazado, así que la sesión ha caducado. Al cliente HTTP se le dice cuál
+corresponde en cada llamada.
+
+**Las fechas nunca se convierten.** La API envía `2026-09-01T00:00:00` sin zona
+horaria, así que .NET la lee como `DateTimeKind.Unspecified` y no la toca: el
+día 1 de un mes sigue en ese mes esté donde esté el usuario.
+
 **El tiempo de espera es de 120 segundos, no los 100 por defecto.** Despertar
 el plan gratuito de App Service y la base de datos serverless pausada a la vez
 puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 6 pruebas de los ViewModels: campos vacíos (y que no se llama a
-la API), acceso correcto (sesión iniciada, email recortado), credenciales
-incorrectas, fallo de conexión y cierre de sesión.
+`dotnet test` — 20 pruebas, sin ventanas ni red.
+
+Once cubren los ViewModels: el acceso (campos vacíos, éxito, contraseña
+incorrecta, sin conexión) y el panel (se elige el mes más reciente, cambio de
+mes, sin datos, errores, sesión caducada, cierre de sesión). Cinco cubren la
+lógica de meses, incluido el día 1 y una lista que cruza de año. Cuatro
+comprueban el cliente HTTP contra un `HttpMessageHandler` falso: se piden todas
+las páginas con el token y `pageSize=100`, con una sola página no se pide una
+segunda, y un 401 se convierte en "contraseña incorrecta" o "sesión caducada"
+según la llamada.
 
 ## 🔄 Automatización
 

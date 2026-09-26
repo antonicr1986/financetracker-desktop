@@ -7,6 +7,7 @@ namespace FinanceTracker.Desktop.Services;
 public class ApiException(string code) : Exception(code)
 {
     public const string InvalidCredentials = "invalid_credentials";
+    public const string SessionExpired = "session_expired";
     public const string NetworkError = "network_error";
     public const string Unknown = "unknown";
 

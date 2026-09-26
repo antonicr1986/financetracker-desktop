@@ -28,11 +28,16 @@ database wake up — the window says so while it waits.
 
 - **Sign-in with JWT** against the deployed API, with clear messages for a
   wrong password and for a connection failure.
-- **A main window** that greets the signed-in user and signs out.
+- **Month selector** with every month that has data, newest first.
+- **Totals for the selected month** — income, expenses and balance — derived
+  on the client from the full history, as in the other clients.
+- **Transaction list** with category, date and a signed, coloured amount.
+- **Loading, error and empty states**, with a retry button, and a clear
+  message when the session expires instead of a silent return to sign-in.
 
 ## 🗺️ Next
 
-Transactions and monthly totals, recording and editing transactions, budgets,
+Recording and editing transactions, budgets,
 light and dark themes, Spanish and English, and a session that survives
 closing the app.
 
@@ -46,6 +51,7 @@ closing the app.
 ## 📁 Project structure
 
     FinanceTracker.Desktop/
+      Domain/       Month grouping and totals — no WPF, plain C#
       Models/       The API DTOs, as records
       Services/     HTTP client, session and the error type
       ViewModels/   The logic of each screen — no reference to any control
@@ -75,15 +81,31 @@ binding `PasswordBox.Password`, on purpose, so the password never sits in a
 bindable property. The window passes it to the ViewModel in a two-line
 handler.
 
+**A 401 means two different things.** On sign-in there is no session yet, so
+it is a wrong password. On the dashboard there was a token and the API refused
+it, so the session expired. The HTTP client is told which one applies at each
+call.
+
+**Dates are never converted.** The API sends `2026-09-01T00:00:00` with no time
+zone, so .NET reads it as `DateTimeKind.Unspecified` and leaves it alone: the
+1st of a month stays in that month wherever the user is.
+
 **The timeout is 120 seconds, not the default 100.** Waking the free App
 Service plan and the paused serverless database at the same time can take
 longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 6 tests on the ViewModels: empty fields (and that the API is
-not called), a successful sign-in (session started, email trimmed), wrong
-credentials, a connection failure, and signing out.
+`dotnet test` — 20 tests, with no window and no network.
+
+Eleven cover the ViewModels: sign-in (empty fields, success, wrong password,
+no connection) and the dashboard (newest month selected, changing month,
+empty data, errors, expired session, signing out). Five cover the month
+logic, including the 1st of a month and a list that crosses a year. Four check
+the HTTP client against a fake `HttpMessageHandler`: every page is requested
+with the token and `pageSize=100`, a single page is never followed by a second
+request, and a 401 becomes "wrong password" or "session expired" depending on
+the call.
 
 ## 🔄 Automation
 
