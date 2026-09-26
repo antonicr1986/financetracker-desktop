@@ -13,6 +13,9 @@ public interface IDialogService
     /// <summary>Abre el formulario de movimiento. true si se guardo o se borro algo.</summary>
     bool ShowTransactionEditor(TransactionEditorViewModel editor);
 
-    /// <summary>Pregunta si/no. true si el usuario confirma.</summary>
-    bool Confirm(string title, string message);
+    /// <summary>
+    /// Pregunta si/no. true si el usuario confirma. confirmText es el texto del
+    /// boton que confirma ("Sí, eliminar"); el otro siempre es "Cancelar".
+    /// </summary>
+    bool Confirm(string title, string message, string confirmText);
 }

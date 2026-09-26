@@ -93,9 +93,12 @@ internal class FakeDialogService : IDialogService
         return Editor(editor);
     }
 
-    public bool Confirm(string title, string message)
+    public string? LastConfirmText { get; private set; }
+
+    public bool Confirm(string title, string message, string confirmText)
     {
         ConfirmCount++;
+        LastConfirmText = confirmText;
         return ConfirmAnswer;
     }
 }

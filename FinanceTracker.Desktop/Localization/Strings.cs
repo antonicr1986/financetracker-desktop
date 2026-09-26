@@ -76,6 +76,7 @@ public static class Strings
         ["dialog.save"] = "Guardar",
         ["dialog.delete"] = "Eliminar",
         ["dialog.deleteConfirm"] = "¿Eliminar este movimiento?",
+        ["dialog.deleteYes"] = "Sí, eliminar",
         ["dialog.deleteConfirmBody"] = "«{0}» se eliminará y no se puede deshacer.",
 
         ["errors.fillCredentials"] = "Introduce tu correo y tu contraseña.",
@@ -169,6 +170,7 @@ public static class Strings
         ["dialog.save"] = "Save",
         ["dialog.delete"] = "Delete",
         ["dialog.deleteConfirm"] = "Delete this transaction?",
+        ["dialog.deleteYes"] = "Yes, delete",
         ["dialog.deleteConfirmBody"] = "“{0}” will be deleted and this cannot be undone.",
 
         ["errors.fillCredentials"] = "Enter your email and your password.",

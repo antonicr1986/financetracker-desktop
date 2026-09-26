@@ -39,6 +39,21 @@ public class DeleteCategoryInEditorTests
     }
 
     [Fact]
+    public async Task BothDeletions_AskWithTheAppsOwnTranslatedButton()
+    {
+        var api = new FakeTransactionService();
+        var dialogs = new FakeDialogService { ConfirmAnswer = false };
+
+        await Editor(api, dialogs).DeleteCategoryCommand.ExecuteAsync(null);
+        Assert.Equal(EsText("dialog.deleteYes"), dialogs.LastConfirmText);
+
+        var edit = new TransactionEditorViewModel(api, dialogs, Categories(), Es,
+            Tx(9, "2026-09-10T00:00:00", 10, Expense));
+        await edit.DeleteCommand.ExecuteAsync(null);
+        Assert.Equal(EsText("dialog.deleteYes"), dialogs.LastConfirmText);
+    }
+
+    [Fact]
     public async Task Delete_WhenTheUserSaysNo_DoesNothing()
     {
         var api = new FakeTransactionService();

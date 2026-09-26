@@ -22,6 +22,11 @@
     <SolidColorBrush x:Key="Brush.Expense" Color="#FB7185" />         <!-- rose-400 -->
     <SolidColorBrush x:Key="Brush.Error" Color="#FB7185" />           <!-- rose-400 -->
 
+    <!-- Boton de accion destructiva: en oscuro, rojo claro con texto oscuro. -->
+    <SolidColorBrush x:Key="Brush.Danger" Color="#FB7185" />          <!-- rose-400 -->
+    <SolidColorBrush x:Key="Brush.DangerHover" Color="#FDA4AF" />     <!-- rose-300 -->
+    <SolidColorBrush x:Key="Brush.OnDanger" Color="#020617" />        <!-- slate-950 -->
+
     <!-- Presupuestos, como la web: barra 500/400 y texto 400. -->
     <SolidColorBrush x:Key="Brush.Track" Color="#1E293B" />           <!-- slate-800 -->
     <SolidColorBrush x:Key="Brush.BarOk" Color="#10B981" />           <!-- emerald-500 -->

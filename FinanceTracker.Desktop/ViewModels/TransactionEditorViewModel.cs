@@ -191,7 +191,7 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
         if (existing is null) return;
 
         var confirmed = dialogs.Confirm(localizer.T("dialog.deleteConfirm"),
-            localizer.T("dialog.deleteConfirmBody", existing.Description));
+            localizer.T("dialog.deleteConfirmBody", existing.Description), localizer.T("dialog.deleteYes"));
         if (!confirmed) return;
 
         await RunAsync(() => transactions.DeleteTransactionAsync(existing.Id), deleting: true);
@@ -310,7 +310,7 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
         SetError(null);
 
         var confirmed = dialogs.Confirm(localizer.T("dialog.deleteCategoryConfirm"),
-            localizer.T("dialog.deleteConfirmBody", category.Name));
+            localizer.T("dialog.deleteConfirmBody", category.Name), localizer.T("dialog.deleteYes"));
         if (!confirmed) return;
 
         IsBusy = true;

@@ -13,9 +13,12 @@ public class DialogService : IDialogService
         return window.ShowDialog() == true;
     }
 
-    public bool Confirm(string title, string message) =>
-        MessageBox.Show(ActiveWindow()!, message, title, MessageBoxButton.YesNo,
-            MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes;
+    // Ventana propia y no MessageBox: sigue el tema y el idioma de la aplicacion.
+    public bool Confirm(string title, string message, string confirmText)
+    {
+        var window = new ConfirmWindow(title, message, confirmText) { Owner = ActiveWindow() };
+        return window.ShowDialog() == true;
+    }
 
     /// <summary>La ventana que esta delante, para que el dialogo salga centrado sobre ella.</summary>
     private static Window? ActiveWindow() =>

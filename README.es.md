@@ -55,6 +55,11 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
   responde 404 como si no existiera. Una categoría que todavía tiene
   movimientos no se puede eliminar; la API lo rechaza y la aplicación muestra
   el motivo, con el mensaje de la web.
+- **Confirmaciones con el estilo de la aplicación.** Eliminar un movimiento o
+  una categoría pregunta en un diálogo pequeño de la propia aplicación —
+  colores del tema en claro y en oscuro, sin barra de título de Windows, el
+  "Sí, eliminar" de la web en rojo, y el foco en Cancelar para que un Enter
+  despistado no borre nada.
 - **Edición y borrado de movimientos**: doble clic lo abre relleno en el mismo
   diálogo; borrar pide confirmación antes. Tras guardar, el panel se recarga y
   muestra el mes de ese movimiento.
@@ -240,6 +245,12 @@ defecto, así que 80,5 se quedaría en 80.
 queda la rueda del ratón en cuanto el puntero está encima, y la página deja de
 moverse.
 
+**Nada de `MessageBox`.** El cuadro de mensaje de Windows ignora el tema de la
+aplicación y escribe su "Sí/No" en el idioma de Windows, no en el elegido en la
+aplicación. `ConfirmWindow` lo sustituye; los ViewModels siguen llegando a él
+solo a través de `IDialogService.Confirm`, así que sus pruebas responden sí o no
+sin ninguna ventana.
+
 **Enter crea la categoría, no el movimiento.** En WPF, Enter pulsa el botón
 por defecto del diálogo — Guardar. Mientras se escribe una categoría nueva,
 Añadir pasa a ser el botón por defecto y Guardar deja de serlo, así que Enter
@@ -262,7 +273,7 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 118 pruebas, sin ventanas ni red.
+`dotnet test` — 119 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -273,7 +284,8 @@ diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas po
 tipo, el cuerpo exacto que se envía, edición por id, borrar pregunta antes y no
 hace nada si se dice que no, y los errores de la API dejan el diálogo abierto.
 
-Ocho cubren el borrado de categorías: pregunta antes y quita la elegida, no hace
+Nueve cubren el borrado de categorías: los dos borrados preguntan con el "Sí,
+eliminar" traducido de la propia aplicación, pregunta antes y quita la elegida, no hace
 nada si se dice que no, una categoría con movimientos se mantiene y se muestra
 el motivo de la API, una que ya no existía se quita igualmente, el enlace se
 deshabilita si no hay ninguna categoría de ese tipo, una creada y borrada en el

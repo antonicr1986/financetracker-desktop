@@ -51,6 +51,10 @@ database wake up — the window says so while it waits.
   user in the token, so another account's category answers 404 as if it did
   not exist. A category that still has transactions cannot be deleted; the
   API refuses and the app shows why, with the web client's message.
+- **Confirmations in the app's own style.** Deleting a transaction or a
+  category asks in a small dialog of the app — theme colours in light and dark,
+  no Windows title bar, the web's "Yes, delete" in red, and the focus on Cancel
+  so a stray Enter deletes nothing.
 - **Editing and deleting a transaction**: a double click opens it prefilled in
   the same dialog; deleting asks for confirmation first. After saving, the
   dashboard reloads and shows the month of that transaction.
@@ -227,6 +231,11 @@ the web writes it — .NET rounds to even by default, so 80.5 would become 80.
 scrolling list inside a scrolling page keeps the mouse wheel for itself once
 the pointer is over it, and the page stops moving.
 
+**No `MessageBox`.** Windows' own message box ignores the app's theme and
+writes its "Yes/No" in the language of Windows, not in the one chosen in the
+app. `ConfirmWindow` replaces it; ViewModels still reach it only through
+`IDialogService.Confirm`, so their tests answer yes or no without a window.
+
 **Enter creates the category, not the transaction.** In WPF, Enter presses the
 dialog's default button — Save. While a new category is being typed, Add
 becomes the default button and Save stops being it, so Enter never saves a
@@ -249,7 +258,7 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 118 tests, with no window and no network.
+`dotnet test` — 119 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -260,7 +269,8 @@ transaction dialog: defaults for a new one, categories filtered by type, the
 exact input sent, editing by id, delete asking first and doing nothing on "no",
 and API errors keeping the dialog open.
 
-Eight cover deleting categories: asking first and removing the selected one,
+Nine cover deleting categories: both deletions asking with the app's own
+translated "Yes, delete", asking first and removing the selected one,
 doing nothing on "no", a category with transactions kept with the API's
 reason shown, one already gone removed anyway, the link disabled when there is
 no category of that type, one created and deleted in the same dialog not
