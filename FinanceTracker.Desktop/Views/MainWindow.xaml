@@ -6,10 +6,19 @@
         xmlns:vm="clr-namespace:FinanceTracker.Desktop.ViewModels"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-        Title="FinanceTracker" Height="450" Width="800">
-    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-        <TextBlock Text="{Binding Message}" FontSize="18" Margin="0,0,0,16" />
-        <Button Content="Pulsar" Command="{Binding SayHelloCommand}"
-                Padding="16,6" HorizontalAlignment="Center" />
-    </StackPanel>
+        Title="FinanceTracker" Height="600" Width="900"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel Margin="24">
+        <DockPanel DockPanel.Dock="Top">
+            <Button DockPanel.Dock="Right" Content="Salir" Command="{Binding LogoutCommand}"
+                    Padding="16,6" VerticalAlignment="Center" />
+            <StackPanel>
+                <TextBlock Text="{Binding Greeting}" FontSize="22" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Email}" Foreground="Gray" />
+            </StackPanel>
+        </DockPanel>
+
+        <TextBlock Text="Aquí irán tus movimientos." Foreground="Gray"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+    </DockPanel>
 </Window>

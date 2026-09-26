@@ -1,26 +1,25 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FinanceTracker.Desktop.Services;
 
 namespace FinanceTracker.Desktop.ViewModels;
 
 /// <summary>
-/// Primer ViewModel, solo para comprobar que el binding funciona.
-/// No conoce ningun control de la ventana: solo expone datos y acciones.
+/// Pantalla principal. De momento solo saluda y permite salir; en el siguiente
+/// paso cargara los movimientos.
 /// </summary>
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel(Session session) : ObservableObject
 {
-    // [ObservableProperty] genera la propiedad publica "Message" y el aviso
-    // a la vista cada vez que cambia (INotifyPropertyChanged).
-    [ObservableProperty]
-    private string message = "Todavia no has pulsado el boton";
+    public string Greeting => $"Hola, {session.User?.Name}";
 
-    private int clicks;
+    public string Email => session.User?.Email ?? "";
 
-    // [RelayCommand] genera "SayHelloCommand", que es lo que usa el boton.
+    public event EventHandler? LoggedOut;
+
     [RelayCommand]
-    private void SayHello()
+    private void Logout()
     {
-        clicks++;
-        Message = $"Has pulsado {clicks} veces";
+        session.Clear();
+        LoggedOut?.Invoke(this, EventArgs.Empty);
     }
 }
