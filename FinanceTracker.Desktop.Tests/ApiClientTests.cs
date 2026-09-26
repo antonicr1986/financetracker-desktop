@@ -16,10 +16,14 @@ public class ApiClientTests
     {
         public List<HttpRequestMessage> Requests { get; } = [];
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        /// <summary>Cuerpo de la ultima peticion, leido antes de que ApiClient la libere.</summary>
+        public string? Body { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         {
             Requests.Add(request);
-            return Task.FromResult(respond(request));
+            Body = request.Content is null ? null : await request.Content.ReadAsStringAsync(ct);
+            return respond(request);
         }
     }
 
@@ -95,10 +99,8 @@ public class ApiClientTests
     [Fact]
     public async Task Create_PostsTheBodyTheApiExpects()
     {
-        string? body = null;
         var handler = new FakeHandler(request =>
         {
-            body = request.Content!.ReadAsStringAsync().Result;
             return Json("""{"id":1,"description":"Cena","amount":30.5,"date":"2026-09-20T00:00:00","type":"Expense","categoryId":3,"categoryName":"Comida"}""",
                 HttpStatusCode.Created);
         });
@@ -108,7 +110,7 @@ public class ApiClientTests
         var request = Assert.Single(handler.Requests);
         Assert.Equal(HttpMethod.Post, request.Method);
         Assert.Equal("/api/Transactions", request.RequestUri!.AbsolutePath);
-        Assert.Equal("""{"description":"Cena","amount":30.5,"date":"2026-09-20T00:00:00","type":"Expense","categoryId":3}""", body);
+        Assert.Equal("""{"description":"Cena","amount":30.5,"date":"2026-09-20T00:00:00","type":"Expense","categoryId":3}""", handler.Body);
         Assert.Equal(1, created.Id);
     }
 

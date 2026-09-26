@@ -166,12 +166,10 @@ public class CreateCategoryApiTests
     [Fact]
     public async Task Create_PostsNameAndType_AndReadsTheCreatedCategory()
     {
-        string? body = null;
         HttpRequestMessage? sent = null;
         var handler = new LambdaHandler(request =>
         {
             sent = request;
-            body = request.Content!.ReadAsStringAsync().Result;
             return new HttpResponseMessage(HttpStatusCode.Created)
             {
                 Content = new StringContent("""{"id":42,"name":"Viajes","type":"Expense"}""", Encoding.UTF8, "application/json"),
@@ -183,13 +181,22 @@ public class CreateCategoryApiTests
 
         Assert.Equal(HttpMethod.Post, sent!.Method);
         Assert.Equal("/api/Categories", sent.RequestUri!.AbsolutePath);
-        Assert.Equal("""{"name":"Viajes","type":"Expense"}""", body);
+        Assert.Equal("""{"name":"Viajes","type":"Expense"}""", handler.Body);
         Assert.Equal(42, created.Id);
     }
 
     private class LambdaHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) =>
-            Task.FromResult(respond(request));
+        /// <summary>
+        /// Cuerpo de la peticion. Se lee aqui, con await, porque ApiClient libera
+        /// la peticion al terminar y leerlo con .Result bloquearia (xUnit1031).
+        /// </summary>
+        public string? Body { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            Body = request.Content is null ? null : await request.Content.ReadAsStringAsync(ct);
+            return respond(request);
+        }
     }
 }
