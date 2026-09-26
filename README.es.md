@@ -19,8 +19,8 @@ lenguaje que la API: C# en los dos extremos.
 > 🚧 **En desarrollo.** Se está construyendo paso a paso; la lista de abajo es
 > lo que funciona hoy.
 
-Hay una **cuenta de demostración pública**, `demo@financetracker.app` /
-`Demo1234!`, que aparece en la pantalla de acceso. La API se duerme tras 20
+Hay una **cuenta de demostración pública**, la misma que usan la web y Android,
+a un clic desde la pantalla de acceso. La API se duerme tras 20
 minutos sin uso, así que el primer acceso del día puede tardar mientras se
 despiertan el servicio y la base de datos — la ventana lo avisa mientras espera.
 
@@ -28,6 +28,10 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
 
 - **Acceso con JWT** contra la API desplegada, con mensajes claros para una
   contraseña incorrecta y para un fallo de conexión.
+- **Entrada a la cuenta de demostración con un clic**, sin rellenar el
+  formulario.
+- **Textos de ayuda dentro de las cajas vacías** (`tu@email.com`,
+  `Tu contraseña`), que desaparecen en cuanto se escribe algo.
 - **Selector de mes** con todos los meses que tienen datos, del más reciente
   al más antiguo.
 - **Totales del mes elegido** — ingresos, gastos y balance — calculados en el
@@ -99,7 +103,14 @@ frase que se muestra — la misma regla que en la web y en Android.
 **La contraseña es la única excepción a "nada en el code-behind".** WPF no
 permite hacer binding de `PasswordBox.Password`, a propósito, para que la
 contraseña no quede en una propiedad enlazable. La ventana se la pasa al
-ViewModel en un manejador de dos líneas.
+ViewModel en un manejador corto, que por el mismo motivo también muestra u
+oculta el texto de ayuda de esa caja.
+
+**WPF no tiene placeholder.** No hay un equivalente al atributo `placeholder`
+de HTML, así que cada texto de ayuda es un `TextBlock` gris colocado encima de
+su caja en la misma celda de un `Grid`, con `IsHitTestVisible="False"` para que
+los clics lleguen a la caja, y un `DataTrigger` sobre `Text.Length` que solo lo
+muestra mientras la caja está vacía.
 
 **Un 401 significa dos cosas distintas.** En el acceso todavía no hay sesión,
 así que es una contraseña incorrecta. En el panel había un token y la API lo
@@ -116,10 +127,11 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 49 pruebas, sin ventanas ni red.
+`dotnet test` — 51 pruebas, sin ventanas ni red.
 
-Veintitrés cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
-incorrecta, sin conexión. Panel: se elige el mes más reciente, cambio de mes,
+Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
+incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
+tocar ni exigir el formulario. Panel: se elige el mes más reciente, cambio de mes,
 sin datos, errores, sesión caducada, cierre de sesión, y que al guardar se
 recarga y salta al mes del movimiento mientras que cancelar no recarga. El
 diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por

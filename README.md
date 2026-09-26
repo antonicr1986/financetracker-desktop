@@ -19,8 +19,8 @@ the API: C# on both ends.
 > 🚧 **Work in progress.** It is being built step by step; the list below is
 > what works today.
 
-There is a **public demo account**, `demo@financetracker.app` / `Demo1234!`,
-shown on the sign-in screen. The API sleeps after 20 minutes of inactivity, so
+There is a **public demo account**, the same one the web and Android clients
+use, reachable in one click from the sign-in screen. The API sleeps after 20 minutes of inactivity, so
 the first sign-in of the day can take a while as the app service and the
 database wake up — the window says so while it waits.
 
@@ -28,6 +28,9 @@ database wake up — the window says so while it waits.
 
 - **Sign-in with JWT** against the deployed API, with clear messages for a
   wrong password and for a connection failure.
+- **One-click entry into the demo account**, without filling in the form.
+- **Hints inside the empty fields** (`tu@email.com`, `Tu contraseña`), which
+  disappear as soon as something is typed.
 - **Month selector** with every month that has data, newest first.
 - **Totals for the selected month** — income, expenses and balance — derived
   on the client from the full history, as in the other clients.
@@ -96,8 +99,13 @@ the sentence to show — the same rule as the web and Android clients.
 
 **The password is the one exception to "no code-behind".** WPF does not allow
 binding `PasswordBox.Password`, on purpose, so the password never sits in a
-bindable property. The window passes it to the ViewModel in a two-line
-handler.
+bindable property. The window passes it to the ViewModel in a short handler,
+which also shows or hides the field's hint for the same reason.
+
+**WPF has no placeholder.** There is no equivalent of HTML's `placeholder`
+attribute, so each hint is a grey `TextBlock` laid over its box in the same
+`Grid` cell, with `IsHitTestVisible="False"` so clicks go through to the box,
+and a `DataTrigger` on `Text.Length` that shows it only while the box is empty.
 
 **A 401 means two different things.** On sign-in there is no session yet, so
 it is a wrong password. On the dashboard there was a token and the API refused
@@ -114,10 +122,11 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 49 tests, with no window and no network.
+`dotnet test` — 51 tests, with no window and no network.
 
-Twenty-three cover the ViewModels. Sign-in: empty fields, success, wrong
-password, no connection. Dashboard: newest month selected, changing month,
+Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
+password, no connection, and the demo button using the demo credentials
+without touching or requiring the form. Dashboard: newest month selected, changing month,
 empty data, errors, expired session, signing out, and that saving reloads and
 jumps to the saved transaction's month while cancelling does not reload. The
 transaction dialog: defaults for a new one, categories filtered by type, the

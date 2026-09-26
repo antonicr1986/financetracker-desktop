@@ -23,6 +23,7 @@ public partial class LoginViewModel(IAuthService auth, Session session) : Observ
     // a preguntar si puede ejecutarse, y se deshabilita mientras se espera.
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
+    [NotifyCanExecuteChangedFor(nameof(LoginDemoCommand))]
     private bool isBusy;
 
     /// <summary>Se lanza al iniciar sesion. La ventana lo escucha para navegar.</summary>
@@ -41,10 +42,26 @@ public partial class LoginViewModel(IAuthService auth, Session session) : Observ
             return;
         }
 
+        await SignInAsync(Email.Trim(), Password);
+    }
+
+    /// <summary>
+    /// Un clic y dentro, como en Android. No toca los campos del formulario:
+    /// entra directamente con las credenciales publicas de la demo.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanLogin))]
+    private async Task LoginDemoAsync()
+    {
+        ErrorMessage = "";
+        await SignInAsync(DemoEmail, DemoPassword);
+    }
+
+    private async Task SignInAsync(string email, string password)
+    {
         IsBusy = true;
         try
         {
-            var login = await auth.LoginAsync(Email.Trim(), Password);
+            var login = await auth.LoginAsync(email, password);
             session.Start(login);
             LoggedIn?.Invoke(this, EventArgs.Empty);
         }

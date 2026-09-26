@@ -12,12 +12,17 @@ public partial class LoginWindow : Window
         InitializeComponent();
         this.viewModel = viewModel;
         DataContext = viewModel;
+
+        Loaded += (_, _) => EmailInput.Focus();
     }
 
     // La unica excepcion a "nada de logica en el code-behind": WPF no deja
-    // hacer binding de PasswordBox.Password, asi que lo pasamos a mano.
+    // hacer binding de PasswordBox.Password, asi que se pasa a mano, y por la
+    // misma razon el placeholder de la contraseña se muestra y oculta aqui.
     private void OnPasswordChanged(object sender, RoutedEventArgs e)
     {
         viewModel.Password = PasswordInput.Password;
+        PasswordPlaceholder.Visibility =
+            PasswordInput.Password.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 }

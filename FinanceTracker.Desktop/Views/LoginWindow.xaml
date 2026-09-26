@@ -12,39 +12,78 @@
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <!-- Texto de ayuda gris dentro de una caja. WPF no trae placeholder:
+             es un TextBlock encima de la caja que no recibe clics
+             (IsHitTestVisible=False), para que el clic llegue a la caja. -->
+        <Style x:Key="Placeholder" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="Margin" Value="9,0,0,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="IsHitTestVisible" Value="False" />
+        </Style>
     </Window.Resources>
 
     <StackPanel Margin="32">
         <TextBlock Text="Iniciar sesión" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,20" />
 
         <TextBlock Text="Email" Margin="0,0,0,4" />
-        <!-- UpdateSourceTrigger=PropertyChanged: el ViewModel se entera en cada
-             tecla, no solo al salir de la caja. -->
-        <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
-                 Padding="6" Margin="0,0,0,12" />
+        <!-- Caja y placeholder en la misma celda de un Grid: quedan superpuestos. -->
+        <Grid Margin="0,0,0,12">
+            <!-- UpdateSourceTrigger=PropertyChanged: el ViewModel se entera en cada
+                 tecla, no solo al salir de la caja. -->
+            <TextBox x:Name="EmailInput" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}"
+                     Padding="6" />
+            <TextBlock Text="tu@email.com">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource Placeholder}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <!-- Visible solo mientras la caja esta vacia. -->
+                            <DataTrigger Binding="{Binding Text.Length, ElementName=EmailInput}" Value="0">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
 
         <TextBlock Text="Contraseña" Margin="0,0,0,4" />
-        <PasswordBox x:Name="PasswordInput" PasswordChanged="OnPasswordChanged"
-                     Padding="6" Margin="0,0,0,12" />
+        <Grid Margin="0,0,0,12">
+            <PasswordBox x:Name="PasswordInput" PasswordChanged="OnPasswordChanged" Padding="6" />
+            <!-- PasswordBox no expone su texto para un binding, asi que este
+                 placeholder lo muestra y oculta el code-behind. -->
+            <TextBlock x:Name="PasswordPlaceholder" Text="Tu contraseña"
+                       Style="{StaticResource Placeholder}" />
+        </Grid>
 
         <TextBlock Text="{Binding ErrorMessage}" Foreground="#E11D48"
                    TextWrapping="Wrap" Margin="0,0,0,12" />
 
         <!-- IsDefault: Enter en cualquier caja pulsa este boton. -->
         <Button Content="Entrar" Command="{Binding LoginCommand}" IsDefault="True"
-                Padding="0,8" />
+                Padding="0,8" Background="#0F172A" Foreground="White" BorderBrush="#0F172A" />
 
         <TextBlock Text="Conectando… la primera vez del día puede tardar un poco."
                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}"
                    Foreground="Gray" TextWrapping="Wrap" Margin="0,12,0,0" />
 
-        <Separator Margin="0,20" />
+        <!-- Separador con texto en medio: "o" -->
+        <Grid Margin="0,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Separator VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="o" Foreground="Gray" Margin="12,0" />
+            <Separator Grid.Column="2" VerticalAlignment="Center" />
+        </Grid>
 
-        <TextBlock Foreground="Gray" TextWrapping="Wrap">
-            <Run Text="Cuenta de demostración:" />
-            <Run Text="{x:Static vm:LoginViewModel.DemoEmail}" FontWeight="SemiBold" />
-            <Run Text="/" />
-            <Run Text="{x:Static vm:LoginViewModel.DemoPassword}" FontWeight="SemiBold" />
-        </TextBlock>
+        <Button Content="Entrar con la cuenta de demostración" Command="{Binding LoginDemoCommand}"
+                Padding="0,8" />
+        <TextBlock Text="Datos de ejemplo compartidos, sin registrarse."
+                   Foreground="Gray" HorizontalAlignment="Center" Margin="0,6,0,0" />
     </StackPanel>
 </Window>

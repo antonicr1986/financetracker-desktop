@@ -13,10 +13,14 @@ public class LoginViewModelTests
             (_, _) => throw new InvalidOperationException("No configurado");
 
         public int Calls { get; private set; }
+        public string? LastEmail { get; private set; }
+        public string? LastPassword { get; private set; }
 
         public Task<LoginResponse> LoginAsync(string email, string password)
         {
             Calls++;
+            LastEmail = email;
+            LastPassword = password;
             return Task.FromResult(Handler(email, password));
         }
     }
@@ -83,5 +87,39 @@ public class LoginViewModelTests
         await vm.LoginCommand.ExecuteAsync(null);
 
         Assert.Equal("No se pudo conectar con el servidor. Revisa tu conexión.", vm.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task LoginDemo_UsesTheDemoCredentialsAndIgnoresTheForm()
+    {
+        var auth = new FakeAuthService { Handler = (email, _) => Success(email) };
+        var session = new Session();
+        var vm = new LoginViewModel(auth, session) { Email = "otro@example.com", Password = "lo-que-sea" };
+        var raised = false;
+        vm.LoggedIn += (_, _) => raised = true;
+
+        await vm.LoginDemoCommand.ExecuteAsync(null);
+
+        Assert.Equal(LoginViewModel.DemoEmail, auth.LastEmail);
+        Assert.Equal(LoginViewModel.DemoPassword, auth.LastPassword);
+        Assert.Equal("otro@example.com", vm.Email); // el formulario no se toca
+        Assert.True(raised);
+        Assert.True(session.IsActive);
+    }
+
+    [Fact]
+    public async Task LoginDemo_WorksWithAnEmptyForm_AndReportsErrors()
+    {
+        var auth = new FakeAuthService
+        {
+            Handler = (_, _) => throw new ApiException(ApiException.NetworkError)
+        };
+        var vm = new LoginViewModel(auth, new Session());
+
+        await vm.LoginDemoCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, auth.Calls); // no exige rellenar los campos
+        Assert.Equal("No se pudo conectar con el servidor. Revisa tu conexión.", vm.ErrorMessage);
+        Assert.False(vm.IsBusy);
     }
 }
