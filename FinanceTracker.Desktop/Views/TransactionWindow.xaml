@@ -9,6 +9,7 @@
         d:DataContext="{d:DesignInstance Type=vm:TransactionEditorViewModel}"
         Title="{Binding Title}" Width="440" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Icon="/Assets/app.ico"
         Background="{DynamicResource Brush.Surface}" Foreground="{DynamicResource Brush.Text}">
 
     <StackPanel Margin="24">

@@ -59,6 +59,11 @@ database wake up — the window says so while it waits.
   in slate-900 (inverted in dark mode), and a shared top bar on every window
   with the name on the left and the language, theme and "Sign out" on the right —
   "Sign out" disabled on the sign-in screen, as in the other clients.
+- **The same icon as the Android app** — three rising bars, the tallest in
+  the income green, on slate-900 — in the title bar, the taskbar, the
+  executable and next to the name in the top bar. The `.ico` holds nine sizes,
+  from 16 to 256 pixels, so Windows picks a sharp one for each place; the top
+  bar draws it as a vector instead.
 - **Loading, error and empty states**, with a retry button, and a clear
   message when the session expires instead of a silent return to sign-in.
 
@@ -80,6 +85,7 @@ closing the app.
       Domain/       Month grouping, totals and form rules — no WPF, plain C#
       Localization/ Texts in both languages, the Localizer and the language switch
       Controls/     Hint.Text, the text boxes' placeholder
+      Assets/       app.ico, built from the Android launcher vector
       Models/       The API DTOs, as records
       Services/     HTTP client, session, dialogs and the error type
       ViewModels/   The logic of each screen — no reference to any control

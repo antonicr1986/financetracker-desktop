@@ -11,6 +11,7 @@
         Title="{DynamicResource login.windowTitle}"
         Width="460" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
+        Icon="/Assets/app.ico"
         Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Text}">
 
     <DockPanel>

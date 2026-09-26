@@ -9,6 +9,7 @@
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="FinanceTracker" Height="680" Width="960" MinWidth="720" MinHeight="480"
         WindowStartupLocation="CenterScreen"
+        Icon="/Assets/app.ico"
         Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Text}">
 
     <DockPanel>

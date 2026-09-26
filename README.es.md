@@ -62,6 +62,11 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
   común a todas las ventanas, con el nombre a la izquierda y el idioma, el
   tema y "Salir" a la derecha — "Salir" deshabilitado en la pantalla de acceso,
   como en los otros clientes.
+- **El mismo icono que la app Android** — tres barras ascendentes, la más alta
+  en el verde de ingresos, sobre slate-900 — en la barra de título, la barra de
+  tareas, el ejecutable y junto al nombre en la barra superior. El `.ico`
+  contiene nueve tamaños, de 16 a 256 píxeles, para que Windows elija uno
+  nítido en cada sitio; la barra superior lo dibuja en vectorial.
 - **Estados de carga, error y vacío**, con botón de reintentar, y un mensaje
   claro cuando la sesión caduca en lugar de volver al acceso sin explicación.
 
@@ -83,6 +88,7 @@ aplicación.
       Domain/       Agrupación por meses, totales y reglas del formulario — sin WPF
       Localization/ Textos en los dos idiomas, el Localizer y el cambio de idioma
       Controls/     Hint.Text, el texto de ayuda de las cajas
+      Assets/       app.ico, generado a partir del vector del icono de Android
       Models/       Los DTOs de la API, como records
       Services/     Cliente HTTP, sesión, diálogos y el tipo de error
       ViewModels/   La lógica de cada pantalla, sin referencias a controles
