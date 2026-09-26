@@ -23,10 +23,20 @@ así que el primer acceso del día puede tardar mientras se despiertan el
 servicio y la base de datos — la ventana lo avisa mientras espera.
 
 **[Descargar la última versión](https://github.com/antonicr1986/financetracker-desktop/releases/latest)**
-— un solo `.exe` para Windows 10 u 11 (64 bits), con .NET incluido dentro, así
-que no hay nada que instalar. No está firmado, así que la primera vez Windows
-SmartScreen puede avisar: elige **Más información** y luego **Ejecutar de todas
-formas**.
+para Windows 10 u 11 (64 bits), con .NET incluido, así que no hay nada que
+instalar. La descarga recomendada es el `.zip`: descomprímelo y ejecuta
+`FinanceTracker.Desktop.exe`. También hay un `.exe` único.
+
+La aplicación no está firmada y es nueva, así que el navegador y Windows pueden
+poner avisos. Son los esperados; para pasarlos:
+
+1. **Conserva la descarga.** En Edge: **…** → **Conservar** → **Mostrar más** →
+   **Conservar de todos modos**. En Chrome: **Conservar**.
+2. **Desbloquéala antes de abrirla.** Clic derecho en el `.zip` →
+   **Propiedades** → marca **Desbloquear** → **Aceptar**. Hacerlo en el `.zip`
+   *antes* de descomprimir desbloquea todos los archivos de dentro.
+3. Si aún aparece SmartScreen: **Más información** → **Ejecutar de todas
+   formas**.
 
 ## ✨ Qué hace
 
@@ -372,11 +382,15 @@ incorrecta" o "sesión caducada" según la llamada.
   pruebas hace fallar el build**: unas pruebas que dejan de ejecutarse sin
   avisar son peores que unas en rojo.
 - **Release** en cada etiqueta de versión (`v1.2.3`): pasa las pruebas, publica
-  un único ejecutable autocontenido con la versión sacada de la etiqueta,
-  comprueba que la versión ha llegado de verdad a las propiedades del archivo,
-  y publica una Release de GitHub con el `.exe` y un changelog desde la
-  etiqueta anterior — el mismo modelo de entrega que la app Android. La versión
-  nunca se edita a mano.
+  la aplicación autocontenida dos veces — como carpeta dentro de un `.zip`, y
+  como un único `.exe` — con la versión sacada de la etiqueta, comprueba que la
+  versión ha llegado de verdad a los dos ejecutables, y publica una Release de
+  GitHub con los dos archivos, los pasos para desbloquearlos y un changelog
+  desde la etiqueta anterior. El mismo modelo de entrega que la app Android; la
+  versión nunca se edita a mano. El `.zip` es el recomendado porque los
+  navegadores desconfían menos de él que de un `.exe` suelto, y una carpeta de
+  archivos normales parece menos sospechosa a Defender que un ejecutable que se
+  descomprime a sí mismo al arrancar.
 - **Escaneo de secretos** con gitleaks sobre todo el historial, con la misma
   configuración que el resto de repositorios del proyecto y una regla más para
   credenciales escritas a mano en C#.

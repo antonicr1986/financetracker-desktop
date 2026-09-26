@@ -23,9 +23,19 @@ minutes of inactivity, so the first sign-in of the day can take a while as the
 app service and the database wake up — the window says so while it waits.
 
 **[Download the latest version](https://github.com/antonicr1986/financetracker-desktop/releases/latest)**
-— a single `.exe` for Windows 10 or 11 (64-bit), with .NET bundled inside, so
-there is nothing to install. It is not code-signed, so the first time Windows
-SmartScreen may warn: choose **More info** and then **Run anyway**.
+for Windows 10 or 11 (64-bit), with .NET bundled, so there is nothing to
+install. The `.zip` is the recommended download: unzip it and run
+`FinanceTracker.Desktop.exe`. A single `.exe` is there too.
+
+The app is not code-signed and is new, so the browser and Windows may put up
+warnings. They are expected; to get past them:
+
+1. **Keep the download.** In Edge: **…** → **Keep** → **Show more** → **Keep
+   anyway**. In Chrome: **Keep**.
+2. **Unblock it before opening.** Right-click the `.zip` → **Properties** →
+   tick **Unblock** → **OK**. Doing it on the `.zip` *before* extracting
+   unblocks every file inside.
+3. If SmartScreen still appears: **More info** → **Run anyway**.
 
 ## ✨ What it does
 
@@ -351,12 +361,15 @@ password" or "session expired" depending on the call.
   run itself.
 - The test count is written to the run summary, and **zero tests fails the
   build**: tests that silently stop running are worse than red ones.
-- **Release** on every version tag (`v1.2.3`): runs the tests, publishes a
-  single self-contained executable with the version taken from the tag, checks
-  that the version really reached the file's properties, and publishes a
-  GitHub Release with the `.exe` and a changelog since the previous tag — the
-  same delivery model as the Android client. The version is never edited by
-  hand.
+- **Release** on every version tag (`v1.2.3`): runs the tests, publishes the
+  app self-contained twice — as a folder in a `.zip`, and as a single `.exe` —
+  with the version taken from the tag, checks that the version really reached
+  both executables, and publishes a GitHub Release with both files, the
+  unblocking steps and a changelog since the previous tag. Same delivery model
+  as the Android client; the version is never edited by hand. The `.zip` is
+  the recommended one because browsers are less wary of it than of a bare
+  `.exe`, and a folder of ordinary files looks less suspicious to Defender
+  than an executable that unpacks itself on start.
 - **Secret scanning** with gitleaks across the full history, with the same
   configuration as the other repositories in this project plus a rule for
   credentials written by hand in C#.

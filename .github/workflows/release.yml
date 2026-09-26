@@ -48,10 +48,31 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release
 
-      # Un solo .exe autocontenido: lleva .NET dentro, asi que se descarga y se
-      # ejecuta sin instalar nada. La version sale de la etiqueta y queda en
-      # las propiedades del archivo (clic derecho > Propiedades > Detalles).
-      - name: Publish the executable
+      # Dos formas de entregar lo mismo, las dos con .NET dentro (nada que instalar):
+      #
+      # - Un .zip con la aplicacion como carpeta normal. Es la recomendada: los
+      #   navegadores ponen menos trabas a un .zip que a un .exe suelto, y una
+      #   carpeta de archivos normales levanta menos sospechas en Defender que
+      #   un ejecutable que se descomprime a si mismo al arrancar.
+      # - Un unico .exe, para quien prefiera un solo archivo.
+      #
+      # La version sale de la etiqueta y queda en las propiedades del archivo
+      # (clic derecho > Propiedades > Detalles).
+      - name: Publish the app as a folder and zip it
+        run: |
+          dotnet publish FinanceTracker.Desktop/FinanceTracker.Desktop.csproj \
+            --configuration Release --runtime win-x64 --self-contained true \
+            -p:DebugType=none \
+            -p:Version="$VERSION" \
+            --output "publish-folder/FinanceTracker"
+
+      - name: Create the zip
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "publish-folder/FinanceTracker" `
+            -DestinationPath "financetracker-desktop-v$env:VERSION-win-x64.zip"
+
+      - name: Publish the single executable
         run: |
           dotnet publish FinanceTracker.Desktop/FinanceTracker.Desktop.csproj \
             --configuration Release --runtime win-x64 --self-contained true \
@@ -60,21 +81,28 @@ jobs:
             -p:EnableCompressionInSingleFile=true \
             -p:DebugType=none \
             -p:Version="$VERSION" \
-            --output publish
-          cp publish/FinanceTracker.Desktop.exe "financetracker-desktop-v$VERSION-win-x64.exe"
+            --output publish-single
+          cp publish-single/FinanceTracker.Desktop.exe "financetracker-desktop-v$VERSION-win-x64.exe"
 
-      # Si la version no hubiera llegado al ejecutable, se veria 1.0.0 en todas
-      # las releases. Esto lo comprueba antes de publicar.
-      - name: Verify the version in the executable
+      # Si la version no hubiera llegado a los ejecutables, se veria 1.0.0 en
+      # todas las releases. Se comprueba en los dos antes de publicar.
+      - name: Verify the version in both executables
         shell: pwsh
         run: |
-          $file = "financetracker-desktop-v$env:VERSION-win-x64.exe"
-          $info = (Get-Item $file).VersionInfo
-          $size = [math]::Round((Get-Item $file).Length / 1MB, 1)
-          echo "ProductVersion: $($info.ProductVersion)  FileVersion: $($info.FileVersion)  Size: $size MB"
-          if (-not $info.ProductVersion.StartsWith($env:VERSION)) {
-            echo "::error::The executable reports version '$($info.ProductVersion)', expected '$env:VERSION'"
-            exit 1
+          $files = @(
+            "publish-folder/FinanceTracker/FinanceTracker.Desktop.exe",
+            "financetracker-desktop-v$env:VERSION-win-x64.exe"
+          )
+          foreach ($file in $files) {
+            $info = (Get-Item $file).VersionInfo
+            echo "$file -> $($info.ProductVersion)"
+            if (-not $info.ProductVersion.StartsWith($env:VERSION)) {
+              echo "::error::$file reports version '$($info.ProductVersion)', expected '$env:VERSION'"
+              exit 1
+            }
+          }
+          foreach ($asset in Get-ChildItem "financetracker-desktop-v$env:VERSION-win-x64.*") {
+            echo "$($asset.Name): $([math]::Round($asset.Length / 1MB, 1)) MB"
           }
 
       - name: Write the changelog
@@ -83,12 +111,20 @@ jobs:
           {
             echo "## FinanceTracker Desktop $VERSION"
             echo
-            echo "Download \`financetracker-desktop-v$VERSION-win-x64.exe\` and run it on Windows 10 or 11 (64-bit)."
-            echo "Nothing to install: .NET is bundled inside the file."
-            echo "Sign in with one click on the demo account, or with your own." # gitleaks:allow
+            echo "### Download"
             echo
-            echo "The executable is not code-signed, so Windows SmartScreen may warn the first time:"
-            echo "choose **More info** and then **Run anyway**."
+            echo "- **\`financetracker-desktop-v$VERSION-win-x64.zip\`** (recommended): unzip it and run \`FinanceTracker.Desktop.exe\` inside the folder."
+            echo "- \`financetracker-desktop-v$VERSION-win-x64.exe\`: the same app as a single file."
+            echo
+            echo "Windows 10 or 11, 64-bit. Nothing to install: .NET is bundled. Sign in with one click on the demo account, or with your own."
+            echo
+            echo "### If Windows blocks it"
+            echo
+            echo "The app is not code-signed and is new, so the browser and Windows SmartScreen may warn. It is expected:"
+            echo
+            echo "1. **Keep the download.** In Edge: **…** > **Keep** > **Show more** > **Keep anyway**. In Chrome: **Keep**."
+            echo "2. **Unblock the file before opening it.** Right-click the \`.zip\` (or the \`.exe\`) > **Properties** > tick **Unblock** > **OK**. Do it on the \`.zip\` *before* extracting, and every file inside comes out unblocked."
+            echo "3. If SmartScreen still appears: **More info** > **Run anyway**."
             echo
             if [ -n "$previous" ]; then
               echo "### Changes since $previous"
@@ -106,6 +142,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" "financetracker-desktop-v$VERSION-win-x64.exe" \
+          gh release create "$GITHUB_REF_NAME" \
+            "financetracker-desktop-v$VERSION-win-x64.zip" \
+            "financetracker-desktop-v$VERSION-win-x64.exe" \
             --title "FinanceTracker Desktop $VERSION" \
             --notes-file release-notes.md
