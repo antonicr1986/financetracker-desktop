@@ -41,6 +41,22 @@ public static class TransactionForm
     public static string FormatAmountForInput(decimal amount) =>
         amount.ToString("0.##########", CultureInfo.InvariantCulture).Replace('.', ',');
 
+    /// <summary>MaxLength(100) del nombre de categoria en la API.</summary>
+    public const int MaxCategoryNameLength = 100;
+
+    /// <summary>
+    /// Si ya hay una categoria del mismo tipo con ese nombre, sin distinguir
+    /// mayusculas ni espacios de los extremos, como en Android. Del otro tipo
+    /// si se permite: puede haber "Regalos" de gasto y de ingreso. La API no
+    /// lo comprueba, asi que lo hacen los clientes.
+    /// </summary>
+    public static bool IsDuplicateCategoryName(IEnumerable<Models.CategoryDto> categories, string name,
+        Models.TransactionType type)
+    {
+        var wanted = name.Trim();
+        return categories.Any(c => c.Type == type && string.Equals(c.Name.Trim(), wanted, StringComparison.CurrentCultureIgnoreCase));
+    }
+
     /// <summary>null si el formulario es valido.</summary>
     public static TransactionFormProblem? Validate(string description, string amountText, DateTime? date, bool hasCategory)
     {

@@ -242,20 +242,26 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [RelayCommand(CanExecute = nameof(CanLoad))]
     private Task NewTransactionAsync() =>
-        OpenEditorAsync(new TransactionEditorViewModel(transactions, dialogs, allCategories, localizer));
+        OpenEditorAsync(new TransactionEditorViewModel(transactions, dialogs, allCategories, localizer,
+            categoryService: categories));
 
     /// <summary>Doble clic en un movimiento: el mismo formulario, relleno.</summary>
     [RelayCommand]
     private Task EditTransactionAsync(TransactionRow? row) =>
         row is null
             ? Task.CompletedTask
-            : OpenEditorAsync(new TransactionEditorViewModel(transactions, dialogs, allCategories, localizer, row.Source));
+            : OpenEditorAsync(new TransactionEditorViewModel(transactions, dialogs, allCategories, localizer, row.Source,
+                categoryService: categories));
 
     private async Task OpenEditorAsync(TransactionEditorViewModel editor)
     {
         bool changed;
         using (editor)
             changed = dialogs.ShowTransactionEditor(editor);
+
+        // Una categoria creada en el formulario ya existe en la API aunque se
+        // haya cancelado el movimiento: la proxima vez tiene que aparecer.
+        allCategories.AddRange(editor.CreatedCategories);
 
         if (editor.SessionHasExpired)
         {

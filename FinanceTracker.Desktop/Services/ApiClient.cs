@@ -95,6 +95,14 @@ public class ApiClient : IAuthService, ITransactionService, ICategoryService, IB
         return await ReadAsync<List<CategoryDto>>(response);
     }
 
+    public async Task<CategoryDto> CreateCategoryAsync(CategoryInput input)
+    {
+        using var request = Authorized(HttpMethod.Post, "api/Categories");
+        request.Content = JsonContent.Create(input);
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+        return await ReadAsync<CategoryDto>(response);
+    }
+
     public async Task<List<BudgetDto>> GetBudgetsAsync()
     {
         using var request = Authorized(HttpMethod.Get, "api/Budgets");

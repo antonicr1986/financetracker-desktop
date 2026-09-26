@@ -29,6 +29,18 @@ internal class FakeTransactionService : ITransactionService, ICategoryService, I
 
     public Task<List<CategoryDto>> GetCategoriesAsync() => Task.FromResult(Categories);
 
+    public List<CategoryInput> CreatedCategories { get; } = [];
+
+    /// <summary>Si se asigna, crear categoria lanza esta excepcion.</summary>
+    public ApiException? CategoryError { get; set; }
+
+    public Task<CategoryDto> CreateCategoryAsync(CategoryInput input)
+    {
+        if (CategoryError is not null) throw CategoryError;
+        CreatedCategories.Add(input);
+        return Task.FromResult(new CategoryDto(100 + CreatedCategories.Count, input.Name, input.Type));
+    }
+
     public Task<TransactionDto> CreateTransactionAsync(TransactionInput input)
     {
         if (WriteError is not null) throw WriteError;

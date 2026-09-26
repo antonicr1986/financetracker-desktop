@@ -44,7 +44,35 @@
 
         <TextBlock Text="{DynamicResource dialog.category}" Margin="0,0,0,4" />
         <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
-                  DisplayMemberPath="Name" Margin="0,0,0,12" />
+                  DisplayMemberPath="Name" />
+
+        <TextBlock Text="{DynamicResource dialog.noCategoriesOfType}" Style="{StaticResource MutedText}"
+                   TextWrapping="Wrap" Margin="0,6,0,0"
+                   Visibility="{Binding HasNoCategoriesOfType, Converter={StaticResource BoolToVisibility}}" />
+
+        <!-- Categoria nueva, como en la web: un enlace que abre una caja con
+             Añadir y Cancelar. Se crea del tipo elegido arriba. -->
+        <Button Content="{DynamicResource dialog.newCategory}" Command="{Binding StartAddingCategoryCommand}"
+                Style="{StaticResource LinkButton}" Margin="0,8,0,12"
+                Visibility="{Binding ShowNewCategoryLink, Converter={StaticResource BoolToVisibility}}" />
+
+        <Grid Margin="0,8,0,12"
+              Visibility="{Binding IsAddingCategory, Converter={StaticResource BoolToVisibility}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="NewCategoryInput" Text="{Binding NewCategoryName, UpdateSourceTrigger=PropertyChanged}"
+                     MaxLength="100" controls:Hint.Text="{DynamicResource dialog.newCategoryPlaceholder}" />
+            <!-- Mientras se escribe la categoria, Enter la crea: Añadir pasa a ser
+                 el boton por defecto y Guardar deja de serlo (mas abajo). Si no,
+                 Enter guardaria el movimiento a medias. -->
+            <Button Grid.Column="1" Content="{DynamicResource dialog.add}" Command="{Binding CreateCategoryCommand}"
+                    IsDefault="{Binding IsAddingCategory}" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" />
+            <Button Grid.Column="2" Content="{DynamicResource dialog.cancel}" Command="{Binding CancelAddingCategoryCommand}"
+                    Margin="8,0,0,0" />
+        </Grid>
 
         <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}" TextWrapping="Wrap"
                    Margin="0,0,0,12"
@@ -59,8 +87,19 @@
                 <!-- IsCancel: el propio WPF cierra el dialogo con Escape o al
                      pulsarlo, sin comando. IsDefault: Enter guarda. -->
                 <Button Content="{DynamicResource dialog.cancel}" IsCancel="True" Margin="0,0,8,0" />
-                <Button Content="{DynamicResource dialog.save}" Command="{Binding SaveCommand}" IsDefault="True"
-                        Style="{StaticResource PrimaryButton}" />
+                <Button Content="{DynamicResource dialog.save}" Command="{Binding SaveCommand}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                            <!-- Enter guarda, salvo mientras se escribe una categoria nueva. -->
+                            <Setter Property="IsDefault" Value="True" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsAddingCategory}" Value="True">
+                                    <Setter Property="IsDefault" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </StackPanel>
         </DockPanel>
     </StackPanel>

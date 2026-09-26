@@ -32,6 +32,9 @@ public record CategoryDto(int Id, string Name, TransactionType Type)
     public override string ToString() => Name;
 }
 
+/// <summary>Cuerpo de POST /api/Categories.</summary>
+public record CategoryInput(string Name, TransactionType Type);
+
 /// <summary>
 /// Cuerpo de alta y de edicion: la API tiene CreateTransactionDto y
 /// UpdateTransactionDto, pero son identicos, asi que aqui hay uno solo.

@@ -41,6 +41,13 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
   importe, fecha y categoría. Solo se ofrecen las categorías del tipo elegido:
   la API rechaza un gasto con una categoría de ingreso. El importe acepta coma
   o punto para los decimales.
+- **Crear una categoría desde el diálogo de movimiento**, como en la web y
+  Android: un enlace "Nueva categoría" abre una caja con Añadir y Cancelar. La
+  categoría toma el tipo del movimiento — el único con el que la API la
+  aceptaría — y queda elegida al crearla. La API no rechaza nombres repetidos,
+  así que lo hace el cliente: mismo tipo, sin distinguir mayúsculas ni espacios
+  de los extremos, de modo que "Regalos" puede existir como gasto y como
+  ingreso.
 - **Edición y borrado de movimientos**: doble clic lo abre relleno en el mismo
   diálogo; borrar pide confirmación antes. Tras guardar, el panel se recarga y
   muestra el mes de ese movimiento.
@@ -226,6 +233,16 @@ defecto, así que 80,5 se quedaría en 80.
 queda la rueda del ratón en cuanto el puntero está encima, y la página deja de
 moverse.
 
+**Enter crea la categoría, no el movimiento.** En WPF, Enter pulsa el botón
+por defecto del diálogo — Guardar. Mientras se escribe una categoría nueva,
+Añadir pasa a ser el botón por defecto y Guardar deja de serlo, así que Enter
+nunca guarda un movimiento a medio rellenar. La web tuvo que interceptar la
+misma tecla por el mismo motivo.
+
+**Una categoría sobrevive a un diálogo cancelado.** Una vez creada, existe en
+la API aunque luego se cancele el movimiento, así que el panel la añade a su
+lista en el acto en lugar de esperar a la próxima recarga.
+
 **La decisión del tema es C# normal.** `ThemePreference` decide qué tema toca
 (el elegido, o el de Windows si no hay elección) sin ninguna referencia a WPF,
 así que tiene pruebas unitarias; `ThemeManager` solo pinta. La elección se
@@ -238,7 +255,7 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 98 pruebas, sin ventanas ni red.
+`dotnet test` — 110 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -248,6 +265,14 @@ recarga y salta al mes del movimiento mientras que cancelar no recarga. El
 diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por
 tipo, el cuerpo exacto que se envía, edición por id, borrar pregunta antes y no
 hace nada si se dice que no, y los errores de la API dejan el diálogo abierto.
+
+Doce cubren la creación de categorías: los duplicados del mismo tipo (con otras
+mayúsculas o espacios) se paran antes de llamar a la API, el mismo nombre se
+permite en el otro tipo, se envía el tipo del movimiento y la nueva queda
+elegida, un nombre vacío, un fallo de la API que deja la caja abierta,
+cancelar, el aviso de "ninguna categoría de este tipo", una categoría creada en
+un diálogo cancelado que se ofrece la vez siguiente sin recargar, y el cuerpo
+exacto de `POST /api/Categories`.
 
 Veintitrés cubren presupuestos y desglose: solo los presupuestos del mes elegido
 (no los del mismo mes de otro año), el redondeo, los cortes de color del 80 %

@@ -17,6 +17,9 @@ public interface ITransactionService
 public interface ICategoryService
 {
     Task<List<CategoryDto>> GetCategoriesAsync();
+
+    /// <summary>Crea una categoria y devuelve la creada (201), con su id.</summary>
+    Task<CategoryDto> CreateCategoryAsync(CategoryInput input);
 }
 
 public interface IBudgetService

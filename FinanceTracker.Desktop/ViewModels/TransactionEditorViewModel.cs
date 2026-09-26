@@ -21,6 +21,7 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
 
     private readonly ITransactionService transactions;
     private readonly IDialogService dialogs;
+    private readonly ICategoryService? categoryService;
     private readonly List<CategoryDto> allCategories;
     private readonly TransactionDto? existing;
 
@@ -30,8 +31,10 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
         IEnumerable<CategoryDto> categories,
         Localizer localizer,
         TransactionDto? existing = null,
-        DateTime? today = null)
+        DateTime? today = null,
+        ICategoryService? categoryService = null)
     {
+        this.categoryService = categoryService;
         this.localizer = localizer;
         localizer.Changed += OnLanguageChanged;
         this.transactions = transactions;
@@ -59,6 +62,27 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
     }
 
     public bool IsEdit => existing is not null;
+
+    /// <summary>Sin servicio de categorias (algunos tests) no se ofrece crear.</summary>
+    public bool CanCreateCategories => categoryService is not null;
+
+    /// <summary>
+    /// Categorias creadas desde este formulario. El panel las añade a su lista
+    /// aunque el movimiento se cancele: la categoria ya existe en la API.
+    /// </summary>
+    public List<CategoryDto> CreatedCategories { get; } = [];
+
+    /// <summary>Si se esta escribiendo una categoria nueva (caja y botones a la vista).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowNewCategoryLink))]
+    private bool isAddingCategory;
+
+    public bool ShowNewCategoryLink => CanCreateCategories && !IsAddingCategory;
+
+    [ObservableProperty] private string newCategoryName = "";
+
+    /// <summary>Aviso bajo el desplegable cuando no hay ninguna del tipo elegido.</summary>
+    public bool HasNoCategoriesOfType => Categories.Count == 0;
     public string Title => localizer.T(IsEdit ? "dialog.editTitle" : "dialog.title");
 
     [ObservableProperty] private string description = "";
@@ -90,6 +114,7 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CreateCategoryCommand))]
     private bool isBusy;
 
     /// <summary>true si la API rechazo el token: el panel se encarga de volver al login.</summary>
@@ -112,6 +137,7 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
 
         // Se mantiene la elegida si es de este tipo; si no, la primera.
         SelectedCategory = Categories.FirstOrDefault(c => c.Id == preferredId) ?? Categories.FirstOrDefault();
+        OnPropertyChanged(nameof(HasNoCategoriesOfType));
     }
 
     private bool CanAct() => !IsBusy;
@@ -124,7 +150,6 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
         var problem = TransactionForm.Validate(Description, AmountText, Date, SelectedCategory is not null);
         if (problem is not null)
         {
-            var isExpense = IsExpense;
             SetError(() => problem switch
             {
                 TransactionFormProblem.MissingDescription => localizer.T("errors.writeConcept"),
@@ -133,7 +158,7 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
                 TransactionFormProblem.InvalidAmount => localizer.T("errors.invalidAmount"),
                 TransactionFormProblem.AmountNotPositive => localizer.T("errors.amountPositive"),
                 TransactionFormProblem.MissingDate => localizer.T("errors.chooseDate"),
-                _ => localizer.T(isExpense ? "errors.noExpenseCategories" : "errors.noIncomeCategories"),
+                _ => localizer.T("errors.chooseCategory"),
             });
             return;
         }
@@ -188,6 +213,76 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
             SetError(() => localizer.Texts.ContainsKey("apiError." + e.Code)
                 ? localizer.ApiError(e.Code)
                 : localizer.T(fallback));
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    // ===== Categoria nueva, como en la web: enlace, caja, Añadir / Cancelar =====
+
+    [RelayCommand]
+    private void StartAddingCategory()
+    {
+        NewCategoryName = "";
+        IsAddingCategory = true;
+    }
+
+    [RelayCommand]
+    private void CancelAddingCategory()
+    {
+        IsAddingCategory = false;
+        NewCategoryName = "";
+        SetError(null);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAct))]
+    private async Task CreateCategoryAsync()
+    {
+        if (categoryService is null) return;
+        SetError(null);
+
+        var name = NewCategoryName.Trim();
+        // La categoria hereda el tipo del movimiento: es el unico con el que la
+        // API la aceptaria despues para este movimiento.
+        var type = IsExpense ? TransactionType.Expense : TransactionType.Income;
+
+        if (name.Length == 0)
+        {
+            SetError(() => localizer.T("errors.writeCategoryName"));
+            return;
+        }
+
+        if (TransactionForm.IsDuplicateCategoryName(allCategories, name, type))
+        {
+            SetError(() => localizer.T("errors.categoryExists"));
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var created = await categoryService.CreateCategoryAsync(new CategoryInput(name, type));
+            CreatedCategories.Add(created);
+            allCategories.Add(created);
+            allCategories.Sort((a, b) => StringComparer.CurrentCultureIgnoreCase.Compare(a.Name, b.Name));
+
+            // La recien creada queda elegida, como en la web y Android.
+            RefreshCategories(preferredId: created.Id);
+            IsAddingCategory = false;
+            NewCategoryName = "";
+        }
+        catch (ApiException e) when (e.Code == ApiException.SessionExpired)
+        {
+            SessionHasExpired = true;
+            CloseRequested?.Invoke(this, false);
+        }
+        catch (ApiException e)
+        {
+            SetError(() => e.Code == ApiException.NetworkError
+                ? localizer.ApiError(e.Code)
+                : localizer.T("errors.createCategoryFailed"));
         }
         finally
         {

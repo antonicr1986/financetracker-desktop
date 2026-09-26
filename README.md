@@ -39,6 +39,12 @@ database wake up — the window says so while it waits.
   description, amount, date and category. Only categories of the chosen type
   are offered: the API rejects an expense filed under an income category. The
   amount accepts a comma or a dot for decimals.
+- **Creating a category from the transaction dialog**, as in the web and
+  Android clients: a "New category" link opens a box with Add and Cancel. The
+  category takes the transaction's type — the only one the API would accept
+  for it — and is selected once created. The API does not reject repeated
+  names, so the client does: same type, ignoring case and surrounding spaces,
+  so "Gifts" can still exist as both an expense and an income.
 - **Editing and deleting a transaction**: a double click opens it prefilled in
   the same dialog; deleting asks for confirmation first. After saving, the
   dashboard reloads and shows the month of that transaction.
@@ -215,6 +221,16 @@ the web writes it — .NET rounds to even by default, so 80.5 would become 80.
 scrolling list inside a scrolling page keeps the mouse wheel for itself once
 the pointer is over it, and the page stops moving.
 
+**Enter creates the category, not the transaction.** In WPF, Enter presses the
+dialog's default button — Save. While a new category is being typed, Add
+becomes the default button and Save stops being it, so Enter never saves a
+half-filled transaction. The web client had to intercept the same key for the
+same reason.
+
+**A category survives a cancelled dialog.** Once created, it exists in the API
+even if the transaction is then cancelled, so the dashboard adds it to its list
+straight away instead of waiting for the next reload.
+
 **The theme decision is plain C#.** `ThemePreference` decides which theme
 applies (the saved choice, or Windows' setting when there is none) with no
 reference to WPF, so it is unit-tested; `ThemeManager` only paints. The choice
@@ -227,7 +243,7 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 98 tests, with no window and no network.
+`dotnet test` — 110 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -237,6 +253,13 @@ jumps to the saved transaction's month while cancelling does not reload. The
 transaction dialog: defaults for a new one, categories filtered by type, the
 exact input sent, editing by id, delete asking first and doing nothing on "no",
 and API errors keeping the dialog open.
+
+Twelve cover creating categories: duplicates of the same type (with other case
+or spaces) stopped before calling the API, the same name allowed for the other
+type, the transaction's type sent and the new category selected, an empty name,
+an API failure keeping the box open, cancelling, the "no categories of this
+type" notice, a category created in a cancelled dialog offered the next time
+without a reload, and the exact `POST /api/Categories` body.
 
 Twenty-three cover budgets and the breakdown: only the selected month's budgets
 (not the same month of another year), the rounding, the 80% and 100% colour

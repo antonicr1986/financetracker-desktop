@@ -103,6 +103,34 @@
         <Setter Property="Foreground" Value="{DynamicResource Brush.Error}" />
     </Style>
 
+    <!-- Enlace: texto sin borde que se subraya al pasar, como "Nueva categoría" en la web. -->
+    <Style x:Key="LinkButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextMuted}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <!-- Binding y no TemplateBinding: Content es un object y Text un
+                         string, y TemplateBinding no convierte tipos. -->
+                    <TextBlock x:Name="Text" Background="Transparent"
+                               Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                               FontWeight="Medium" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Text" Property="TextDecorations" Value="Underline" />
+                            <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Text" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Boton cuadrado de icono (tema). -->
     <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
         <Setter Property="Padding" Value="7" />
