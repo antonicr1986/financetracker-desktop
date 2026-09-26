@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+      - '.gitignore'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  secrets:
+    name: secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # El historial completo: un secreto borrado ayer sigue estando en el
+          # commit que lo introdujo, y es ahi donde hay que encontrarlo.
+          fetch-depth: 0
+
+      - name: Install gitleaks
+        run: |
+          # --retry cubre los cortes de red del runner, que no dicen nada del
+          # codigo. Sin esto, un fallo transitorio deja el pipeline en rojo.
+          curl -sSL --retry 5 --retry-delay 3 --retry-all-errors --fail \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz \
+            -o gitleaks.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+          sudo mv gitleaks /usr/local/bin/
+
+      - name: Scan the repository history
+        run: gitleaks git . --config .gitleaks.toml --redact --verbose
+
+  build:
+    name: build
+    # WPF solo compila en Windows: net8.0-windows no existe en Linux.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test --configuration Release --no-build
+          --logger "trx;LogFileName=results.trx" --results-directory TestResults
+
+      # "dotnet test" termina bien tanto si las pruebas pasan como si no se
+      # encontro ninguna. Esto cuenta lo que dice el informe y lo escribe en el
+      # resumen de la ejecucion, para que el numero se vea sin abrir logs.
+      - name: Summarise the test results
+        if: always()
+        shell: pwsh
+        run: |
+          $file = Get-ChildItem TestResults -Filter *.trx -Recurse | Select-Object -First 1
+          if (-not $file) {
+            echo "::error::No test report was produced"
+            exit 1
+          }
+          [xml]$trx = Get-Content $file.FullName
+          $c = $trx.TestRun.ResultSummary.Counters
+          $line = "$($c.total) run · $($c.passed) passed · $($c.failed) failed"
+          "### Unit tests`n`n$line" >> $env:GITHUB_STEP_SUMMARY
+          echo $line
+          # Cero pruebas es un fallo: significa que dejaron de ejecutarse y
+          # nadie se entero, que es peor que verlas en rojo.
+          if ([int]$c.total -eq 0) {
+            echo "::error::No unit tests were executed"
+            exit 1
+          }
+
+      - name: Upload the test report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-report
+          path: TestResults/
+          if-no-files-found: ignore
+
+      # El ejecutable queda descargable desde la propia ejecucion. Depende del
+      # runtime de escritorio de .NET 8, que hay que tener instalado.
+      - name: Publish
+        run: >
+          dotnet publish FinanceTracker.Desktop/FinanceTracker.Desktop.csproj
+          --configuration Release --runtime win-x64 --self-contained false
+          --output publish
+
+      - name: Upload the app
+        uses: actions/upload-artifact@v7
+        with:
+          name: financetracker-desktop-win-x64
+          path: publish/
+          if-no-files-found: error
