@@ -24,4 +24,7 @@ public partial class TransactionWindow : Window
                 Dispatcher.BeginInvoke(() => NewCategoryInput.Focus());
         };
     }
+
+    // La X de la barra propia: cierra sin guardar, igual que Cancelar o Escape.
+    private void OnCloseClick(object sender, RoutedEventArgs e) => DialogResult = false;
 }

@@ -219,7 +219,8 @@ click and snapping keep working. Everything clickable in that strip is marked
 instead. A maximised `WindowChrome` window overflows the screen by its
 invisible resize border on every side, so the top bar pads the content by
 `SystemParameters.WindowResizeBorderThickness` while maximised. The transaction
-dialog keeps Windows' own title bar: it has no top bar to replace it.
+and confirmation dialogs do the same on a smaller scale: their own title row is
+the draggable bar, so "New transaction" is not written twice either.
 
 **Budget figures come from the API.** `SpentAmount`, `RemainingAmount` and
 `UsagePercentage` are computed by the API from the transactions; the client

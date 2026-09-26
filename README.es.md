@@ -229,9 +229,10 @@ lo que se pulsa en esa franja lleva `WindowChrome.IsHitTestVisibleInChrome`; si
 no, el clic arrastraría la ventana. Una ventana maximizada con `WindowChrome`
 se sale de la pantalla por cada lado lo que mide su borde invisible de
 redimensionar, así que la barra superior añade al contenido un margen de
-`SystemParameters.WindowResizeBorderThickness` mientras está maximizada. El
-diálogo de movimiento mantiene la barra de título de Windows: no tiene barra
-superior que la sustituya.
+`SystemParameters.WindowResizeBorderThickness` mientras está maximizada. Los
+diálogos de movimiento y de confirmación hacen lo mismo en pequeño: su propia
+fila de título es la barra que se arrastra, así que "Nuevo movimiento" tampoco
+aparece dos veces.
 
 **Las cifras de los presupuestos vienen de la API.** `SpentAmount`,
 `RemainingAmount` y `UsagePercentage` los calcula la API a partir de los

@@ -12,8 +12,27 @@
         Icon="/Assets/app.ico"
         Background="{DynamicResource Brush.Surface}" Foreground="{DynamicResource Brush.Text}">
 
-    <StackPanel Margin="24">
-        <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" />
+    <!-- Una sola barra, como la ventana principal: sin la barra de titulo de
+         Windows, la fila del titulo hace de barra. CaptionHeight 64 = esa fila:
+         desde ahi se arrastra el dialogo. -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="64" ResizeBorderThickness="0" GlassFrameThickness="0,0,0,1"
+                      UseAeroCaptionButtons="False" CornerRadius="0" />
+    </WindowChrome.WindowChrome>
+
+    <Border BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1">
+    <StackPanel>
+        <!-- Titulo y boton de cerrar, en la franja que se arrastra. -->
+        <DockPanel Height="64">
+            <!-- Mismo estilo que los botones de la ventana principal; cierra sin
+                 guardar, como Cancelar. -->
+            <Button DockPanel.Dock="Right" Style="{StaticResource CloseCaptionButton}" VerticalAlignment="Top"
+                    Height="40" Content="&#xE8BB;" Click="OnCloseClick" />
+            <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold"
+                       VerticalAlignment="Bottom" Margin="24,0,0,4" />
+        </DockPanel>
+
+    <StackPanel Margin="24,12,24,24">
 
         <!-- Tipo: dos RadioButton enlazados a propiedades opuestas del ViewModel. -->
         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
@@ -109,4 +128,6 @@
             </StackPanel>
         </DockPanel>
     </StackPanel>
+    </StackPanel>
+    </Border>
 </Window>
