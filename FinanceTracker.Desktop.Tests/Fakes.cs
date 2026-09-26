@@ -10,6 +10,35 @@ internal class FakeTransactionService : ITransactionService, ICategoryService, I
     public List<BudgetDto> Budgets { get; set; } = [];
     public Task<List<BudgetDto>> GetBudgetsAsync() => Task.FromResult(Budgets);
 
+    public List<BudgetInput> CreatedBudgets { get; } = [];
+    public List<(int Id, BudgetInput Input)> UpdatedBudgets { get; } = [];
+    public List<int> DeletedBudgets { get; } = [];
+
+    /// <summary>Si se asigna, las escrituras de presupuestos lanzan esta excepcion.</summary>
+    public ApiException? BudgetError { get; set; }
+
+    public Task<BudgetDto> CreateBudgetAsync(BudgetInput input)
+    {
+        if (BudgetError is not null) throw BudgetError;
+        CreatedBudgets.Add(input);
+        return Task.FromResult(new BudgetDto(500, input.Name, input.Amount, 0, input.Amount, 0,
+            input.Month, input.Year, input.Type, input.CategoryId, null));
+    }
+
+    public Task UpdateBudgetAsync(int id, BudgetInput input)
+    {
+        if (BudgetError is not null) throw BudgetError;
+        UpdatedBudgets.Add((id, input));
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteBudgetAsync(int id)
+    {
+        if (BudgetError is not null) throw BudgetError;
+        DeletedBudgets.Add(id);
+        return Task.CompletedTask;
+    }
+
     public Func<List<TransactionDto>> Handler { get; set; } = () => [];
     public List<CategoryDto> Categories { get; set; } = [];
 
@@ -86,6 +115,17 @@ internal class FakeDialogService : IDialogService
     public Func<TransactionEditorViewModel, bool> Editor { get; set; } = _ => false;
 
     public TransactionEditorViewModel? LastEditor { get; private set; }
+
+    /// <summary>Que hace el "usuario" en el formulario de presupuesto. Por defecto, cancelar.</summary>
+    public Func<BudgetEditorViewModel, bool> BudgetEditor { get; set; } = _ => false;
+
+    public BudgetEditorViewModel? LastBudgetEditor { get; private set; }
+
+    public bool ShowBudgetEditor(BudgetEditorViewModel editor)
+    {
+        LastBudgetEditor = editor;
+        return BudgetEditor(editor);
+    }
 
     public bool ShowTransactionEditor(TransactionEditorViewModel editor)
     {

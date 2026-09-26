@@ -33,4 +33,11 @@ public interface IBudgetService
 {
     /// <summary>Todos los presupuestos de todos los meses: la API no admite filtro.</summary>
     Task<List<BudgetDto>> GetBudgetsAsync();
+
+    Task<BudgetDto> CreateBudgetAsync(BudgetInput input);
+
+    /// <summary>204 sin cuerpo, como el resto de PUT.</summary>
+    Task UpdateBudgetAsync(int id, BudgetInput input);
+
+    Task DeleteBudgetAsync(int id);
 }

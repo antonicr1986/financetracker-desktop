@@ -16,7 +16,8 @@ public record BudgetRow(
     int BarValue,
     string SpentOfText,
     string StatusText,
-    BudgetTone Tone)
+    BudgetTone Tone,
+    string EditHint)
 {
     public static BudgetRow From(BudgetDto budget, Localizer localizer)
     {
@@ -35,7 +36,8 @@ public record BudgetRow(
             budget.RemainingAmount >= 0
                 ? localizer.T("budgets.remaining", Money(budget.RemainingAmount))
                 : localizer.T("budgets.exceeded", Money(-budget.RemainingAmount)),
-            Budgets.Tone(percent));
+            Budgets.Tone(percent),
+            localizer.T("budgets.editOne", budget.Name));
     }
 }
 

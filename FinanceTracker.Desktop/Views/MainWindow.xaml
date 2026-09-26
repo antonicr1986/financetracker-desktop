@@ -150,9 +150,11 @@
                                     </DockPanel>
                                 </Button>
 
-                                <StackPanel Margin="16,0,16,16"
+                                <!-- Margen 8 y no 16: cada fila es un boton con 8 de relleno propio,
+                                     asi el texto sigue alineado con la cabecera. -->
+                                <StackPanel Margin="8,0,8,12"
                                             Visibility="{Binding IsBudgetsExpanded, Converter={StaticResource BoolToVisibility}}">
-                                    <TextBlock Text="{DynamicResource budgets.empty}" TextWrapping="Wrap">
+                                    <TextBlock Text="{DynamicResource budgets.empty}" TextWrapping="Wrap" Margin="8,0,8,8">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock" BasedOn="{StaticResource MutedText}">
                                                 <Style.Triggers>
@@ -166,7 +168,14 @@
                                     <ItemsControl ItemsSource="{Binding BudgetRows}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate DataType="{x:Type vm:BudgetRow}">
-                                                <StackPanel Margin="0,4,0,12">
+                                                <!-- Cada presupuesto se pulsa para editarlo. El comando esta en
+                                                     el ViewModel de la ventana: se busca subiendo al ItemsControl. -->
+                                                <Button Style="{StaticResource RowButton}" Margin="0,0,0,4"
+                                                        ToolTip="{Binding EditHint}"
+                                                        Command="{Binding DataContext.EditBudgetCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                        CommandParameter="{Binding}">
+                                                <StackPanel>
                                                     <!-- El color sigue al tono: verde, ambar al 80 %, rojo al 100 %. -->
                                                     <StackPanel.Resources>
                                                         <Style x:Key="ToneText" TargetType="TextBlock">
@@ -210,9 +219,12 @@
                                                         <TextBlock Text="{Binding SpentOfText}" Style="{StaticResource MutedText}" />
                                                     </DockPanel>
                                                 </StackPanel>
+                                                </Button>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
+                                    <Button Content="{DynamicResource budgets.new}" Command="{Binding NewBudgetCommand}"
+                                            HorizontalAlignment="Left" Margin="8,4,0,0" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>

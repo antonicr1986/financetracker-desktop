@@ -96,6 +96,12 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
   total, una barra que se pone ámbar al 80 % y roja al 100 %, y lo que queda o
   lo que se ha pasado, con "1 de 2 dentro del límite" como resumen. Todas las
   cifras las calcula la API; la aplicación solo elige los del mes y los pinta.
+- **Alta, edición y borrado de presupuestos**, como en los otros clientes:
+  nombre, gasto o ingreso, importe, mes (doce antes y doce después, como
+  Android) y categoría — primero "Todas las categorías", que cubre todo el
+  tipo. Uno nuevo se propone para el mes que se está viendo; un clic en un
+  presupuesto lo abre relleno, con Eliminar y la confirmación de la aplicación.
+  Al guardar, el panel se recarga, salta a ese mes y abre la sección.
 - **Gastos por categoría**: los gastos del mes agrupados por categoría, de
   mayor a menor, cada uno con una barra relativa a la mayor, y "Mayor: …" como
   resumen.
@@ -109,8 +115,8 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
 
 ## 🗺️ Lo siguiente
 
-Alta, edición y borrado de presupuestos, y una sesión que sobreviva a cerrar
-la aplicación.
+Una sesión que sobreviva a cerrar la aplicación, capturas en este README, y
+una release con el ejecutable en cada etiqueta de versión.
 
 ## 🧰 Tecnologías
 
@@ -252,6 +258,11 @@ aplicación. `ConfirmWindow` lo sustituye; los ViewModels siguen llegando a él
 solo a través de `IDialogService.Confirm`, así que sus pruebas responden sí o no
 sin ninguna ventana.
 
+**"Todas las categorías" es una opción, no una ausencia.** En el diálogo de
+presupuesto es una entrada de verdad con `Id = null`, la forma de la API de
+decir "todo el tipo" — no "sin categoría". Se rehace con el idioma y se vuelve a
+elegir al cambiar el tipo si la categoría anterior ya no encaja.
+
 **Enter crea la categoría, no el movimiento.** En WPF, Enter pulsa el botón
 por defecto del diálogo — Guardar. Mientras se escribe una categoría nueva,
 Añadir pasa a ser el botón por defecto y Guardar deja de serlo, así que Enter
@@ -274,7 +285,7 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 119 pruebas, sin ventanas ni red.
+`dotnet test` — 135 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -284,6 +295,17 @@ recarga y salta al mes del movimiento mientras que cancelar no recarga. El
 diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por
 tipo, el cuerpo exacto que se envía, edición por id, borrar pregunta antes y no
 hace nada si se dice que no, y los errores de la API dejan el diálogo abierto.
+
+Dieciséis cubren el diálogo de presupuesto: doce meses a cada lado cruzando de
+año, los problemas del formulario en orden, uno nuevo para el mes que se ve con
+"Todas las categorías", el cuerpo exacto (mes, año, tipo y una categoría nula),
+el tipo ingreso ofreciendo solo categorías de ingreso y volviendo a "Todas",
+la edición por id centrada en el mes del propio presupuesto, el borrado solo
+tras la confirmación de la aplicación, cada error de la API explicado con el
+diálogo abierto, el cambio de idioma que rehace los meses y "Todas las
+categorías" sin perder lo elegido, el panel que recarga, salta al mes y abre la
+sección tras guardar, y las peticiones `POST`, `PUT` y `DELETE` con el cuerpo que
+espera la API.
 
 Nueve cubren el borrado de categorías: los dos borrados preguntan con el "Sí,
 eliminar" traducido de la propia aplicación, pregunta antes y quita la elegida, no hace

@@ -89,6 +89,12 @@ database wake up — the window says so while it waits.
   spent of total, a bar that turns amber at 80% and red at 100%, and what is
   left or over, with "1 of 2 within limit" as the summary. The API computes
   every figure; the app only picks the month's budgets and paints them.
+- **Creating, editing and deleting budgets**, as in the other clients: name,
+  expense or income, amount, month (twelve before and twelve after, like
+  Android) and category — "All categories" first, which covers the whole type.
+  A new budget is proposed for the month being viewed; clicking a budget opens
+  it prefilled, with Delete and the app's confirmation. After saving, the
+  dashboard reloads, jumps to that month and opens the section.
 - **Expenses by category**: the month's expenses grouped by category, largest
   first, each with a bar relative to the largest one, and "Largest: …" as the
   summary.
@@ -102,8 +108,8 @@ database wake up — the window says so while it waits.
 
 ## 🗺️ Next
 
-Creating, editing and deleting budgets, and a session that survives closing
-the app.
+A session that survives closing the app, screenshots in this README, and a
+release with the executable on every version tag.
 
 ## 🧰 Stack
 
@@ -237,6 +243,11 @@ writes its "Yes/No" in the language of Windows, not in the one chosen in the
 app. `ConfirmWindow` replaces it; ViewModels still reach it only through
 `IDialogService.Confirm`, so their tests answer yes or no without a window.
 
+**"All categories" is an option, not an absence.** In the budget dialog it is
+a real entry with `Id = null`, the API's way of saying "the whole type" — not
+"no category". It is rebuilt with the language and chosen again when the type
+changes and the previous category no longer fits.
+
 **Enter creates the category, not the transaction.** In WPF, Enter presses the
 dialog's default button — Save. While a new category is being typed, Add
 becomes the default button and Save stops being it, so Enter never saves a
@@ -259,7 +270,7 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 119 tests, with no window and no network.
+`dotnet test` — 135 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -269,6 +280,16 @@ jumps to the saved transaction's month while cancelling does not reload. The
 transaction dialog: defaults for a new one, categories filtered by type, the
 exact input sent, editing by id, delete asking first and doing nothing on "no",
 and API errors keeping the dialog open.
+
+Sixteen cover the budget dialog: twelve months either side across a year
+boundary, the form's problems in order, a new one for the viewed month with
+"All categories", the exact input (month, year, type and a null category),
+income offering only income categories and falling back to "All", editing by
+id centred on the budget's own month, deleting only after the app's
+confirmation, each API error explained with the dialog kept open, a language
+switch rewriting months and "All categories" while keeping the selection, the
+dashboard reloading, jumping to the month and opening the section after a
+save, and the `POST`, `PUT` and `DELETE` requests with the body the API expects.
 
 Nine cover deleting categories: both deletions asking with the app's own
 translated "Yes, delete", asking first and removing the selected one,

@@ -117,6 +117,27 @@ public class ApiClient : IAuthService, ITransactionService, ICategoryService, IB
         return await ReadAsync<List<BudgetDto>>(response);
     }
 
+    public async Task<BudgetDto> CreateBudgetAsync(BudgetInput input)
+    {
+        using var request = Authorized(HttpMethod.Post, "api/Budgets");
+        request.Content = JsonContent.Create(input);
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+        return await ReadAsync<BudgetDto>(response);
+    }
+
+    public async Task UpdateBudgetAsync(int id, BudgetInput input)
+    {
+        using var request = Authorized(HttpMethod.Put, $"api/Budgets/{id}");
+        request.Content = JsonContent.Create(input);
+        using var _ = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+    }
+
+    public async Task DeleteBudgetAsync(int id)
+    {
+        using var request = Authorized(HttpMethod.Delete, $"api/Budgets/{id}");
+        using var _ = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+    }
+
     private HttpRequestMessage Authorized(HttpMethod method, string path)
     {
         var request = new HttpRequestMessage(method, path);

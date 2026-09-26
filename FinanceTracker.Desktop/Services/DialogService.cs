@@ -13,6 +13,12 @@ public class DialogService : IDialogService
         return window.ShowDialog() == true;
     }
 
+    public bool ShowBudgetEditor(BudgetEditorViewModel editor)
+    {
+        var window = new BudgetWindow(editor) { Owner = ActiveWindow() };
+        return window.ShowDialog() == true;
+    }
+
     // Ventana propia y no MessageBox: sigue el tema y el idioma de la aplicacion.
     public bool Confirm(string title, string message, string confirmText)
     {

@@ -36,4 +36,46 @@ public static class Budgets
 
     /// <summary>Cuantos siguen dentro del limite, para "1 de 2 dentro del límite".</summary>
     public static int WithinLimit(IEnumerable<BudgetDto> budgets) => budgets.Count(b => b.RemainingAmount >= 0);
+
+    /// <summary>
+    /// Meses que ofrece el formulario: before meses antes y after despues del
+    /// indicado, en orden, como Android. Un presupuesto se hace para el mes en
+    /// curso o los proximos; los de atras sirven para corregir uno pasado.
+    /// </summary>
+    public static List<MonthKey> MonthsAround(MonthKey month, int before = 12, int after = 12)
+    {
+        var index = month.Year * 12 + (month.Month - 1);
+        return Enumerable.Range(index - before, before + after + 1)
+            .Select(i => new MonthKey(i / 12, i % 12 + 1))
+            .ToList();
+    }
+}
+
+/// <summary>Lo primero que falla en el formulario de presupuesto.</summary>
+public enum BudgetFormProblem
+{
+    MissingName,
+    NameTooLong,
+    InvalidAmount,
+    AmountNotPositive,
+}
+
+public static class BudgetForm
+{
+    /// <summary>MaxLength(100) de CreateBudgetDto en la API.</summary>
+    public const int MaxNameLength = 100;
+
+    /// <summary>null si es valido. El importe se lee igual que en los movimientos.</summary>
+    public static BudgetFormProblem? Validate(string name, string amountText)
+    {
+        var trimmed = name.Trim();
+        if (trimmed.Length == 0) return BudgetFormProblem.MissingName;
+        if (trimmed.Length > MaxNameLength) return BudgetFormProblem.NameTooLong;
+
+        var amount = TransactionForm.ParseAmount(amountText);
+        if (amount is null) return BudgetFormProblem.InvalidAmount;
+        if (amount <= 0) return BudgetFormProblem.AmountNotPositive;
+
+        return null;
+    }
 }

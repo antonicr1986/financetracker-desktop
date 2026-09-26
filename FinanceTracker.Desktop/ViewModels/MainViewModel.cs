@@ -117,6 +117,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(HasData))]
     [NotifyCanExecuteChangedFor(nameof(LoadCommand))]
     [NotifyCanExecuteChangedFor(nameof(NewTransactionCommand))]
+    [NotifyCanExecuteChangedFor(nameof(NewBudgetCommand))]
     private bool isLoading;
 
     [ObservableProperty]
@@ -277,6 +278,50 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (editor.SavedDate is { } savedDate) monthAfterLoad = MonthKey.Of(savedDate);
 
         // Se recarga todo: es lo mas simple y garantiza ver lo mismo que la API.
+        await LoadAsync();
+    }
+
+    // ===== Presupuestos: alta, edicion y borrado =====
+
+    /// <summary>Nuevo presupuesto, propuesto para el mes que se esta viendo.</summary>
+    [RelayCommand(CanExecute = nameof(CanLoad))]
+    private Task NewBudgetAsync() =>
+        OpenBudgetEditorAsync(new BudgetEditorViewModel(budgets, dialogs, allCategories, localizer, CurrentMonth()));
+
+    /// <summary>Clic en un presupuesto: el mismo formulario, relleno.</summary>
+    [RelayCommand]
+    private Task EditBudgetAsync(BudgetRow? row) =>
+        row is null
+            ? Task.CompletedTask
+            : OpenBudgetEditorAsync(new BudgetEditorViewModel(budgets, dialogs, allCategories, localizer,
+                CurrentMonth(), row.Source));
+
+    private MonthKey CurrentMonth() => SelectedMonth?.Key ?? MonthKey.Of(DateTime.Today);
+
+    private async Task OpenBudgetEditorAsync(BudgetEditorViewModel editor)
+    {
+        bool changed;
+        using (editor)
+            changed = dialogs.ShowBudgetEditor(editor);
+
+        if (editor.SessionHasExpired)
+        {
+            session.Clear();
+            SessionExpired?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
+        if (!changed) return;
+
+        // Tras guardar se va al mes del presupuesto y la seccion se abre, para
+        // que se vea el resultado aunque estuviera plegada.
+        if (editor.SavedMonth is { } month) monthAfterLoad = month;
+        if (!IsBudgetsExpanded)
+        {
+            IsBudgetsExpanded = true;
+            SaveSections();
+        }
+
         await LoadAsync();
     }
 

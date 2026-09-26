@@ -59,3 +59,9 @@ public record BudgetDto(
     TransactionType Type,
     int? CategoryId,
     string? CategoryName);
+
+/// <summary>
+/// Cuerpo de alta y edicion de presupuesto (CreateBudgetDto y UpdateBudgetDto
+/// son identicos en la API). CategoryId null = todas las categorias del tipo.
+/// </summary>
+public record BudgetInput(string Name, decimal Amount, int Month, int Year, TransactionType Type, int? CategoryId);
