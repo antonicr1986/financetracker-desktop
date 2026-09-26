@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FinanceTracker.Desktop.Tests/FinanceTracker.Desktop.Tests.csproj" />
+  <Project Path="FinanceTracker.Desktop/FinanceTracker.Desktop.csproj" />
+</Solution>
