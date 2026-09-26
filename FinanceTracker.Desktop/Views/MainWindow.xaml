@@ -31,12 +31,12 @@
             <!-- Selector de mes y acciones -->
             <DockPanel Grid.Row="1" Margin="0,0,0,16">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button Content="Recargar" Command="{Binding LoadCommand}" Margin="0,0,8,0" />
-                    <Button Content="+ Nuevo movimiento" Command="{Binding NewTransactionCommand}"
+                    <Button Content="{DynamicResource dashboard.reload}" Command="{Binding LoadCommand}" Margin="0,0,8,0" />
+                    <Button Content="{DynamicResource dashboard.newTransactionButton}" Command="{Binding NewTransactionCommand}"
                             Style="{StaticResource PrimaryButton}" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Mes" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <TextBlock Text="{DynamicResource table.month}" VerticalAlignment="Center" Margin="0,0,8,0" />
                     <ComboBox ItemsSource="{Binding Months}" SelectedItem="{Binding SelectedMonth}"
                               DisplayMemberPath="Label" Width="200" />
                 </StackPanel>
@@ -47,21 +47,21 @@
                          Visibility="{Binding HasData, Converter={StaticResource BoolToVisibility}}">
                 <Border Style="{StaticResource Card}" Margin="0,0,8,0">
                     <StackPanel>
-                        <TextBlock Text="Ingresos" Style="{StaticResource MutedText}" />
+                        <TextBlock Text="{DynamicResource dashboard.income}" Style="{StaticResource MutedText}" />
                         <TextBlock Text="{Binding IncomeText}" FontSize="22" FontWeight="SemiBold"
                                    Foreground="{DynamicResource Brush.Income}" />
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource Card}" Margin="4,0">
                     <StackPanel>
-                        <TextBlock Text="Gastos" Style="{StaticResource MutedText}" />
+                        <TextBlock Text="{DynamicResource dashboard.expenses}" Style="{StaticResource MutedText}" />
                         <TextBlock Text="{Binding ExpenseText}" FontSize="22" FontWeight="SemiBold"
                                    Foreground="{DynamicResource Brush.Expense}" />
                     </StackPanel>
                 </Border>
                 <Border Style="{StaticResource Card}" Margin="8,0,0,0">
                     <StackPanel>
-                        <TextBlock Text="Balance" Style="{StaticResource MutedText}" />
+                        <TextBlock Text="{DynamicResource dashboard.balance}" Style="{StaticResource MutedText}" />
                         <TextBlock Text="{Binding BalanceText}" FontSize="22" FontWeight="SemiBold">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
@@ -129,15 +129,15 @@
 
             <!-- Estados: cargando, error, sin datos -->
             <StackPanel Grid.Row="2" Grid.RowSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="Cargando movimientos… la primera vez del día puede tardar un poco."
+                <TextBlock Text="{DynamicResource dashboard.loading}"
                            Style="{StaticResource MutedText}"
                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}" />
                 <StackPanel Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}"
                                HorizontalAlignment="Center" Margin="0,0,0,12" />
-                    <Button Content="Reintentar" Command="{Binding LoadCommand}" HorizontalAlignment="Center" />
+                    <Button Content="{DynamicResource dashboard.retry}" Command="{Binding LoadCommand}" HorizontalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Text="Todavía no tienes movimientos." Style="{StaticResource MutedText}"
+                <TextBlock Text="{DynamicResource dashboard.emptyTitle}" Style="{StaticResource MutedText}"
                            Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
             </StackPanel>
         </Grid>

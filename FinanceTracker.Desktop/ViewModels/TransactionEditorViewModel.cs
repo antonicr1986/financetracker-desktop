@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FinanceTracker.Desktop.Domain;
+using FinanceTracker.Desktop.Localization;
 using FinanceTracker.Desktop.Models;
 using FinanceTracker.Desktop.Services;
 
@@ -11,8 +12,13 @@ namespace FinanceTracker.Desktop.ViewModels;
 /// Formulario de movimiento. El mismo para crear (existing == null) y para
 /// editar, como en la web y en Android.
 /// </summary>
-public partial class TransactionEditorViewModel : ObservableObject
+public partial class TransactionEditorViewModel : ObservableObject, IDisposable
 {
+    private readonly Localizer localizer;
+
+    /// <summary>Como escribir el error actual; ver LoginViewModel.</summary>
+    private Func<string>? error;
+
     private readonly ITransactionService transactions;
     private readonly IDialogService dialogs;
     private readonly List<CategoryDto> allCategories;
@@ -22,9 +28,12 @@ public partial class TransactionEditorViewModel : ObservableObject
         ITransactionService transactions,
         IDialogService dialogs,
         IEnumerable<CategoryDto> categories,
+        Localizer localizer,
         TransactionDto? existing = null,
         DateTime? today = null)
     {
+        this.localizer = localizer;
+        localizer.Changed += OnLanguageChanged;
         this.transactions = transactions;
         this.dialogs = dialogs;
         this.existing = existing;
@@ -50,7 +59,7 @@ public partial class TransactionEditorViewModel : ObservableObject
     }
 
     public bool IsEdit => existing is not null;
-    public string Title => IsEdit ? "Editar movimiento" : "Nuevo movimiento";
+    public string Title => localizer.T(IsEdit ? "dialog.editTitle" : "dialog.title");
 
     [ObservableProperty] private string description = "";
     [ObservableProperty] private string amountText = "";
@@ -110,23 +119,22 @@ public partial class TransactionEditorViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanAct))]
     private async Task SaveAsync()
     {
-        ErrorMessage = "";
+        SetError(null);
 
         var problem = TransactionForm.Validate(Description, AmountText, Date, SelectedCategory is not null);
         if (problem is not null)
         {
-            ErrorMessage = problem switch
+            var isExpense = IsExpense;
+            SetError(() => problem switch
             {
-                TransactionFormProblem.MissingDescription => "Escribe una descripción.",
+                TransactionFormProblem.MissingDescription => localizer.T("errors.writeConcept"),
                 TransactionFormProblem.DescriptionTooLong =>
-                    $"La descripción no puede pasar de {TransactionForm.MaxDescriptionLength} caracteres.",
-                TransactionFormProblem.InvalidAmount => "El importe no es un número válido. Usa coma o punto para los decimales.",
-                TransactionFormProblem.AmountNotPositive => "El importe tiene que ser mayor que cero.",
-                TransactionFormProblem.MissingDate => "Elige una fecha.",
-                _ => IsExpense
-                    ? "No tienes categorías de gasto. Crea una desde la web o la app Android."
-                    : "No tienes categorías de ingreso. Crea una desde la web o la app Android.",
-            };
+                    localizer.T("errors.conceptTooLong", TransactionForm.MaxDescriptionLength),
+                TransactionFormProblem.InvalidAmount => localizer.T("errors.invalidAmount"),
+                TransactionFormProblem.AmountNotPositive => localizer.T("errors.amountPositive"),
+                TransactionFormProblem.MissingDate => localizer.T("errors.chooseDate"),
+                _ => localizer.T(isExpense ? "errors.noExpenseCategories" : "errors.noIncomeCategories"),
+            });
             return;
         }
 
@@ -151,15 +159,15 @@ public partial class TransactionEditorViewModel : ObservableObject
     {
         if (existing is null) return;
 
-        var confirmed = dialogs.Confirm("Borrar movimiento",
-            $"¿Seguro que quieres borrar \"{existing.Description}\"? No se puede deshacer.");
+        var confirmed = dialogs.Confirm(localizer.T("dialog.deleteConfirm"),
+            localizer.T("dialog.deleteConfirmBody", existing.Description));
         if (!confirmed) return;
 
-        await RunAsync(() => transactions.DeleteTransactionAsync(existing.Id));
+        await RunAsync(() => transactions.DeleteTransactionAsync(existing.Id), deleting: true);
     }
 
     /// <summary>Ejecuta la llamada a la API y traduce los errores. Cierra si va bien.</summary>
-    private async Task RunAsync(Func<Task> call)
+    private async Task RunAsync(Func<Task> call, bool deleting = false)
     {
         IsBusy = true;
         try
@@ -174,18 +182,31 @@ public partial class TransactionEditorViewModel : ObservableObject
         }
         catch (ApiException e)
         {
-            ErrorMessage = e.Code switch
-            {
-                ApiException.NetworkError => "No se pudo conectar con el servidor. Revisa tu conexión.",
-                ApiException.NotFound => "Este movimiento ya no existe. Cierra y recarga.",
-                ApiException.CategoryNotFound => "La categoría ya no existe. Elige otra.",
-                ApiException.CategoryTypeMismatch => "La categoría no es del tipo elegido.",
-                _ => "No se pudo guardar. Inténtalo de nuevo.",
-            };
+            // Los codigos que conocemos tienen su frase; cualquier otro, la
+            // generica de guardar o eliminar segun lo que se estaba haciendo.
+            var fallback = deleting ? "errors.deleteFailed" : "errors.saveFailed";
+            SetError(() => localizer.Texts.ContainsKey("apiError." + e.Code)
+                ? localizer.ApiError(e.Code)
+                : localizer.T(fallback));
         }
         finally
         {
             IsBusy = false;
         }
     }
+
+    private void SetError(Func<string>? text)
+    {
+        error = text;
+        ErrorMessage = text?.Invoke() ?? "";
+    }
+
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(Title));
+        SetError(error);
+    }
+
+    /// <summary>Deja de escuchar al Localizer al cerrar el formulario.</summary>
+    public void Dispose() => localizer.Changed -= OnLanguageChanged;
 }

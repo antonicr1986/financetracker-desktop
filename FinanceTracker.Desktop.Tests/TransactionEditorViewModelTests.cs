@@ -18,11 +18,11 @@ public class TransactionEditorViewModelTests
     private static readonly DateTime Today = new(2026, 9, 26);
 
     private static TransactionEditorViewModel New(FakeTransactionService api, FakeDialogService? dialogs = null) =>
-        new(api, dialogs ?? new FakeDialogService(), Categories, today: Today);
+        new(api, dialogs ?? new FakeDialogService(), Categories, Es, today: Today);
 
     private static TransactionEditorViewModel Edit(FakeTransactionService api, TransactionDto existing,
         FakeDialogService? dialogs = null) =>
-        new(api, dialogs ?? new FakeDialogService(), Categories, existing);
+        new(api, dialogs ?? new FakeDialogService(), Categories, Es, existing);
 
     [Fact]
     public void New_StartsAsAnExpenseOfTodayWithExpenseCategoriesOnly()
@@ -80,7 +80,7 @@ public class TransactionEditorViewModelTests
 
         await vm.SaveCommand.ExecuteAsync(null);
 
-        Assert.Equal("El importe tiene que ser mayor que cero.", vm.ErrorMessage);
+        Assert.Equal(EsText("errors.amountPositive"), vm.ErrorMessage);
         Assert.Empty(api.Created);
     }
 
@@ -92,7 +92,7 @@ public class TransactionEditorViewModelTests
         var vm = Edit(api, existing);
 
         Assert.True(vm.IsEdit);
-        Assert.Equal("Editar movimiento", vm.Title);
+        Assert.Equal(EsText("dialog.editTitle"), vm.Title);
         Assert.Equal("1500,5", vm.AmountText);
         Assert.True(vm.IsIncome);
         Assert.Equal("Nómina", vm.SelectedCategory?.Name);
@@ -145,7 +145,7 @@ public class TransactionEditorViewModelTests
 
         await vm.SaveCommand.ExecuteAsync(null);
 
-        Assert.Equal("La categoría no es del tipo elegido.", vm.ErrorMessage);
+        Assert.Equal(EsText("apiError.category_type_mismatch"), vm.ErrorMessage);
         Assert.False(closed);
         Assert.False(vm.IsBusy);
     }

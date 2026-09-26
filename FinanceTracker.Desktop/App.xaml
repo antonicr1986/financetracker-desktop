@@ -9,6 +9,8 @@
                 <ResourceDictionary Source="Themes/Light.xaml" />
                 <!-- [1] Plantillas de los controles, comunes a los dos temas. -->
                 <ResourceDictionary Source="Themes/Controls.xaml" />
+                <!-- [2] Textos del idioma: LanguageManager lo rellena al arrancar. -->
+                <ResourceDictionary />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

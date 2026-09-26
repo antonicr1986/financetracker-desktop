@@ -7,7 +7,7 @@
         xmlns:views="clr-namespace:FinanceTracker.Desktop.Views"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:LoginViewModel}"
-        Title="FinanceTracker — Iniciar sesión"
+        Title="{DynamicResource login.windowTitle}"
         Width="460" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Text}">
@@ -18,17 +18,17 @@
 
         <StackPanel Margin="24">
             <!-- Titulo fuera de la tarjeta y formulario dentro, como la web y Android. -->
-            <TextBlock Text="Iniciar sesión" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16" />
+            <TextBlock Text="{DynamicResource login.title}" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16" />
 
             <Border Style="{StaticResource Card}" Padding="24">
                 <StackPanel>
-                    <TextBlock Text="Email" Margin="0,0,0,4" />
+                    <TextBlock Text="{DynamicResource login.email}" Margin="0,0,0,4" />
                     <!-- Caja y placeholder en la misma celda de un Grid: quedan superpuestos. -->
                     <Grid Margin="0,0,0,12">
                         <!-- UpdateSourceTrigger=PropertyChanged: el ViewModel se entera en
                              cada tecla, no solo al salir de la caja. -->
                         <TextBox x:Name="EmailInput" Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" />
-                        <TextBlock Text="tu@email.com">
+                        <TextBlock Text="{DynamicResource login.emailPlaceholder}">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource Placeholder}">
                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -43,12 +43,12 @@
                         </TextBlock>
                     </Grid>
 
-                    <TextBlock Text="Contraseña" Margin="0,0,0,4" />
+                    <TextBlock Text="{DynamicResource login.password}" Margin="0,0,0,4" />
                     <Grid Margin="0,0,0,12">
                         <PasswordBox x:Name="PasswordInput" PasswordChanged="OnPasswordChanged" />
                         <!-- PasswordBox no expone su texto para un binding, asi que este
                              placeholder lo muestra y oculta el code-behind. -->
-                        <TextBlock x:Name="PasswordPlaceholder" Text="Tu contraseña"
+                        <TextBlock x:Name="PasswordPlaceholder" Text="{DynamicResource login.passwordPlaceholder}"
                                    Style="{StaticResource Placeholder}" />
                     </Grid>
 
@@ -56,10 +56,10 @@
                                TextWrapping="Wrap" Margin="0,0,0,12" />
 
                     <!-- IsDefault: Enter en cualquier caja pulsa este boton. -->
-                    <Button Content="Entrar" Command="{Binding LoginCommand}" IsDefault="True"
+                    <Button Content="{DynamicResource login.submit}" Command="{Binding LoginCommand}" IsDefault="True"
                             Style="{StaticResource PrimaryButton}" Padding="0,9" />
 
-                    <TextBlock Text="Conectando… la primera vez del día puede tardar un poco."
+                    <TextBlock Text="{DynamicResource login.connecting}"
                                Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,12,0,0"
                                Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
 
@@ -71,13 +71,13 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Separator VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="o" Style="{StaticResource MutedText}" Margin="12,0" />
+                        <TextBlock Grid.Column="1" Text="{DynamicResource login.or}" Style="{StaticResource MutedText}" Margin="12,0" />
                         <Separator Grid.Column="2" VerticalAlignment="Center" />
                     </Grid>
 
-                    <Button Content="Entrar con la cuenta de demostración" Command="{Binding LoginDemoCommand}"
+                    <Button Content="{DynamicResource login.demo}" Command="{Binding LoginDemoCommand}"
                             Padding="0,9" />
-                    <TextBlock Text="Datos de ejemplo compartidos, sin registrarse."
+                    <TextBlock Text="{DynamicResource login.demoHint}"
                                Style="{StaticResource MutedText}" HorizontalAlignment="Center" Margin="0,6,0,0" />
                 </StackPanel>
             </Border>

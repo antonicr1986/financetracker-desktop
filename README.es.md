@@ -49,18 +49,25 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
   Mientras no se elige, la aplicación sigue el ajuste de Windows, como Android
   sigue el del teléfono, y lo sigue también si Windows cambia con la aplicación
   abierta. La barra de título también se oscurece.
+- **Español e inglés**, que se cambian desde la barra superior con el mismo
+  selector de dos botones que la web — bandera y código, el activo relleno — y
+  se recuerdan entre sesiones. Mientras no se elige, la aplicación sigue el
+  idioma de Windows, igual que la web sigue el del navegador. Todos los textos
+  cambian a la vez, también un error que ya esté en pantalla, sin reiniciar y
+  sin volver a llamar a la API. Los textos reutilizan las frases y claves de la
+  web; importes y fechas siguen al idioma (`es-ES` / `en-GB`), siempre en euros.
 - **La misma estética que la web**: la escala slate de Tailwind, tarjetas
   blancas sobre fondo gris (tarjetas slate sobre casi negro en oscuro), la
   acción principal en slate-900 (invertida en oscuro) y una barra superior
-  común a todas las ventanas, con el nombre a la izquierda y el cambio de tema
-  y "Salir" a la derecha — "Salir" deshabilitado en la pantalla de acceso,
+  común a todas las ventanas, con el nombre a la izquierda y el idioma, el
+  tema y "Salir" a la derecha — "Salir" deshabilitado en la pantalla de acceso,
   como en los otros clientes.
 - **Estados de carga, error y vacío**, con botón de reintentar, y un mensaje
   claro cuando la sesión caduca en lugar de volver al acceso sin explicación.
 
 ## 🗺️ Lo siguiente
 
-Presupuestos, desglose por categoría, español e inglés, y una sesión que sobreviva a cerrar la
+Presupuestos, desglose por categoría, y una sesión que sobreviva a cerrar la
 aplicación.
 
 ## 🧰 Tecnologías
@@ -74,6 +81,7 @@ aplicación.
 
     FinanceTracker.Desktop/
       Domain/       Agrupación por meses, totales y reglas del formulario — sin WPF
+      Localization/ Textos en los dos idiomas, el Localizer y el cambio de idioma
       Models/       Los DTOs de la API, como records
       Services/     Cliente HTTP, sesión, diálogos y el tipo de error
       ViewModels/   La lógica de cada pantalla, sin referencias a controles
@@ -148,6 +156,22 @@ pequeña que toma sus colores del tema, con las esquinas de 8 píxeles de la web
 La barra de título la pinta Windows, no WPF, así que se oscurece con
 `DwmSetWindowAttribute`.
 
+**Un idioma también es un diccionario que se sustituye.** `Strings.cs` tiene
+todos los textos en los dos idiomas, en C#. `LanguageManager` convierte el
+elegido en un diccionario de recursos y lo pone en el tercer hueco de la
+aplicación, así que el XAML lee `{DynamicResource dashboard.income}` y se
+repinta igual que con el tema. Los ViewModels obtienen los mismos textos de un
+`Localizer` que reciben en el constructor, y escuchan su evento `Changed` para
+rehacer lo que construyen ellos — nombres de meses, importes, fechas, el
+saludo.
+
+**Los errores se guardan como "cómo escribirlos", no como texto.** Un ViewModel
+guarda una `Func<string>` para el error actual. Al cambiar de idioma se vuelve a
+ejecutar, así que un mensaje en pantalla no se queda en el otro idioma.
+
+**El inglés es `en-GB` con el euro fijado**, como en la web: `en-US` pondría el
+mes antes que el día, y `en-GB` por sí solo mostraría libras.
+
 **La decisión del tema es C# normal.** `ThemePreference` decide qué tema toca
 (el elegido, o el de Windows si no hay elección) sin ninguna referencia a WPF,
 así que tiene pruebas unitarias; `ThemeManager` solo pinta. La elección se
@@ -160,7 +184,7 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 60 pruebas, sin ventanas ni red.
+`dotnet test` — 75 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -170,6 +194,16 @@ recarga y salta al mes del movimiento mientras que cancelar no recarga. El
 diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por
 tipo, el cuerpo exacto que se envía, edición por id, borrar pregunta antes y no
 hace nada si se dice que no, y los errores de la API dejan el diálogo abierto.
+
+Quince cubren los idiomas. Los dos diccionarios deben tener exactamente las
+mismas claves y ningún texto vacío — olvidar una traducción rompe la
+compilación, como en la web. Otra prueba lee los archivos XAML y comprueba que
+cada clave de texto de `{DynamicResource}` existe, porque WPF muestra una que
+falta como un texto vacío sin avisar. El resto comprueban los euros en los dos
+idiomas (`12.345,60 €` y `€12,345.60`), que se sigue el idioma de Windows hasta
+que se elige uno, y el cambio con las pantallas abiertas: el panel rehace sus
+meses, importes y saludo sin volver a llamar a la API, un error en pantalla se
+reescribe, y un diálogo cerrado deja de escuchar.
 
 Siete cubren el tema: se sigue a Windows hasta que se elige, el cambio parte
 de lo que se ve y se guarda, una vez elegido se ignora Windows, un valor

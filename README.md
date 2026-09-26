@@ -47,17 +47,24 @@ database wake up — the window says so while it waits.
   chosen the app follows the Windows setting, as the Android client follows
   the phone's — and keeps following it if Windows changes while the app is
   open. The title bar turns dark too.
+- **Spanish and English**, switched from the top bar with the same two-button
+  selector as the web client — flag and code, the active one filled — and
+  remembered between sessions. Until one is chosen the app follows Windows'
+  language, as the web follows the browser's. Every text changes at once,
+  including an error already on screen, with no restart and no new request to
+  the API. Texts reuse the web client's phrases and keys; amounts and dates
+  follow the language (`es-ES` / `en-GB`), always in euros.
 - **The same look as the web client**: Tailwind's slate scale, white cards on
   a grey background (slate cards on near-black in dark mode), the main action
   in slate-900 (inverted in dark mode), and a shared top bar on every window
-  with the name on the left and the theme switch and "Sign out" on the right —
+  with the name on the left and the language, theme and "Sign out" on the right —
   "Sign out" disabled on the sign-in screen, as in the other clients.
 - **Loading, error and empty states**, with a retry button, and a clear
   message when the session expires instead of a silent return to sign-in.
 
 ## 🗺️ Next
 
-Budgets, a breakdown by category, Spanish and English, and a session that survives
+Budgets, a breakdown by category, and a session that survives
 closing the app.
 
 ## 🧰 Stack
@@ -71,6 +78,7 @@ closing the app.
 
     FinanceTracker.Desktop/
       Domain/       Month grouping, totals and form rules — no WPF, plain C#
+      Localization/ Texts in both languages, the Localizer and the language switch
       Models/       The API DTOs, as records
       Services/     HTTP client, session, dialogs and the error type
       ViewModels/   The logic of each screen — no reference to any control
@@ -141,6 +149,21 @@ gives each one a small template that takes its colours from the theme, with
 the web's 8-pixel corners. The title bar is drawn by Windows, not WPF, so it is
 darkened through `DwmSetWindowAttribute`.
 
+**A language is a swapped dictionary too.** `Strings.cs` holds every text in
+both languages, in C#. `LanguageManager` turns the chosen one into a resource
+dictionary and puts it in the application's third slot, so the XAML reads
+`{DynamicResource dashboard.income}` and repaints like the theme does. The
+ViewModels get the same texts from a `Localizer` passed to their constructor,
+and listen to its `Changed` event to rewrite what they built themselves —
+month names, amounts, dates, the greeting.
+
+**Errors are stored as "how to write them", not as text.** A ViewModel keeps a
+`Func<string>` for the current error. Switching language runs it again, so a
+message on screen is not left behind in the other language.
+
+**English is `en-GB` with the euro forced in**, as in the web client: `en-US`
+would write dates month-first, and `en-GB` on its own would show pounds.
+
 **The theme decision is plain C#.** `ThemePreference` decides which theme
 applies (the saved choice, or Windows' setting when there is none) with no
 reference to WPF, so it is unit-tested; `ThemeManager` only paints. The choice
@@ -153,7 +176,7 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 60 tests, with no window and no network.
+`dotnet test` — 75 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -163,6 +186,16 @@ jumps to the saved transaction's month while cancelling does not reload. The
 transaction dialog: defaults for a new one, categories filtered by type, the
 exact input sent, editing by id, delete asking first and doing nothing on "no",
 and API errors keeping the dialog open.
+
+Fifteen cover the languages. Both dictionaries must have exactly the same
+keys and no empty text — forgetting a translation fails the build, as in the
+web client. Another test reads the XAML files and checks that every
+`{DynamicResource}` text key exists, because WPF shows a missing one as an
+empty string without any warning. The rest check euros in both languages
+(`12.345,60 €` and `€12,345.60`), following Windows' language until one is
+chosen, and switching with the screens open: the dashboard rewrites its months,
+amounts and greeting without calling the API again, an error on screen is
+rewritten, and a closed dialog stops listening.
 
 Seven cover the theme: following Windows until a choice is made, toggling
 from whatever is shown and saving it, ignoring Windows once chosen, an unknown

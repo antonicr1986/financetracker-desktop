@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Windows;
+using FinanceTracker.Desktop.Localization;
 using FinanceTracker.Desktop.Services;
 using FinanceTracker.Desktop.ViewModels;
 using FinanceTracker.Desktop.Views;
@@ -15,9 +17,13 @@ public partial class App : Application
     private readonly Session session = new();
     private readonly ApiClient api;
     private readonly DialogService dialogs = new();
+    private readonly Localizer localizer = new();
 
     /// <summary>Tema de la aplicacion. Estatico porque es uno para todas las ventanas.</summary>
     public static ThemeManager Theme { get; private set; } = null!;
+
+    /// <summary>Idioma de la aplicacion. Lo usa el selector de la barra superior.</summary>
+    public static LanguageManager Languages { get; private set; } = null!;
 
     public App()
     {
@@ -28,19 +34,28 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        // Antes de abrir ninguna ventana, para que la primera ya salga con su tema.
-        Theme = new ThemeManager(new ThemePreference(new SettingsStore(), ThemeManager.SystemPrefersDark));
+        // Antes de abrir ninguna ventana, para que la primera ya salga con su
+        // tema y su idioma.
+        var settings = new SettingsStore();
+        Theme = new ThemeManager(new ThemePreference(settings, ThemeManager.SystemPrefersDark));
         Theme.ApplyInitial();
+
+        // El idioma del sistema se lee antes de que LanguageManager cambie la
+        // cultura del proceso.
+        var systemLanguage = CultureInfo.CurrentUICulture.Name;
+        Languages = new LanguageManager(localizer, new LanguagePreference(settings, () => systemLanguage));
+        Languages.ApplyInitial();
 
         ShowLogin();
     }
 
-    private void ShowLogin(string? message = null)
+    private void ShowLogin(bool sessionExpired = false)
     {
-        var viewModel = new LoginViewModel(api, session);
-        if (message is not null) viewModel.ErrorMessage = message;
+        var viewModel = new LoginViewModel(api, session, localizer);
+        if (sessionExpired) viewModel.ShowSessionExpired();
 
         var window = new LoginWindow(viewModel);
+        window.Closed += (_, _) => viewModel.Dispose();
         viewModel.LoggedIn += (_, _) =>
         {
             ShowMain();
@@ -52,8 +67,9 @@ public partial class App : Application
 
     private void ShowMain()
     {
-        var viewModel = new MainViewModel(session, api, api, dialogs);
+        var viewModel = new MainViewModel(session, api, api, dialogs, localizer);
         var window = new Views.MainWindow(viewModel);
+        window.Closed += (_, _) => viewModel.Dispose();
 
         viewModel.LoggedOut += (_, _) =>
         {
@@ -65,7 +81,7 @@ public partial class App : Application
         // la API lo ha rechazado (caduca a los 60 minutos).
         viewModel.SessionExpired += (_, _) =>
         {
-            ShowLogin("Tu sesión ha caducado. Vuelve a iniciar sesión.");
+            ShowLogin(sessionExpired: true);
             window.Close();
         };
 

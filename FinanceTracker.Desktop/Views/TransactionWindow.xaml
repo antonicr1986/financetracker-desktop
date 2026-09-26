@@ -15,14 +15,28 @@
 
         <!-- Tipo: dos RadioButton enlazados a propiedades opuestas del ViewModel. -->
         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-            <RadioButton Content="Gasto" IsChecked="{Binding IsExpense}" Margin="0,0,16,0" />
-            <RadioButton Content="Ingreso" IsChecked="{Binding IsIncome}" />
+            <RadioButton Content="{DynamicResource dialog.expense}" IsChecked="{Binding IsExpense}" Margin="0,0,16,0" />
+            <RadioButton Content="{DynamicResource dialog.income}" IsChecked="{Binding IsIncome}" />
         </StackPanel>
 
-        <TextBlock Text="Descripción" Margin="0,0,0,4" />
-        <TextBox x:Name="DescriptionInput"
-                 Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
-                 MaxLength="150" Margin="0,0,0,12" />
+        <TextBlock Text="{DynamicResource dialog.concept}" Margin="0,0,0,4" />
+        <Grid Margin="0,0,0,12">
+            <TextBox x:Name="DescriptionInput"
+                     Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" />
+            <!-- Texto de ayuda mientras la caja esta vacia, como en el login. -->
+            <TextBlock Text="{DynamicResource dialog.conceptPlaceholder}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource Placeholder}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Text.Length, ElementName=DescriptionInput}" Value="0">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
 
         <Grid Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
@@ -31,16 +45,16 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="Importe (€)" Margin="0,0,0,4" />
+                <TextBlock Text="{DynamicResource dialog.amount}" Margin="0,0,0,4" />
                 <TextBox Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" />
             </StackPanel>
             <StackPanel Grid.Column="2">
-                <TextBlock Text="Fecha" Margin="0,0,0,4" />
+                <TextBlock Text="{DynamicResource dialog.date}" Margin="0,0,0,4" />
                 <DatePicker SelectedDate="{Binding Date}" />
             </StackPanel>
         </Grid>
 
-        <TextBlock Text="Categoría" Margin="0,0,0,4" />
+        <TextBlock Text="{DynamicResource dialog.category}" Margin="0,0,0,4" />
         <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
                   DisplayMemberPath="Name" Margin="0,0,0,12" />
 
@@ -50,14 +64,14 @@
 
         <DockPanel>
             <!-- Borrar solo existe al editar. -->
-            <Button DockPanel.Dock="Left" Content="Borrar" Command="{Binding DeleteCommand}"
+            <Button DockPanel.Dock="Left" Content="{DynamicResource dialog.delete}" Command="{Binding DeleteCommand}"
                     Style="{StaticResource DangerButton}"
                     Visibility="{Binding IsEdit, Converter={StaticResource BoolToVisibility}}" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <!-- IsCancel: el propio WPF cierra el dialogo con Escape o al
                      pulsarlo, sin comando. IsDefault: Enter guarda. -->
-                <Button Content="Cancelar" IsCancel="True" Margin="0,0,8,0" />
-                <Button Content="Guardar" Command="{Binding SaveCommand}" IsDefault="True"
+                <Button Content="{DynamicResource dialog.cancel}" IsCancel="True" Margin="0,0,8,0" />
+                <Button Content="{DynamicResource dialog.save}" Command="{Binding SaveCommand}" IsDefault="True"
                         Style="{StaticResource PrimaryButton}" />
             </StackPanel>
         </DockPanel>

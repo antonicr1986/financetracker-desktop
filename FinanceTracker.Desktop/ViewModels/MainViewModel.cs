@@ -1,8 +1,8 @@
 using System.Collections.ObjectModel;
-using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FinanceTracker.Desktop.Domain;
+using FinanceTracker.Desktop.Localization;
 using FinanceTracker.Desktop.Models;
 using FinanceTracker.Desktop.Services;
 
@@ -20,15 +20,31 @@ public record MonthOption(MonthKey Key, string Label)
 /// Panel principal: selector de mes, totales del mes y lista de movimientos.
 /// Se descarga todo una vez y el cambio de mes se resuelve en memoria.
 /// </summary>
-public partial class MainViewModel(
-    Session session,
-    ITransactionService transactions,
-    ICategoryService categories,
-    IDialogService dialogs) : ObservableObject
+public partial class MainViewModel : ObservableObject, IDisposable
 {
-    // Siempre en euros y con formato español, como la web y Android. El
-    // cambio de idioma llegara en un paso posterior.
-    public static readonly CultureInfo Culture = CultureInfo.GetCultureInfo("es-ES");
+    private readonly Session session;
+    private readonly ITransactionService transactions;
+    private readonly ICategoryService categories;
+    private readonly IDialogService dialogs;
+    private readonly Localizer localizer;
+
+    /// <summary>Como escribir el error actual; ver LoginViewModel.</summary>
+    private Func<string>? error;
+
+    public MainViewModel(
+        Session session,
+        ITransactionService transactions,
+        ICategoryService categories,
+        IDialogService dialogs,
+        Localizer localizer)
+    {
+        this.session = session;
+        this.transactions = transactions;
+        this.categories = categories;
+        this.dialogs = dialogs;
+        this.localizer = localizer;
+        localizer.Changed += OnLanguageChanged;
+    }
 
     private List<TransactionDto> all = [];
     private List<CategoryDto> allCategories = [];
@@ -36,7 +52,7 @@ public partial class MainViewModel(
     /// <summary>Mes a mostrar tras la proxima carga (el del movimiento recien guardado).</summary>
     private MonthKey? monthAfterLoad;
 
-    public string Greeting => $"Hola, {session.User?.Name}";
+    public string Greeting => localizer.T("dashboard.greeting", session.User?.Name ?? "");
     public string Email => session.User?.Email ?? "";
 
     public ObservableCollection<MonthOption> Months { get; } = [];
@@ -76,7 +92,7 @@ public partial class MainViewModel(
     [RelayCommand(CanExecute = nameof(CanLoad))]
     private async Task LoadAsync()
     {
-        ErrorMessage = "";
+        SetError(null);
         IsLoading = true;
         try
         {
@@ -96,9 +112,9 @@ public partial class MainViewModel(
         }
         catch (ApiException e)
         {
-            ErrorMessage = e.Code == ApiException.NetworkError
-                ? "No se pudo conectar con el servidor. Revisa tu conexión."
-                : "No se pudieron cargar los movimientos.";
+            SetError(() => e.Code == ApiException.NetworkError
+                ? localizer.ApiError(e.Code)
+                : localizer.T("errors.loadFailed"));
         }
         finally
         {
@@ -113,7 +129,7 @@ public partial class MainViewModel(
 
         Months.Clear();
         foreach (var key in Domain.Months.Available(all))
-            Months.Add(new MonthOption(key, key.Label(Culture)));
+            Months.Add(new MonthOption(key, key.Label(localizer.Culture)));
 
         IsEmpty = Months.Count == 0;
 
@@ -131,29 +147,31 @@ public partial class MainViewModel(
         List<TransactionDto> ofMonth = SelectedMonth is null ? [] : Domain.Months.Of(all, SelectedMonth.Key);
 
         foreach (var t in ofMonth)
-            Transactions.Add(TransactionRow.From(t, Culture));
+            Transactions.Add(TransactionRow.From(t, localizer.Culture));
 
         var summary = Domain.Months.Summary(ofMonth);
-        IncomeText = summary.Income.ToString("C", Culture);
-        ExpenseText = summary.Expense.ToString("C", Culture);
-        BalanceText = summary.Balance.ToString("C", Culture);
+        IncomeText = summary.Income.ToString("C", localizer.Culture);
+        ExpenseText = summary.Expense.ToString("C", localizer.Culture);
+        BalanceText = summary.Balance.ToString("C", localizer.Culture);
         IsBalanceNegative = summary.Balance < 0;
     }
 
     [RelayCommand(CanExecute = nameof(CanLoad))]
     private Task NewTransactionAsync() =>
-        OpenEditorAsync(new TransactionEditorViewModel(transactions, dialogs, allCategories));
+        OpenEditorAsync(new TransactionEditorViewModel(transactions, dialogs, allCategories, localizer));
 
     /// <summary>Doble clic en un movimiento: el mismo formulario, relleno.</summary>
     [RelayCommand]
     private Task EditTransactionAsync(TransactionRow? row) =>
         row is null
             ? Task.CompletedTask
-            : OpenEditorAsync(new TransactionEditorViewModel(transactions, dialogs, allCategories, row.Source));
+            : OpenEditorAsync(new TransactionEditorViewModel(transactions, dialogs, allCategories, localizer, row.Source));
 
     private async Task OpenEditorAsync(TransactionEditorViewModel editor)
     {
-        var changed = dialogs.ShowTransactionEditor(editor);
+        bool changed;
+        using (editor)
+            changed = dialogs.ShowTransactionEditor(editor);
 
         if (editor.SessionHasExpired)
         {
@@ -177,4 +195,25 @@ public partial class MainViewModel(
         session.Clear();
         LoggedOut?.Invoke(this, EventArgs.Empty);
     }
+
+    private void SetError(Func<string>? text)
+    {
+        error = text;
+        ErrorMessage = text?.Invoke() ?? "";
+    }
+
+    /// <summary>
+    /// Al cambiar de idioma se rehace lo que lleva texto o formato: saludo,
+    /// nombres de meses, importes, fechas y el error si lo hay. Los datos ya
+    /// estan en memoria: no se vuelve a llamar a la API.
+    /// </summary>
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(Greeting));
+        SetError(error);
+        if (all.Count > 0) Render();
+    }
+
+    /// <summary>Deja de escuchar al Localizer, que vive mas que esta pantalla.</summary>
+    public void Dispose() => localizer.Changed -= OnLanguageChanged;
 }

@@ -1,6 +1,7 @@
 using FinanceTracker.Desktop.Models;
 using FinanceTracker.Desktop.Services;
 using FinanceTracker.Desktop.ViewModels;
+using static FinanceTracker.Desktop.Tests.TestData;
 
 namespace FinanceTracker.Desktop.Tests;
 
@@ -32,11 +33,11 @@ public class LoginViewModelTests
     public async Task Login_WithEmptyFields_ShowsErrorAndDoesNotCallApi()
     {
         var auth = new FakeAuthService();
-        var vm = new LoginViewModel(auth, new Session());
+        var vm = new LoginViewModel(auth, new Session(), Es);
 
         await vm.LoginCommand.ExecuteAsync(null);
 
-        Assert.Equal("Escribe el email y la contraseña.", vm.ErrorMessage);
+        Assert.Equal(EsText("errors.fillCredentials"), vm.ErrorMessage);
         Assert.Equal(0, auth.Calls);
     }
 
@@ -45,7 +46,7 @@ public class LoginViewModelTests
     {
         var auth = new FakeAuthService { Handler = (email, _) => Success(email) };
         var session = new Session();
-        var vm = new LoginViewModel(auth, session) { Email = "  antonio@example.com ", Password = "secret" };
+        var vm = new LoginViewModel(auth, session, Es) { Email = "  antonio@example.com ", Password = "secret" };
         var raised = false;
         vm.LoggedIn += (_, _) => raised = true;
 
@@ -66,11 +67,11 @@ public class LoginViewModelTests
             Handler = (_, _) => throw new ApiException(ApiException.InvalidCredentials)
         };
         var session = new Session();
-        var vm = new LoginViewModel(auth, session) { Email = "a@b.com", Password = "bad" };
+        var vm = new LoginViewModel(auth, session, Es) { Email = "a@b.com", Password = "bad" };
 
         await vm.LoginCommand.ExecuteAsync(null);
 
-        Assert.Equal("Email o contraseña incorrectos.", vm.ErrorMessage);
+        Assert.Equal(EsText("apiError.invalid_credentials"), vm.ErrorMessage);
         Assert.False(session.IsActive);
         Assert.False(vm.IsBusy);
     }
@@ -82,11 +83,11 @@ public class LoginViewModelTests
         {
             Handler = (_, _) => throw new ApiException(ApiException.NetworkError)
         };
-        var vm = new LoginViewModel(auth, new Session()) { Email = "a@b.com", Password = "x" };
+        var vm = new LoginViewModel(auth, new Session(), Es) { Email = "a@b.com", Password = "x" };
 
         await vm.LoginCommand.ExecuteAsync(null);
 
-        Assert.Equal("No se pudo conectar con el servidor. Revisa tu conexión.", vm.ErrorMessage);
+        Assert.Equal(EsText("apiError.network_error"), vm.ErrorMessage);
     }
 
     [Fact]
@@ -94,7 +95,7 @@ public class LoginViewModelTests
     {
         var auth = new FakeAuthService { Handler = (email, _) => Success(email) };
         var session = new Session();
-        var vm = new LoginViewModel(auth, session) { Email = "otro@example.com", Password = "lo-que-sea" };
+        var vm = new LoginViewModel(auth, session, Es) { Email = "otro@example.com", Password = "lo-que-sea" };
         var raised = false;
         vm.LoggedIn += (_, _) => raised = true;
 
@@ -114,12 +115,12 @@ public class LoginViewModelTests
         {
             Handler = (_, _) => throw new ApiException(ApiException.NetworkError)
         };
-        var vm = new LoginViewModel(auth, new Session());
+        var vm = new LoginViewModel(auth, new Session(), Es);
 
         await vm.LoginDemoCommand.ExecuteAsync(null);
 
         Assert.Equal(1, auth.Calls); // no exige rellenar los campos
-        Assert.Equal("No se pudo conectar con el servidor. Revisa tu conexión.", vm.ErrorMessage);
+        Assert.Equal(EsText("apiError.network_error"), vm.ErrorMessage);
         Assert.False(vm.IsBusy);
     }
 }

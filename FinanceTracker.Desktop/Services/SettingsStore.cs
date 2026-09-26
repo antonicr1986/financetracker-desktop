@@ -8,6 +8,9 @@ public class AppSettings
 {
     /// <summary>"light", "dark" o null (sin elegir: sigue a Windows).</summary>
     public string? Theme { get; set; }
+
+    /// <summary>"es", "en" o null (sin elegir: el idioma de Windows).</summary>
+    public string? Language { get; set; }
 }
 
 public interface ISettingsStore

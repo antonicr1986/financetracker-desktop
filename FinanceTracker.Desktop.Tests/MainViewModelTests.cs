@@ -10,7 +10,7 @@ public class MainViewModelTests
 {
     private static MainViewModel Vm(FakeTransactionService api, FakeDialogService? dialogs = null,
         Session? session = null) =>
-        new(session ?? LoggedInSession(), api, api, dialogs ?? new FakeDialogService());
+        new(session ?? LoggedInSession(), api, api, dialogs ?? new FakeDialogService(), Es);
 
     private static List<TransactionDto> SampleData() =>
     [
@@ -37,9 +37,9 @@ public class MainViewModelTests
         Assert.Equal(2, vm.Months.Count);
         Assert.Equal("Septiembre 2026", vm.SelectedMonth?.Label);
         Assert.Equal(new[] { "Compra", "Nómina" }, vm.Transactions.Select(t => t.Description));
-        Assert.Equal(1000m.ToString("C", MainViewModel.Culture), vm.IncomeText);
-        Assert.Equal(250m.ToString("C", MainViewModel.Culture), vm.ExpenseText);
-        Assert.Equal(750m.ToString("C", MainViewModel.Culture), vm.BalanceText);
+        Assert.Equal(1000m.ToString("C", Es.Culture), vm.IncomeText);
+        Assert.Equal(250m.ToString("C", Es.Culture), vm.ExpenseText);
+        Assert.Equal(750m.ToString("C", Es.Culture), vm.BalanceText);
         Assert.True(vm.HasData);
     }
 
