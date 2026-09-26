@@ -18,6 +18,7 @@ public partial class App : Application
     private readonly ApiClient api;
     private readonly DialogService dialogs = new();
     private readonly Localizer localizer = new();
+    private readonly SettingsStore settings = new();
 
     /// <summary>Tema de la aplicacion. Estatico porque es uno para todas las ventanas.</summary>
     public static ThemeManager Theme { get; private set; } = null!;
@@ -36,7 +37,6 @@ public partial class App : Application
 
         // Antes de abrir ninguna ventana, para que la primera ya salga con su
         // tema y su idioma.
-        var settings = new SettingsStore();
         Theme = new ThemeManager(new ThemePreference(settings, ThemeManager.SystemPrefersDark));
         Theme.ApplyInitial();
 
@@ -67,7 +67,7 @@ public partial class App : Application
 
     private void ShowMain()
     {
-        var viewModel = new MainViewModel(session, api, api, dialogs, localizer);
+        var viewModel = new MainViewModel(session, api, api, api, dialogs, localizer, settings);
         var window = new Views.MainWindow(viewModel);
         window.Closed += (_, _) => viewModel.Dispose();
 

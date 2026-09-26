@@ -73,13 +73,25 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
   tareas, el ejecutable y junto al nombre en la barra superior. El `.ico`
   contiene nueve tamaños, de 16 a 256 píxeles, para que Windows elija uno
   nítido en cada sitio; la barra superior lo dibuja en vectorial.
+- **Presupuestos mensuales** en el panel, como en la web y Android: gastado de
+  total, una barra que se pone ámbar al 80 % y roja al 100 %, y lo que queda o
+  lo que se ha pasado, con "1 de 2 dentro del límite" como resumen. Todas las
+  cifras las calcula la API; la aplicación solo elige los del mes y los pinta.
+- **Gastos por categoría**: los gastos del mes agrupados por categoría, de
+  mayor a menor, cada uno con una barra relativa a la mayor, y "Mayor: …" como
+  resumen.
+- **Secciones plegables**, plegadas la primera vez, cuyo resumen de una línea
+  sigue a la vista al plegarlas, así que el panel se abre compacto y aun así
+  dice lo importante. Cómo se dejan se recuerda en `settings.json`. Presupuestos y desglose van uno al lado del otro, porque en
+  escritorio sobra ancho, y todo el panel se desplaza como una sola página,
+  como en Android.
 - **Estados de carga, error y vacío**, con botón de reintentar, y un mensaje
   claro cuando la sesión caduca en lugar de volver al acceso sin explicación.
 
 ## 🗺️ Lo siguiente
 
-Presupuestos, desglose por categoría, y una sesión que sobreviva a cerrar la
-aplicación.
+Alta, edición y borrado de presupuestos, y una sesión que sobreviva a cerrar
+la aplicación.
 
 ## 🧰 Tecnologías
 
@@ -91,7 +103,7 @@ aplicación.
 ## 📁 Estructura
 
     FinanceTracker.Desktop/
-      Domain/       Agrupación por meses, totales y reglas del formulario — sin WPF
+      Domain/       Meses, totales, presupuestos, desglose y reglas del formulario — sin WPF
       Localization/ Textos en los dos idiomas, el Localizer y el cambio de idioma
       Controls/     Hint.Text, el texto de ayuda de las cajas
       Assets/       app.ico, generado a partir del vector del icono de Android
@@ -202,6 +214,18 @@ redimensionar, así que la barra superior añade al contenido un margen de
 diálogo de movimiento mantiene la barra de título de Windows: no tiene barra
 superior que la sustituya.
 
+**Las cifras de los presupuestos vienen de la API.** `SpentAmount`,
+`RemainingAmount` y `UsagePercentage` los calcula la API a partir de los
+movimientos; el cliente nunca los deriva. Por eso guardar un movimiento recarga
+también los presupuestos: lo gastado ha cambiado. El porcentaje se redondea
+alejándose del cero, como lo escribe la web — .NET redondea al par por
+defecto, así que 80,5 se quedaría en 80.
+
+**Un solo desplazamiento, no dos.** La lista de movimientos ha perdido su
+`ScrollViewer` propio: una lista con scroll dentro de una página con scroll se
+queda la rueda del ratón en cuanto el puntero está encima, y la página deja de
+moverse.
+
 **La decisión del tema es C# normal.** `ThemePreference` decide qué tema toca
 (el elegido, o el de Windows si no hay elección) sin ninguna referencia a WPF,
 así que tiene pruebas unitarias; `ThemeManager` solo pinta. La elección se
@@ -214,7 +238,7 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 75 pruebas, sin ventanas ni red.
+`dotnet test` — 98 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -224,6 +248,16 @@ recarga y salta al mes del movimiento mientras que cancelar no recarga. El
 diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por
 tipo, el cuerpo exacto que se envía, edición por id, borrar pregunta antes y no
 hace nada si se dice que no, y los errores de la API dejan el diálogo abierto.
+
+Veintitrés cubren presupuestos y desglose: solo los presupuestos del mes elegido
+(no los del mismo mes de otro año), el redondeo, los cortes de color del 80 %
+y el 100 %, "dentro del límite" incluido uno justo en el límite, la barra
+limitada al pasarse, "Todas las categorías" para un presupuesto sin categoría,
+solo gastos y de mayor a menor en el desglose con barras relativas a la mayor,
+los resúmenes vacíos, que las secciones empiezan plegadas y recuerdan cómo se
+dejaron sin tocar los otros ajustes, los textos de los
+presupuestos reescritos al cambiar de idioma, y el endpoint de presupuestos
+leído como un array normal con una categoría nula.
 
 Quince cubren los idiomas. Los dos diccionarios deben tener exactamente las
 mismas claves y ningún texto vacío — olvidar una traducción rompe la

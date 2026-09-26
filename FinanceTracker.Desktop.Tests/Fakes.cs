@@ -5,8 +5,11 @@ using FinanceTracker.Desktop.ViewModels;
 namespace FinanceTracker.Desktop.Tests;
 
 /// <summary>API falsa: devuelve lo que le digamos y apunta lo que se le pide.</summary>
-internal class FakeTransactionService : ITransactionService, ICategoryService
+internal class FakeTransactionService : ITransactionService, ICategoryService, IBudgetService
 {
+    public List<BudgetDto> Budgets { get; set; } = [];
+    public Task<List<BudgetDto>> GetBudgetsAsync() => Task.FromResult(Budgets);
+
     public Func<List<TransactionDto>> Handler { get; set; } = () => [];
     public List<CategoryDto> Categories { get; set; } = [];
 

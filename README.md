@@ -69,13 +69,25 @@ database wake up — the window says so while it waits.
   executable and next to the name in the top bar. The `.ico` holds nine sizes,
   from 16 to 256 pixels, so Windows picks a sharp one for each place; the top
   bar draws it as a vector instead.
+- **Monthly budgets** on the dashboard, as in the web and Android clients:
+  spent of total, a bar that turns amber at 80% and red at 100%, and what is
+  left or over, with "1 of 2 within limit" as the summary. The API computes
+  every figure; the app only picks the month's budgets and paints them.
+- **Expenses by category**: the month's expenses grouped by category, largest
+  first, each with a bar relative to the largest one, and "Largest: …" as the
+  summary.
+- **Collapsible sections**, folded the first time, whose one-line summary stays
+  visible when folded, so the dashboard opens compact and still says what
+  matters. How they are left is remembered in `settings.json`.
+  Budgets and the breakdown sit side by side, since a desktop has the width,
+  and the whole dashboard scrolls as one page, like the Android client.
 - **Loading, error and empty states**, with a retry button, and a clear
   message when the session expires instead of a silent return to sign-in.
 
 ## 🗺️ Next
 
-Budgets, a breakdown by category, and a session that survives
-closing the app.
+Creating, editing and deleting budgets, and a session that survives closing
+the app.
 
 ## 🧰 Stack
 
@@ -87,7 +99,7 @@ closing the app.
 ## 📁 Project structure
 
     FinanceTracker.Desktop/
-      Domain/       Month grouping, totals and form rules — no WPF, plain C#
+      Domain/       Months, totals, budgets, breakdown and form rules — no WPF, plain C#
       Localization/ Texts in both languages, the Localizer and the language switch
       Controls/     Hint.Text, the text boxes' placeholder
       Assets/       app.ico, built from the Android launcher vector
@@ -193,6 +205,16 @@ invisible resize border on every side, so the top bar pads the content by
 `SystemParameters.WindowResizeBorderThickness` while maximised. The transaction
 dialog keeps Windows' own title bar: it has no top bar to replace it.
 
+**Budget figures come from the API.** `SpentAmount`, `RemainingAmount` and
+`UsagePercentage` are computed by the API from the transactions; the client
+never derives them. That is also why saving a transaction reloads the budgets:
+what was spent has changed. The percentage is rounded half away from zero, as
+the web writes it — .NET rounds to even by default, so 80.5 would become 80.
+
+**One scroll, not two.** The transaction list lost its own `ScrollViewer`: a
+scrolling list inside a scrolling page keeps the mouse wheel for itself once
+the pointer is over it, and the page stops moving.
+
 **The theme decision is plain C#.** `ThemePreference` decides which theme
 applies (the saved choice, or Windows' setting when there is none) with no
 reference to WPF, so it is unit-tested; `ThemeManager` only paints. The choice
@@ -205,7 +227,7 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 75 tests, with no window and no network.
+`dotnet test` — 98 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -215,6 +237,15 @@ jumps to the saved transaction's month while cancelling does not reload. The
 transaction dialog: defaults for a new one, categories filtered by type, the
 exact input sent, editing by id, delete asking first and doing nothing on "no",
 and API errors keeping the dialog open.
+
+Twenty-three cover budgets and the breakdown: only the selected month's budgets
+(not the same month of another year), the rounding, the 80% and 100% colour
+thresholds, "within limit" including one exactly at it, the bar capped when
+overspent, "All categories" for a budget with no category, expenses only and
+largest first in the breakdown with bars relative to the largest, the empty
+summaries, the sections starting folded and remembering how they were left
+without touching the other settings, the budget texts rewritten on a language
+switch, and the budgets endpoint read as a plain array with a null category.
 
 Fifteen cover the languages. Both dictionaries must have exactly the same
 keys and no empty text — forgetting a translation fails the build, as in the

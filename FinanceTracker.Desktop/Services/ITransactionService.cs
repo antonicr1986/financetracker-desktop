@@ -18,3 +18,9 @@ public interface ICategoryService
 {
     Task<List<CategoryDto>> GetCategoriesAsync();
 }
+
+public interface IBudgetService
+{
+    /// <summary>Todos los presupuestos de todos los meses: la API no admite filtro.</summary>
+    Task<List<BudgetDto>> GetBudgetsAsync();
+}

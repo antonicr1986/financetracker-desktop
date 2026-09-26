@@ -26,132 +26,314 @@
     <DockPanel>
         <views:TopBar DockPanel.Dock="Top" SignOutCommand="{Binding LogoutCommand}" />
 
-        <Grid Margin="24">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+        <!-- Se desplaza toda la pantalla, no solo la lista, como en Android: con
+             presupuestos y desglose, una lista de altura fija quedaria diminuta. -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="24">
 
-            <!-- Saludo y correo -->
-            <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                <TextBlock Text="{Binding Greeting}" FontSize="22" FontWeight="SemiBold" />
-                <TextBlock Text="{Binding Email}" Style="{StaticResource MutedText}" />
-            </StackPanel>
-
-            <!-- Selector de mes y acciones -->
-            <DockPanel Grid.Row="1" Margin="0,0,0,16">
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button Content="{DynamicResource dashboard.reload}" Command="{Binding LoadCommand}" Margin="0,0,8,0" />
-                    <Button Content="{DynamicResource dashboard.newTransactionButton}" Command="{Binding NewTransactionCommand}"
-                            Style="{StaticResource PrimaryButton}" />
+                <!-- Saludo y correo -->
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="{Binding Greeting}" FontSize="22" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding Email}" Style="{StaticResource MutedText}" />
                 </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{DynamicResource table.month}" VerticalAlignment="Center" Margin="0,0,8,0" />
-                    <ComboBox ItemsSource="{Binding Months}" SelectedItem="{Binding SelectedMonth}"
-                              DisplayMemberPath="Label" Width="200" />
+
+                <!-- Selector de mes y acciones -->
+                <DockPanel Margin="0,0,0,16">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Content="{DynamicResource dashboard.reload}" Command="{Binding LoadCommand}" Margin="0,0,8,0" />
+                        <Button Content="{DynamicResource dashboard.newTransactionButton}" Command="{Binding NewTransactionCommand}"
+                                Style="{StaticResource PrimaryButton}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{DynamicResource table.month}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <ComboBox ItemsSource="{Binding Months}" SelectedItem="{Binding SelectedMonth}"
+                                  DisplayMemberPath="Label" Width="200" />
+                    </StackPanel>
+                </DockPanel>
+
+                <!-- Estados: cargando, error, sin datos -->
+                <StackPanel HorizontalAlignment="Center" Margin="0,48,0,0">
+                    <TextBlock Text="{DynamicResource dashboard.loading}" Style="{StaticResource MutedText}"
+                               Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}" />
+                    <StackPanel Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
+                        <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,12" />
+                        <Button Content="{DynamicResource dashboard.retry}" Command="{Binding LoadCommand}" HorizontalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="{DynamicResource dashboard.emptyTitle}" Style="{StaticResource MutedText}"
+                               Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Style.Triggers>
+                                <!-- Con datos, este hueco no ocupa espacio. -->
+                                <DataTrigger Binding="{Binding HasData}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                 </StackPanel>
-            </DockPanel>
 
-            <!-- Totales del mes -->
-            <UniformGrid Grid.Row="2" Columns="3" Margin="0,0,0,16"
-                         Visibility="{Binding HasData, Converter={StaticResource BoolToVisibility}}">
-                <Border Style="{StaticResource Card}" Margin="0,0,8,0">
-                    <StackPanel>
-                        <TextBlock Text="{DynamicResource dashboard.income}" Style="{StaticResource MutedText}" />
-                        <TextBlock Text="{Binding IncomeText}" FontSize="22" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource Brush.Income}" />
-                    </StackPanel>
-                </Border>
-                <Border Style="{StaticResource Card}" Margin="4,0">
-                    <StackPanel>
-                        <TextBlock Text="{DynamicResource dashboard.expenses}" Style="{StaticResource MutedText}" />
-                        <TextBlock Text="{Binding ExpenseText}" FontSize="22" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource Brush.Expense}" />
-                    </StackPanel>
-                </Border>
-                <Border Style="{StaticResource Card}" Margin="8,0,0,0">
-                    <StackPanel>
-                        <TextBlock Text="{DynamicResource dashboard.balance}" Style="{StaticResource MutedText}" />
-                        <TextBlock Text="{Binding BalanceText}" FontSize="22" FontWeight="SemiBold">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsBalanceNegative}" Value="True">
-                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Expense}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
+                <StackPanel Visibility="{Binding HasData, Converter={StaticResource BoolToVisibility}}">
 
-            <!-- Movimientos del mes -->
-            <Border Grid.Row="3" Style="{StaticResource Card}" Padding="0"
-                    Visibility="{Binding HasData, Converter={StaticResource BoolToVisibility}}">
-                <ListView ItemsSource="{Binding Transactions}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate DataType="{x:Type vm:TransactionRow}">
-                            <!-- Doble clic abre el movimiento para editarlo. El comando
-                                 esta en el ViewModel de la ventana, no en la fila, asi que
-                                 se busca subiendo hasta el ListView. Background Transparent
-                                 hace que el clic cuente en toda la fila, no solo en el texto. -->
-                            <Grid Margin="12,8" Background="Transparent">
-                                <Grid.InputBindings>
-                                    <MouseBinding Gesture="LeftDoubleClick"
-                                                  Command="{Binding DataContext.EditTransactionCommand,
-                                                            RelativeSource={RelativeSource AncestorType=ListView}}"
-                                                  CommandParameter="{Binding}" />
-                                </Grid.InputBindings>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Description}" FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis" />
-                                    <TextBlock Style="{StaticResource MutedText}">
-                                        <Run Text="{Binding Category, Mode=OneWay}" />
-                                        <Run Text="·" />
-                                        <Run Text="{Binding DateText, Mode=OneWay}" />
-                                    </TextBlock>
-                                </StackPanel>
-                                <TextBlock Grid.Column="1" Text="{Binding AmountText}" FontWeight="SemiBold"
-                                           VerticalAlignment="Center" Margin="16,0,0,0">
+                    <!-- Totales del mes -->
+                    <UniformGrid Columns="3" Margin="0,0,0,16">
+                        <Border Style="{StaticResource Card}" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource dashboard.income}" Style="{StaticResource MutedText}" />
+                                <TextBlock Text="{Binding IncomeText}" FontSize="22" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource Brush.Income}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="4,0">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource dashboard.expenses}" Style="{StaticResource MutedText}" />
+                                <TextBlock Text="{Binding ExpenseText}" FontSize="22" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource Brush.Expense}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="8,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource dashboard.balance}" Style="{StaticResource MutedText}" />
+                                <TextBlock Text="{Binding BalanceText}" FontSize="22" FontWeight="SemiBold">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Expense}" />
+                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsIncome}" Value="True">
-                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Income}" />
+                                                <DataTrigger Binding="{Binding IsBalanceNegative}" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Expense}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Border>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
 
-            <!-- Estados: cargando, error, sin datos -->
-            <StackPanel Grid.Row="2" Grid.RowSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <TextBlock Text="{DynamicResource dashboard.loading}"
-                           Style="{StaticResource MutedText}"
-                           Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibility}}" />
-                <StackPanel Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}">
-                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}"
-                               HorizontalAlignment="Center" Margin="0,0,0,12" />
-                    <Button Content="{DynamicResource dashboard.retry}" Command="{Binding LoadCommand}" HorizontalAlignment="Center" />
+                    <!-- Presupuestos y desglose, uno al lado del otro: en escritorio
+                         sobra ancho y asi la lista de movimientos queda mas arriba. -->
+                    <Grid Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- ===== Presupuestos ===== -->
+                        <Border Style="{StaticResource Card}" Padding="0" VerticalAlignment="Top">
+                            <StackPanel>
+                                <Button Style="{StaticResource SectionHeader}" Command="{Binding ToggleBudgetsCommand}"
+                                        ToolTip="{DynamicResource section.toggle}">
+                                    <DockPanel>
+                                        <!-- Flecha: hacia abajo plegada, hacia arriba abierta. -->
+                                        <Path DockPanel.Dock="Right" Data="M0,0 L5,5 L10,0" VerticalAlignment="Center"
+                                              Stroke="{DynamicResource Brush.TextMuted}" StrokeThickness="1.5"
+                                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" RenderTransformOrigin="0.5,0.5">
+                                            <Path.Style>
+                                                <Style TargetType="Path">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsBudgetsExpanded}" Value="True">
+                                                            <Setter Property="RenderTransform">
+                                                                <Setter.Value><RotateTransform Angle="180" /></Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Path.Style>
+                                        </Path>
+                                        <StackPanel>
+                                            <TextBlock Text="{DynamicResource budgets.title}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding BudgetsSummary}" Style="{StaticResource MutedText}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Button>
+
+                                <StackPanel Margin="16,0,16,16"
+                                            Visibility="{Binding IsBudgetsExpanded, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{DynamicResource budgets.empty}" TextWrapping="Wrap">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource MutedText}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasBudgets}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <ItemsControl ItemsSource="{Binding BudgetRows}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type vm:BudgetRow}">
+                                                <StackPanel Margin="0,4,0,12">
+                                                    <!-- El color sigue al tono: verde, ambar al 80 %, rojo al 100 %. -->
+                                                    <StackPanel.Resources>
+                                                        <Style x:Key="ToneText" TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Income}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Tone}" Value="Warning">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Warning}" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Tone}" Value="Over">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Expense}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </StackPanel.Resources>
+                                                    <DockPanel>
+                                                        <TextBlock DockPanel.Dock="Right" Text="{Binding PercentText}"
+                                                                   FontWeight="SemiBold" Style="{StaticResource ToneText}" />
+                                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"
+                                                                   TextTrimming="CharacterEllipsis" />
+                                                    </DockPanel>
+                                                    <TextBlock Text="{Binding CategoryText}" Style="{StaticResource MutedText}"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                    <ProgressBar Value="{Binding BarValue, Mode=OneWay}" Margin="0,6">
+                                                        <ProgressBar.Style>
+                                                            <Style TargetType="ProgressBar" BasedOn="{StaticResource {x:Type ProgressBar}}">
+                                                                <Setter Property="Foreground" Value="{DynamicResource Brush.BarOk}" />
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Tone}" Value="Warning">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource Brush.BarWarning}" />
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Tone}" Value="Over">
+                                                                        <Setter Property="Foreground" Value="{DynamicResource Brush.BarOver}" />
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </ProgressBar.Style>
+                                                    </ProgressBar>
+                                                    <DockPanel>
+                                                        <TextBlock DockPanel.Dock="Right" Text="{Binding StatusText}"
+                                                                   Style="{StaticResource ToneText}" />
+                                                        <TextBlock Text="{Binding SpentOfText}" Style="{StaticResource MutedText}" />
+                                                    </DockPanel>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ===== Gastos por categoria ===== -->
+                        <Border Grid.Column="2" Style="{StaticResource Card}" Padding="0" VerticalAlignment="Top">
+                            <StackPanel>
+                                <Button Style="{StaticResource SectionHeader}" Command="{Binding ToggleBreakdownCommand}"
+                                        ToolTip="{DynamicResource section.toggle}">
+                                    <DockPanel>
+                                        <Path DockPanel.Dock="Right" Data="M0,0 L5,5 L10,0" VerticalAlignment="Center"
+                                              Stroke="{DynamicResource Brush.TextMuted}" StrokeThickness="1.5"
+                                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" RenderTransformOrigin="0.5,0.5">
+                                            <Path.Style>
+                                                <Style TargetType="Path">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsBreakdownExpanded}" Value="True">
+                                                            <Setter Property="RenderTransform">
+                                                                <Setter.Value><RotateTransform Angle="180" /></Setter.Value>
+                                                            </Setter>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Path.Style>
+                                        </Path>
+                                        <StackPanel>
+                                            <TextBlock Text="{DynamicResource dashboard.byCategory}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding BreakdownSummary}" Style="{StaticResource MutedText}"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Button>
+
+                                <StackPanel Margin="16,0,16,16"
+                                            Visibility="{Binding IsBreakdownExpanded, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Text="{DynamicResource dashboard.noExpensesThisMonth}" TextWrapping="Wrap">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource MutedText}">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasExpenses}" Value="True">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <ItemsControl ItemsSource="{Binding BreakdownRows}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type vm:BreakdownRow}">
+                                                <StackPanel Margin="0,4,0,8">
+                                                    <DockPanel>
+                                                        <TextBlock DockPanel.Dock="Right" Text="{Binding AmountText}" FontWeight="SemiBold" />
+                                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                                                    </DockPanel>
+                                                    <!-- Sin tonos: aqui no hay limite que superar, solo un reparto. -->
+                                                    <ProgressBar Value="{Binding BarValue, Mode=OneWay}" Margin="0,6,0,0" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Movimientos del mes -->
+                    <Border Style="{StaticResource Card}" Padding="0">
+                        <ListView ItemsSource="{Binding Transactions}">
+                            <!-- Sin ScrollViewer propio: desplaza la pantalla entera. Con uno
+                                 dentro de otro, la rueda del raton se quedaria en la lista. -->
+                            <ListView.Template>
+                                <ControlTemplate TargetType="ListView">
+                                    <ItemsPresenter Margin="4" />
+                                </ControlTemplate>
+                            </ListView.Template>
+                            <ListView.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:TransactionRow}">
+                                    <!-- Doble clic abre el movimiento para editarlo. El comando
+                                         esta en el ViewModel de la ventana, no en la fila, asi que
+                                         se busca subiendo hasta el ListView. Background Transparent
+                                         hace que el clic cuente en toda la fila, no solo en el texto. -->
+                                    <Grid Margin="12,8" Background="Transparent">
+                                        <Grid.InputBindings>
+                                            <MouseBinding Gesture="LeftDoubleClick"
+                                                          Command="{Binding DataContext.EditTransactionCommand,
+                                                                    RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                          CommandParameter="{Binding}" />
+                                        </Grid.InputBindings>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Description}" FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Style="{StaticResource MutedText}">
+                                                <Run Text="{Binding Category, Mode=OneWay}" />
+                                                <Run Text="·" />
+                                                <Run Text="{Binding DateText, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding AmountText}" FontWeight="SemiBold"
+                                                   VerticalAlignment="Center" Margin="16,0,0,0">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Expense}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsIncome}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource Brush.Income}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Border>
                 </StackPanel>
-                <TextBlock Text="{DynamicResource dashboard.emptyTitle}" Style="{StaticResource MutedText}"
-                           Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
             </StackPanel>
-        </Grid>
+        </ScrollViewer>
     </DockPanel>
 </Window>

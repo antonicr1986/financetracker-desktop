@@ -22,6 +22,13 @@
     <SolidColorBrush x:Key="Brush.Expense" Color="#BE123C" />         <!-- rose-700 -->
     <SolidColorBrush x:Key="Brush.Error" Color="#E11D48" />           <!-- rose-600 -->
 
+    <!-- Presupuestos, como la web: barra 600/500 y texto 700. -->
+    <SolidColorBrush x:Key="Brush.Track" Color="#F1F5F9" />           <!-- slate-100 -->
+    <SolidColorBrush x:Key="Brush.BarOk" Color="#059669" />           <!-- emerald-600 -->
+    <SolidColorBrush x:Key="Brush.BarWarning" Color="#F59E0B" />      <!-- amber-500 -->
+    <SolidColorBrush x:Key="Brush.BarOver" Color="#E11D48" />         <!-- rose-600 -->
+    <SolidColorBrush x:Key="Brush.Warning" Color="#B45309" />         <!-- amber-700 -->
+
     <!-- Como en la web: luna en tema claro (pasar a oscuro), sol en oscuro. -->
     <Visibility x:Key="Visibility.Moon">Visible</Visibility>
     <Visibility x:Key="Visibility.Sun">Collapsed</Visibility>

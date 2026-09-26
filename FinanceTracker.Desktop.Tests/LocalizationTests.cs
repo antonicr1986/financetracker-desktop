@@ -151,7 +151,7 @@ public class LanguageSwitchTests
         {
             Handler = () => [Tx(1, "2026-09-10T00:00:00", 1234.5m, Income)]
         };
-        var vm = new MainViewModel(LoggedInSession(), api, api, new FakeDialogService(), localizer);
+        var vm = new MainViewModel(LoggedInSession(), api, api, api, new FakeDialogService(), localizer);
         await vm.LoadCommand.ExecuteAsync(null);
 
         localizer.SetLanguage(AppLanguage.En);

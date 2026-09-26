@@ -11,6 +11,20 @@ public class AppSettings
 
     /// <summary>"es", "en" o null (sin elegir: el idioma de Windows).</summary>
     public string? Language { get; set; }
+
+    /// <summary>Secciones del panel abiertas. Sin valor, plegadas: asi se entra la primera vez.</summary>
+    public bool? BudgetsExpanded { get; set; }
+    public bool? BreakdownExpanded { get; set; }
+}
+
+/// <summary>Ajustes solo en memoria, para cuando no se quiere tocar el disco (tests).</summary>
+public class MemorySettingsStore : ISettingsStore
+{
+    private string json = "{}";
+
+    public AppSettings Load() => System.Text.Json.JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+
+    public void Save(AppSettings settings) => json = System.Text.Json.JsonSerializer.Serialize(settings);
 }
 
 public interface ISettingsStore

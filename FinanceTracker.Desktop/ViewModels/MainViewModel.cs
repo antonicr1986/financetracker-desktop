@@ -25,8 +25,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly Session session;
     private readonly ITransactionService transactions;
     private readonly ICategoryService categories;
+    private readonly IBudgetService budgets;
     private readonly IDialogService dialogs;
     private readonly Localizer localizer;
+    private readonly ISettingsStore settings;
 
     /// <summary>Como escribir el error actual; ver LoginViewModel.</summary>
     private Func<string>? error;
@@ -35,9 +37,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
         Session session,
         ITransactionService transactions,
         ICategoryService categories,
+        IBudgetService budgets,
         IDialogService dialogs,
-        Localizer localizer)
+        Localizer localizer,
+        ISettingsStore? settings = null)
     {
+        this.settings = settings ?? new MemorySettingsStore();
+
+        // Plegadas la primera vez; despues, como las dejo el usuario.
+        var saved = this.settings.Load();
+        IsBudgetsExpanded = saved.BudgetsExpanded ?? false;
+        IsBreakdownExpanded = saved.BreakdownExpanded ?? false;
+
+        this.budgets = budgets;
         this.session = session;
         this.transactions = transactions;
         this.categories = categories;
@@ -48,6 +60,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private List<TransactionDto> all = [];
     private List<CategoryDto> allCategories = [];
+    private List<BudgetDto> allBudgets = [];
 
     /// <summary>Mes a mostrar tras la proxima carga (el del movimiento recien guardado).</summary>
     private MonthKey? monthAfterLoad;
@@ -57,6 +70,40 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public ObservableCollection<MonthOption> Months { get; } = [];
     public ObservableCollection<TransactionRow> Transactions { get; } = [];
+    public ObservableCollection<BudgetRow> BudgetRows { get; } = [];
+    public ObservableCollection<BreakdownRow> BreakdownRows { get; } = [];
+
+    // Secciones plegables. El resumen de la cabecera se ve siempre, plegada o
+    // no, asi que plegadas ya dicen lo importante sin ocupar sitio.
+    [ObservableProperty] private bool isBudgetsExpanded;
+    [ObservableProperty] private bool isBreakdownExpanded;
+    [ObservableProperty] private string budgetsSummary = "";
+    [ObservableProperty] private string breakdownSummary = "";
+    [ObservableProperty] private bool hasBudgets;
+    [ObservableProperty] private bool hasExpenses;
+
+    [RelayCommand]
+    private void ToggleBudgets()
+    {
+        IsBudgetsExpanded = !IsBudgetsExpanded;
+        SaveSections();
+    }
+
+    [RelayCommand]
+    private void ToggleBreakdown()
+    {
+        IsBreakdownExpanded = !IsBreakdownExpanded;
+        SaveSections();
+    }
+
+    /// <summary>Se guarda al pulsar, junto al tema y el idioma (settings.json).</summary>
+    private void SaveSections()
+    {
+        var current = settings.Load();
+        current.BudgetsExpanded = IsBudgetsExpanded;
+        current.BreakdownExpanded = IsBreakdownExpanded;
+        settings.Save(current);
+    }
 
     [ObservableProperty]
     private MonthOption? selectedMonth;
@@ -96,13 +143,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IsLoading = true;
         try
         {
-            // Las dos peticiones a la vez: no dependen una de otra.
+            // Las tres peticiones a la vez: no dependen unas de otras. Los
+            // presupuestos se recargan con los movimientos porque lo gastado
+            // lo calcula la API: tras guardar un movimiento, cambia.
             var transactionsTask = transactions.GetAllTransactionsAsync();
             var categoriesTask = categories.GetCategoriesAsync();
-            await Task.WhenAll(transactionsTask, categoriesTask);
+            var budgetsTask = budgets.GetBudgetsAsync();
+            await Task.WhenAll(transactionsTask, categoriesTask, budgetsTask);
 
             all = transactionsTask.Result;
             allCategories = categoriesTask.Result;
+            allBudgets = budgetsTask.Result;
             Render();
         }
         catch (ApiException e) when (e.Code == ApiException.SessionExpired)
@@ -154,6 +205,39 @@ public partial class MainViewModel : ObservableObject, IDisposable
         ExpenseText = summary.Expense.ToString("C", localizer.Culture);
         BalanceText = summary.Balance.ToString("C", localizer.Culture);
         IsBalanceNegative = summary.Balance < 0;
+
+        ShowBudgets();
+        ShowBreakdown(ofMonth);
+    }
+
+    private void ShowBudgets()
+    {
+        BudgetRows.Clear();
+        List<BudgetDto> ofMonth = SelectedMonth is null ? [] : Domain.Budgets.OfMonth(allBudgets, SelectedMonth.Key);
+        foreach (var budget in ofMonth)
+            BudgetRows.Add(BudgetRow.From(budget, localizer));
+
+        HasBudgets = ofMonth.Count > 0;
+        BudgetsSummary = HasBudgets
+            ? localizer.T("budgets.summary", Domain.Budgets.WithinLimit(ofMonth), ofMonth.Count)
+            : localizer.T("budgets.none");
+    }
+
+    private void ShowBreakdown(List<TransactionDto> ofMonth)
+    {
+        BreakdownRows.Clear();
+        var totals = Domain.Breakdown.Of(ofMonth, localizer.T("table.noCategory"));
+        var largest = totals.Count > 0 ? totals[0].Amount : 0;
+        foreach (var total in totals)
+            BreakdownRows.Add(new BreakdownRow(
+                total.Name,
+                total.Amount.ToString("C", localizer.Culture),
+                Domain.Breakdown.BarPercent(total.Amount, largest)));
+
+        HasExpenses = totals.Count > 0;
+        BreakdownSummary = HasExpenses
+            ? localizer.T("dashboard.byCategorySummary", totals[0].Name, totals[0].Amount.ToString("C", localizer.Culture))
+            : localizer.T("dashboard.noExpenses");
     }
 
     [RelayCommand(CanExecute = nameof(CanLoad))]

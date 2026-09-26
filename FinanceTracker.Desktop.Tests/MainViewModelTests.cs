@@ -10,7 +10,7 @@ public class MainViewModelTests
 {
     private static MainViewModel Vm(FakeTransactionService api, FakeDialogService? dialogs = null,
         Session? session = null) =>
-        new(session ?? LoggedInSession(), api, api, dialogs ?? new FakeDialogService(), Es);
+        new(session ?? LoggedInSession(), api, api, api, dialogs ?? new FakeDialogService(), Es);
 
     private static List<TransactionDto> SampleData() =>
     [

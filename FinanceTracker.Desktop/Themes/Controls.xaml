@@ -487,6 +487,49 @@
         </Style.Triggers>
     </Style>
 
+    <!-- ===== Barra de progreso (presupuestos, desglose) =====
+         Fina y redondeada, como la de la web (h-2 rounded-full). El color de la
+         barra es el Foreground: cada uso elige el suyo. -->
+    <Style TargetType="ProgressBar">
+        <Setter Property="Height" Value="8" />
+        <Setter Property="Minimum" Value="0" />
+        <Setter Property="Maximum" Value="100" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Track}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Primary}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <!-- PART_Track y PART_Indicator: nombres obligatorios. WPF da al
+                         indicador el ancho que toca segun Value. -->
+                    <Grid>
+                        <Border x:Name="PART_Track" Background="{TemplateBinding Background}" CornerRadius="4" />
+                        <Border x:Name="PART_Indicator" Background="{TemplateBinding Foreground}"
+                                CornerRadius="4" HorizontalAlignment="Left" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Cabecera de una seccion plegable: todo el ancho se pulsa, con la flecha
+         a la derecha. El contenido lo pone cada seccion. -->
+    <Style x:Key="SectionHeader" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" Padding="16,12">
+                        <ContentPresenter HorizontalAlignment="Stretch" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- ===== Separador ===== -->
     <Style TargetType="Separator">
         <Setter Property="Template">

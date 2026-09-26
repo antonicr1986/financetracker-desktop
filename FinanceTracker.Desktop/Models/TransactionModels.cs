@@ -37,3 +37,22 @@ public record CategoryDto(int Id, string Name, TransactionType Type)
 /// UpdateTransactionDto, pero son identicos, asi que aqui hay uno solo.
 /// </summary>
 public record TransactionInput(string Description, decimal Amount, DateTime Date, TransactionType Type, int CategoryId);
+
+/// <summary>
+/// Copia de BudgetDto de la API. SpentAmount, RemainingAmount y
+/// UsagePercentage los calcula la API cruzando el presupuesto con los
+/// movimientos: el cliente no los deriva. CategoryId null significa "todas
+/// las categorias de ese tipo", no "sin categoria".
+/// </summary>
+public record BudgetDto(
+    int Id,
+    string Name,
+    decimal Amount,
+    decimal SpentAmount,
+    decimal RemainingAmount,
+    decimal UsagePercentage,
+    int Month,
+    int Year,
+    TransactionType Type,
+    int? CategoryId,
+    string? CategoryName);

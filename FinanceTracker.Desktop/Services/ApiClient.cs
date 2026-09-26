@@ -7,7 +7,7 @@ using FinanceTracker.Desktop.Models;
 namespace FinanceTracker.Desktop.Services;
 
 /// <summary>Llamadas HTTP a la API de FinanceTracker.</summary>
-public class ApiClient : IAuthService, ITransactionService, ICategoryService
+public class ApiClient : IAuthService, ITransactionService, ICategoryService, IBudgetService
 {
     public const string BaseUrl =
         "https://financetracker-api-cpctbta0gddddge5.belgiumcentral-01.azurewebsites.net/";
@@ -93,6 +93,13 @@ public class ApiClient : IAuthService, ITransactionService, ICategoryService
         using var request = Authorized(HttpMethod.Get, "api/Categories");
         using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
         return await ReadAsync<List<CategoryDto>>(response);
+    }
+
+    public async Task<List<BudgetDto>> GetBudgetsAsync()
+    {
+        using var request = Authorized(HttpMethod.Get, "api/Budgets");
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+        return await ReadAsync<List<BudgetDto>>(response);
     }
 
     private HttpRequestMessage Authorized(HttpMethod method, string path)
