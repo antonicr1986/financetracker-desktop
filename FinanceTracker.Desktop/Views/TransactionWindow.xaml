@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:FinanceTracker.Desktop.ViewModels"
+        xmlns:controls="clr-namespace:FinanceTracker.Desktop.Controls"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:TransactionEditorViewModel}"
         Title="{Binding Title}" Width="440" SizeToContent="Height" ResizeMode="NoResize"
@@ -20,23 +21,9 @@
         </StackPanel>
 
         <TextBlock Text="{DynamicResource dialog.concept}" Margin="0,0,0,4" />
-        <Grid Margin="0,0,0,12">
-            <TextBox x:Name="DescriptionInput"
-                     Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="150" />
-            <!-- Texto de ayuda mientras la caja esta vacia, como en el login. -->
-            <TextBlock Text="{DynamicResource dialog.conceptPlaceholder}">
-                <TextBlock.Style>
-                    <Style TargetType="TextBlock" BasedOn="{StaticResource Placeholder}">
-                        <Setter Property="Visibility" Value="Collapsed" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Text.Length, ElementName=DescriptionInput}" Value="0">
-                                <Setter Property="Visibility" Value="Visible" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TextBlock.Style>
-            </TextBlock>
-        </Grid>
+        <TextBox x:Name="DescriptionInput"
+                 Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" MaxLength="150"
+                 controls:Hint.Text="{DynamicResource dialog.conceptPlaceholder}" Margin="0,0,0,12" />
 
         <Grid Margin="0,0,0,12">
             <Grid.ColumnDefinitions>

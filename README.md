@@ -79,6 +79,7 @@ closing the app.
     FinanceTracker.Desktop/
       Domain/       Month grouping, totals and form rules — no WPF, plain C#
       Localization/ Texts in both languages, the Localizer and the language switch
+      Controls/     Hint.Text, the text boxes' placeholder
       Models/       The API DTOs, as records
       Services/     HTTP client, session, dialogs and the error type
       ViewModels/   The logic of each screen — no reference to any control
@@ -117,13 +118,21 @@ the sentence to show — the same rule as the web and Android clients.
 
 **The password is the one exception to "no code-behind".** WPF does not allow
 binding `PasswordBox.Password`, on purpose, so the password never sits in a
-bindable property. The window passes it to the ViewModel in a short handler,
-which also shows or hides the field's hint for the same reason.
+bindable property. The window passes it to the ViewModel in a two-line
+handler.
 
-**WPF has no placeholder.** There is no equivalent of HTML's `placeholder`
-attribute, so each hint is a grey `TextBlock` laid over its box in the same
-`Grid` cell, with `IsHitTestVisible="False"` so clicks go through to the box,
-and a `DataTrigger` on `Text.Length` that shows it only while the box is empty.
+**WPF has no placeholder, so there is a small one.** `Controls/Hint.cs` is an
+attached property — one that can be set on a control that does not have it —
+used as `<TextBox controls:Hint.Text="you@email.com" />`. The text box and
+password box templates draw it inside the box, in the same cell as the real
+text. Where text starts inside a box is not a fixed number — WPF leaves its own
+gap before the caret, and it changes with the Windows display scale — so
+instead of guessing it, `Hint` measures where the first character would go
+with `GetRectFromCharacterIndex(0)` and places the hint exactly there. Two
+earlier versions guessed the gap and the caret landed between the hint's first
+and second letters. Since a
+`PasswordBox` does not expose its content to triggers, the attached property
+also keeps a `Hint.IsEmpty` flag up to date from `PasswordChanged`.
 
 **A 401 means two different things.** On sign-in there is no session yet, so
 it is a wrong password. On the dashboard there was a token and the API refused

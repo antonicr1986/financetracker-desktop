@@ -82,6 +82,7 @@ aplicación.
     FinanceTracker.Desktop/
       Domain/       Agrupación por meses, totales y reglas del formulario — sin WPF
       Localization/ Textos en los dos idiomas, el Localizer y el cambio de idioma
+      Controls/     Hint.Text, el texto de ayuda de las cajas
       Models/       Los DTOs de la API, como records
       Services/     Cliente HTTP, sesión, diálogos y el tipo de error
       ViewModels/   La lógica de cada pantalla, sin referencias a controles
@@ -122,14 +123,20 @@ frase que se muestra — la misma regla que en la web y en Android.
 **La contraseña es la única excepción a "nada en el code-behind".** WPF no
 permite hacer binding de `PasswordBox.Password`, a propósito, para que la
 contraseña no quede en una propiedad enlazable. La ventana se la pasa al
-ViewModel en un manejador corto, que por el mismo motivo también muestra u
-oculta el texto de ayuda de esa caja.
+ViewModel en un manejador de dos líneas.
 
-**WPF no tiene placeholder.** No hay un equivalente al atributo `placeholder`
-de HTML, así que cada texto de ayuda es un `TextBlock` gris colocado encima de
-su caja en la misma celda de un `Grid`, con `IsHitTestVisible="False"` para que
-los clics lleguen a la caja, y un `DataTrigger` sobre `Text.Length` que solo lo
-muestra mientras la caja está vacía.
+**WPF no tiene placeholder, así que hay uno pequeño.** `Controls/Hint.cs` es una
+propiedad adjunta — una propiedad que se puede poner en un control que no la
+tiene — y se usa como `<TextBox controls:Hint.Text="tu@correo.com" />`. Las
+plantillas de las cajas de texto y de contraseña la pintan dentro de la caja,
+en la misma celda que el texto real. Dónde empieza el texto dentro de una caja
+no es un número fijo — WPF deja su propio hueco antes del cursor, y cambia con
+la escala de pantalla de Windows —, así que en vez de adivinarlo, `Hint` mide
+dónde iría el primer carácter con `GetRectFromCharacterIndex(0)` y coloca la
+ayuda justo ahí. Dos versiones anteriores adivinaban ese hueco y el cursor
+quedaba entre la primera y la segunda letra de la ayuda. Como `PasswordBox` no deja ver su
+contenido a los triggers, la propiedad adjunta también mantiene al día un
+indicador `Hint.IsEmpty` desde `PasswordChanged`.
 
 **Un 401 significa dos cosas distintas.** En el acceso todavía no hay sesión,
 así que es una contraseña incorrecta. En el panel había un token y la API lo
