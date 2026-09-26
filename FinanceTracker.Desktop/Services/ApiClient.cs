@@ -7,7 +7,7 @@ using FinanceTracker.Desktop.Models;
 namespace FinanceTracker.Desktop.Services;
 
 /// <summary>Llamadas HTTP a la API de FinanceTracker.</summary>
-public class ApiClient : IAuthService, ITransactionService
+public class ApiClient : IAuthService, ITransactionService, ICategoryService
 {
     public const string BaseUrl =
         "https://financetracker-api-cpctbta0gddddge5.belgiumcentral-01.azurewebsites.net/";
@@ -64,6 +64,37 @@ public class ApiClient : IAuthService, ITransactionService
         return all;
     }
 
+    public async Task<TransactionDto> CreateTransactionAsync(TransactionInput input)
+    {
+        using var request = Authorized(HttpMethod.Post, "api/Transactions");
+        request.Content = JsonContent.Create(input);
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+        return await ReadAsync<TransactionDto>(response);
+    }
+
+    // PUT y DELETE responden 204 sin cuerpo: no se intenta leer JSON, porque
+    // fallaria y convertiria cada exito en un error.
+    public async Task UpdateTransactionAsync(int id, TransactionInput input)
+    {
+        using var request = Authorized(HttpMethod.Put, $"api/Transactions/{id}");
+        request.Content = JsonContent.Create(input);
+        using var _ = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+    }
+
+    public async Task DeleteTransactionAsync(int id)
+    {
+        using var request = Authorized(HttpMethod.Delete, $"api/Transactions/{id}");
+        using var _ = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+    }
+
+    /// <summary>Este endpoint devuelve un array normal, no un PagedResult.</summary>
+    public async Task<List<CategoryDto>> GetCategoriesAsync()
+    {
+        using var request = Authorized(HttpMethod.Get, "api/Categories");
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+        return await ReadAsync<List<CategoryDto>>(response);
+    }
+
     private HttpRequestMessage Authorized(HttpMethod method, string path)
     {
         var request = new HttpRequestMessage(method, path);
@@ -94,6 +125,10 @@ public class ApiClient : IAuthService, ITransactionService
         {
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 throw new ApiException(unauthorizedCode);
+
+            // El 404 de editar o borrar llega sin cuerpo: el movimiento ya no existe.
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                throw new ApiException(ApiException.NotFound);
 
             throw new ApiException(await ReadErrorCodeAsync(response));
         }

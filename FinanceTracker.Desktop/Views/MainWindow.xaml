@@ -49,8 +49,13 @@
 
             <!-- Selector de mes y recarga -->
             <DockPanel Grid.Row="0" Margin="0,0,0,16">
-                <Button DockPanel.Dock="Right" Content="Recargar" Command="{Binding LoadCommand}"
-                        Padding="12,4" />
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Recargar" Command="{Binding LoadCommand}"
+                            Padding="12,4" Margin="0,0,8,0" />
+                    <!-- Accion principal en slate-900 con texto blanco, como la web. -->
+                    <Button Content="+ Nuevo movimiento" Command="{Binding NewTransactionCommand}"
+                            Padding="12,4" Background="#0F172A" Foreground="White" BorderBrush="#0F172A" />
+                </StackPanel>
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Mes" VerticalAlignment="Center" Margin="0,0,8,0" />
                     <ComboBox ItemsSource="{Binding Months}" SelectedItem="{Binding SelectedMonth}"
@@ -101,7 +106,17 @@
                           HorizontalContentAlignment="Stretch">
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type vm:TransactionRow}">
-                            <Grid Margin="12,8">
+                            <!-- Doble clic abre el movimiento para editarlo. El comando
+                                 esta en el ViewModel de la ventana, no en la fila, asi que
+                                 se busca subiendo hasta el ListView. Background Transparent
+                                 hace que el clic cuente en toda la fila, no solo en el texto. -->
+                            <Grid Margin="12,8" Background="Transparent">
+                                <Grid.InputBindings>
+                                    <MouseBinding Gesture="LeftDoubleClick"
+                                                  Command="{Binding DataContext.EditTransactionCommand,
+                                                            RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                  CommandParameter="{Binding}" />
+                                </Grid.InputBindings>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />

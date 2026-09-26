@@ -88,4 +88,62 @@ public class ApiClientTests
 
         Assert.Equal(ApiException.InvalidCredentials, e.Code);
     }
+
+    private static readonly Models.TransactionInput Input =
+        new("Cena", 30.5m, new DateTime(2026, 9, 20), Models.TransactionType.Expense, 3);
+
+    [Fact]
+    public async Task Create_PostsTheBodyTheApiExpects()
+    {
+        string? body = null;
+        var handler = new FakeHandler(request =>
+        {
+            body = request.Content!.ReadAsStringAsync().Result;
+            return Json("""{"id":1,"description":"Cena","amount":30.5,"date":"2026-09-20T00:00:00","type":"Expense","categoryId":3,"categoryName":"Comida"}""",
+                HttpStatusCode.Created);
+        });
+
+        var created = await Client(handler).CreateTransactionAsync(Input);
+
+        var request = Assert.Single(handler.Requests);
+        Assert.Equal(HttpMethod.Post, request.Method);
+        Assert.Equal("/api/Transactions", request.RequestUri!.AbsolutePath);
+        Assert.Equal("""{"description":"Cena","amount":30.5,"date":"2026-09-20T00:00:00","type":"Expense","categoryId":3}""", body);
+        Assert.Equal(1, created.Id);
+    }
+
+    [Fact]
+    public async Task Update_AcceptsA204WithNoBody()
+    {
+        var handler = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
+
+        await Client(handler).UpdateTransactionAsync(5, Input);
+
+        var request = Assert.Single(handler.Requests);
+        Assert.Equal(HttpMethod.Put, request.Method);
+        Assert.Equal("/api/Transactions/5", request.RequestUri!.AbsolutePath);
+    }
+
+    [Fact]
+    public async Task Delete_AcceptsA204_AndA404MeansNotFound()
+    {
+        var ok = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
+        await Client(ok).DeleteTransactionAsync(5);
+        Assert.Equal(HttpMethod.Delete, Assert.Single(ok.Requests).Method);
+
+        var missing = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
+        var e = await Assert.ThrowsAsync<ApiException>(() => Client(missing).DeleteTransactionAsync(5));
+        Assert.Equal(ApiException.NotFound, e.Code);
+    }
+
+    [Fact]
+    public async Task Save_CategoryTypeMismatch_KeepsTheApiCode()
+    {
+        var handler = new FakeHandler(_ =>
+            Json("""{"code":"category_type_mismatch","detail":"..."}""", HttpStatusCode.BadRequest));
+
+        var e = await Assert.ThrowsAsync<ApiException>(() => Client(handler).CreateTransactionAsync(Input));
+
+        Assert.Equal(ApiException.CategoryTypeMismatch, e.Code);
+    }
 }

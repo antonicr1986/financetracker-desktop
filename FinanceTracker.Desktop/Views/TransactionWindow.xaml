@@ -1,0 +1,69 @@
+<Window x:Class="FinanceTracker.Desktop.Views.TransactionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:FinanceTracker.Desktop.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:TransactionEditorViewModel}"
+        Title="{Binding Title}" Width="440" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+    </Window.Resources>
+
+    <StackPanel Margin="24">
+        <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,16" />
+
+        <!-- Tipo: dos RadioButton enlazados a propiedades opuestas del ViewModel. -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+            <RadioButton Content="Gasto" IsChecked="{Binding IsExpense}" Margin="0,0,16,0" />
+            <RadioButton Content="Ingreso" IsChecked="{Binding IsIncome}" />
+        </StackPanel>
+
+        <TextBlock Text="Descripción" Margin="0,0,0,4" />
+        <TextBox x:Name="DescriptionInput"
+                 Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+                 MaxLength="150" Padding="6" Margin="0,0,0,12" />
+
+        <Grid Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="Importe (€)" Margin="0,0,0,4" />
+                <TextBox Text="{Binding AmountText, UpdateSourceTrigger=PropertyChanged}" Padding="6" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="Fecha" Margin="0,0,0,4" />
+                <DatePicker SelectedDate="{Binding Date}" Padding="4" />
+            </StackPanel>
+        </Grid>
+
+        <TextBlock Text="Categoría" Margin="0,0,0,4" />
+        <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}"
+                  DisplayMemberPath="Name" Padding="6" Margin="0,0,0,12" />
+
+        <TextBlock Text="{Binding ErrorMessage}" Foreground="#E11D48" TextWrapping="Wrap"
+                   Margin="0,0,0,12"
+                   Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}" />
+
+        <DockPanel>
+            <!-- Borrar solo existe al editar. -->
+            <Button DockPanel.Dock="Left" Content="Borrar" Command="{Binding DeleteCommand}"
+                    Foreground="#E11D48" Padding="16,6"
+                    Visibility="{Binding IsEdit, Converter={StaticResource BoolToVisibility}}" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <!-- IsCancel: el propio WPF cierra el dialogo con Escape o al
+                     pulsarlo, sin comando. IsDefault: Enter guarda. -->
+                <Button Content="Cancelar" IsCancel="True"
+                        Padding="16,6" Margin="0,0,8,0" />
+                <Button Content="Guardar" Command="{Binding SaveCommand}" IsDefault="True"
+                        Padding="16,6" />
+            </StackPanel>
+        </DockPanel>
+    </StackPanel>
+</Window>

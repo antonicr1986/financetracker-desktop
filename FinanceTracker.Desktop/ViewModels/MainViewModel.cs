@@ -14,13 +14,21 @@ public record MonthOption(MonthKey Key, string Label);
 /// Panel principal: selector de mes, totales del mes y lista de movimientos.
 /// Se descarga todo una vez y el cambio de mes se resuelve en memoria.
 /// </summary>
-public partial class MainViewModel(Session session, ITransactionService transactions) : ObservableObject
+public partial class MainViewModel(
+    Session session,
+    ITransactionService transactions,
+    ICategoryService categories,
+    IDialogService dialogs) : ObservableObject
 {
     // Siempre en euros y con formato español, como la web y Android. El
     // cambio de idioma llegara en un paso posterior.
     public static readonly CultureInfo Culture = CultureInfo.GetCultureInfo("es-ES");
 
     private List<TransactionDto> all = [];
+    private List<CategoryDto> allCategories = [];
+
+    /// <summary>Mes a mostrar tras la proxima carga (el del movimiento recien guardado).</summary>
+    private MonthKey? monthAfterLoad;
 
     public string Greeting => $"Hola, {session.User?.Name}";
     public string Email => session.User?.Email ?? "";
@@ -39,6 +47,7 @@ public partial class MainViewModel(Session session, ITransactionService transact
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasData))]
     [NotifyCanExecuteChangedFor(nameof(LoadCommand))]
+    [NotifyCanExecuteChangedFor(nameof(NewTransactionCommand))]
     private bool isLoading;
 
     [ObservableProperty]
@@ -65,7 +74,13 @@ public partial class MainViewModel(Session session, ITransactionService transact
         IsLoading = true;
         try
         {
-            all = await transactions.GetAllTransactionsAsync();
+            // Las dos peticiones a la vez: no dependen una de otra.
+            var transactionsTask = transactions.GetAllTransactionsAsync();
+            var categoriesTask = categories.GetCategoriesAsync();
+            await Task.WhenAll(transactionsTask, categoriesTask);
+
+            all = transactionsTask.Result;
+            allCategories = categoriesTask.Result;
             Render();
         }
         catch (ApiException e) when (e.Code == ApiException.SessionExpired)
@@ -87,7 +102,8 @@ public partial class MainViewModel(Session session, ITransactionService transact
 
     private void Render()
     {
-        var previous = SelectedMonth?.Key;
+        var previous = monthAfterLoad ?? SelectedMonth?.Key;
+        monthAfterLoad = null;
 
         Months.Clear();
         foreach (var key in Domain.Months.Available(all))
@@ -116,6 +132,37 @@ public partial class MainViewModel(Session session, ITransactionService transact
         ExpenseText = summary.Expense.ToString("C", Culture);
         BalanceText = summary.Balance.ToString("C", Culture);
         IsBalanceNegative = summary.Balance < 0;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanLoad))]
+    private Task NewTransactionAsync() =>
+        OpenEditorAsync(new TransactionEditorViewModel(transactions, dialogs, allCategories));
+
+    /// <summary>Doble clic en un movimiento: el mismo formulario, relleno.</summary>
+    [RelayCommand]
+    private Task EditTransactionAsync(TransactionRow? row) =>
+        row is null
+            ? Task.CompletedTask
+            : OpenEditorAsync(new TransactionEditorViewModel(transactions, dialogs, allCategories, row.Source));
+
+    private async Task OpenEditorAsync(TransactionEditorViewModel editor)
+    {
+        var changed = dialogs.ShowTransactionEditor(editor);
+
+        if (editor.SessionHasExpired)
+        {
+            session.Clear();
+            SessionExpired?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
+        if (!changed) return;
+
+        // Tras guardar se muestra el mes del movimiento, aunque sea otro.
+        if (editor.SavedDate is { } savedDate) monthAfterLoad = MonthKey.Of(savedDate);
+
+        // Se recarga todo: es lo mas simple y garantiza ver lo mismo que la API.
+        await LoadAsync();
     }
 
     [RelayCommand]

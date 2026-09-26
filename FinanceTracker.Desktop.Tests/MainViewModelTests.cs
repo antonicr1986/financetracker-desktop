@@ -8,12 +8,9 @@ namespace FinanceTracker.Desktop.Tests;
 
 public class MainViewModelTests
 {
-    private class FakeTransactionService : ITransactionService
-    {
-        public Func<List<TransactionDto>> Handler { get; set; } = () => [];
-
-        public Task<List<TransactionDto>> GetAllTransactionsAsync() => Task.FromResult(Handler());
-    }
+    private static MainViewModel Vm(FakeTransactionService api, FakeDialogService? dialogs = null,
+        Session? session = null) =>
+        new(session ?? LoggedInSession(), api, api, dialogs ?? new FakeDialogService());
 
     private static List<TransactionDto> SampleData() =>
     [
@@ -25,7 +22,7 @@ public class MainViewModelTests
     [Fact]
     public void Greeting_UsesUserName()
     {
-        var vm = new MainViewModel(LoggedInSession(), new FakeTransactionService());
+        var vm = Vm(new FakeTransactionService());
 
         Assert.Equal("Hola, Antonio", vm.Greeting);
     }
@@ -33,7 +30,7 @@ public class MainViewModelTests
     [Fact]
     public async Task Load_SelectsNewestMonthAndShowsItsTotals()
     {
-        var vm = new MainViewModel(LoggedInSession(), new FakeTransactionService { Handler = SampleData });
+        var vm = Vm(new FakeTransactionService { Handler = SampleData });
 
         await vm.LoadCommand.ExecuteAsync(null);
 
@@ -49,7 +46,7 @@ public class MainViewModelTests
     [Fact]
     public async Task ChangingMonth_UpdatesListAndTotals()
     {
-        var vm = new MainViewModel(LoggedInSession(), new FakeTransactionService { Handler = SampleData });
+        var vm = Vm(new FakeTransactionService { Handler = SampleData });
         await vm.LoadCommand.ExecuteAsync(null);
 
         vm.SelectedMonth = vm.Months.Single(m => m.Label == "Agosto 2026");
@@ -61,7 +58,7 @@ public class MainViewModelTests
     [Fact]
     public async Task Load_WithNoTransactions_ShowsEmptyState()
     {
-        var vm = new MainViewModel(LoggedInSession(), new FakeTransactionService());
+        var vm = Vm(new FakeTransactionService());
 
         await vm.LoadCommand.ExecuteAsync(null);
 
@@ -77,7 +74,7 @@ public class MainViewModelTests
         {
             Handler = () => throw new ApiException(ApiException.NetworkError)
         };
-        var vm = new MainViewModel(session, service);
+        var vm = Vm(service, session: session);
 
         await vm.LoadCommand.ExecuteAsync(null);
 
@@ -94,7 +91,7 @@ public class MainViewModelTests
         {
             Handler = () => throw new ApiException(ApiException.SessionExpired)
         };
-        var vm = new MainViewModel(session, service);
+        var vm = Vm(service, session: session);
         var raised = false;
         vm.SessionExpired += (_, _) => raised = true;
 
@@ -108,7 +105,7 @@ public class MainViewModelTests
     public void Logout_ClearsSessionAndRaisesEvent()
     {
         var session = LoggedInSession();
-        var vm = new MainViewModel(session, new FakeTransactionService());
+        var vm = Vm(new FakeTransactionService(), session: session);
         var raised = false;
         vm.LoggedOut += (_, _) => raised = true;
 
@@ -116,5 +113,58 @@ public class MainViewModelTests
 
         Assert.False(session.IsActive);
         Assert.True(raised);
+    }
+
+    [Fact]
+    public async Task SavingANewTransaction_ReloadsAndShowsItsMonth()
+    {
+        var api = new FakeTransactionService { Handler = SampleData };
+        var dialogs = new FakeDialogService();
+        var vm = Vm(api, dialogs);
+        await vm.LoadCommand.ExecuteAsync(null);
+
+        // El "usuario" guarda un movimiento de agosto estando en septiembre.
+        dialogs.Editor = editor =>
+        {
+            editor.Description = "Cena";
+            editor.AmountText = "30";
+            editor.Date = new DateTime(2026, 8, 20);
+            editor.SaveCommand.Execute(null);
+            return true;
+        };
+        api.Categories = [new CategoryDto(1, "Comida", Expense)];
+        await vm.LoadCommand.ExecuteAsync(null); // recoge la categoria nueva
+
+        await vm.NewTransactionCommand.ExecuteAsync(null);
+
+        Assert.Single(api.Created);
+        Assert.Equal(3, api.LoadCount);
+        Assert.Equal("Agosto 2026", vm.SelectedMonth?.Label);
+    }
+
+    [Fact]
+    public async Task CancellingTheEditor_DoesNotReload()
+    {
+        var api = new FakeTransactionService { Handler = SampleData };
+        var vm = Vm(api);
+        await vm.LoadCommand.ExecuteAsync(null);
+
+        await vm.NewTransactionCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, api.LoadCount);
+    }
+
+    [Fact]
+    public async Task EditingARow_OpensTheEditorPrefilled()
+    {
+        var api = new FakeTransactionService { Handler = SampleData };
+        var dialogs = new FakeDialogService();
+        var vm = Vm(api, dialogs);
+        await vm.LoadCommand.ExecuteAsync(null);
+
+        await vm.EditTransactionCommand.ExecuteAsync(vm.Transactions.First());
+
+        Assert.True(dialogs.LastEditor?.IsEdit);
+        Assert.Equal("Compra", dialogs.LastEditor?.Description);
     }
 }

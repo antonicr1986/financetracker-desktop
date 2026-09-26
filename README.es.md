@@ -33,12 +33,19 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
 - **Totales del mes elegido** — ingresos, gastos y balance — calculados en el
   cliente sobre todo el historial, como en los otros clientes.
 - **Lista de movimientos** con categoría, fecha e importe con signo y color.
+- **Alta de movimientos** desde el panel, en un diálogo con tipo, descripción,
+  importe, fecha y categoría. Solo se ofrecen las categorías del tipo elegido:
+  la API rechaza un gasto con una categoría de ingreso. El importe acepta coma
+  o punto para los decimales.
+- **Edición y borrado de movimientos**: doble clic lo abre relleno en el mismo
+  diálogo; borrar pide confirmación antes. Tras guardar, el panel se recarga y
+  muestra el mes de ese movimiento.
 - **Estados de carga, error y vacío**, con botón de reintentar, y un mensaje
   claro cuando la sesión caduca en lugar de volver al acceso sin explicación.
 
 ## 🗺️ Lo siguiente
 
-Alta y edición de movimientos, presupuestos,
+Presupuestos, desglose por categoría,
 temas claro y oscuro, español e inglés, y una sesión que sobreviva a cerrar la
 aplicación.
 
@@ -52,9 +59,9 @@ aplicación.
 ## 📁 Estructura
 
     FinanceTracker.Desktop/
-      Domain/       Agrupación por meses y totales — sin WPF, C# normal
+      Domain/       Agrupación por meses, totales y reglas del formulario — sin WPF
       Models/       Los DTOs de la API, como records
-      Services/     Cliente HTTP, sesión y el tipo de error
+      Services/     Cliente HTTP, sesión, diálogos y el tipo de error
       ViewModels/   La lógica de cada pantalla, sin referencias a controles
       Views/        Ventanas XAML, con el code-behind casi vacío
       App.xaml.cs   Crea los servicios y decide qué ventana se ve
@@ -67,6 +74,17 @@ aplicación.
 (`LoggedIn`, `LoggedOut`) y es `App.xaml.cs` quien navega. Así los ViewModels
 no tienen ninguna referencia a ventanas de WPF y se pueden probar como clases
 normales.
+
+**Los ViewModels tampoco abren diálogos.** Preguntar "¿seguro?" con
+`MessageBox` desde un ViewModel lo haría imposible de probar. Se lo piden a un
+`IDialogService`: la implementación de la aplicación abre ventanas de verdad, y
+la de las pruebas responde sí o no a demanda, así que "el usuario dijo que no y
+no se borró nada" es una prueba unitaria normal.
+
+**Un solo diálogo para crear y editar.** `TransactionEditorViewModel` recibe el
+movimiento existente o nada. La misma ventana, la misma validación y los mismos
+errores de la API, con el botón de borrar solo al editar — como en la web y en
+Android.
 
 **El ViewModel de acceso depende de una interfaz, no del cliente HTTP.**
 `LoginViewModel` recibe un `IAuthService`. La aplicación le pasa el `ApiClient`
@@ -98,16 +116,26 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 20 pruebas, sin ventanas ni red.
+`dotnet test` — 49 pruebas, sin ventanas ni red.
 
-Once cubren los ViewModels: el acceso (campos vacíos, éxito, contraseña
-incorrecta, sin conexión) y el panel (se elige el mes más reciente, cambio de
-mes, sin datos, errores, sesión caducada, cierre de sesión). Cinco cubren la
-lógica de meses, incluido el día 1 y una lista que cruza de año. Cuatro
-comprueban el cliente HTTP contra un `HttpMessageHandler` falso: se piden todas
-las páginas con el token y `pageSize=100`, con una sola página no se pide una
-segunda, y un 401 se convierte en "contraseña incorrecta" o "sesión caducada"
-según la llamada.
+Veintitrés cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
+incorrecta, sin conexión. Panel: se elige el mes más reciente, cambio de mes,
+sin datos, errores, sesión caducada, cierre de sesión, y que al guardar se
+recarga y salta al mes del movimiento mientras que cancelar no recarga. El
+diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por
+tipo, el cuerpo exacto que se envía, edición por id, borrar pregunta antes y no
+hace nada si se dice que no, y los errores de la API dejan el diálogo abierto.
+
+Trece cubren las reglas del formulario (importes con coma o punto, el
+separador de miles rechazado por ambiguo, el orden en que se avisan los
+problemas) y cinco la lógica de meses, incluido el día 1 y una lista que cruza
+de año.
+
+Ocho comprueban el cliente HTTP contra un `HttpMessageHandler` falso: se piden
+todas las páginas con el token y `pageSize=100`, el JSON exacto de un
+movimiento nuevo, `PUT` y `DELETE` respondidos con 204 sin cuerpo, un 404 y un
+`category_type_mismatch` convertidos en su código, y un 401 que es "contraseña
+incorrecta" o "sesión caducada" según la llamada.
 
 ## 🔄 Automatización
 

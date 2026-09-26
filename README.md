@@ -32,12 +32,19 @@ database wake up — the window says so while it waits.
 - **Totals for the selected month** — income, expenses and balance — derived
   on the client from the full history, as in the other clients.
 - **Transaction list** with category, date and a signed, coloured amount.
+- **Recording a transaction** from the dashboard, in a dialog with the type,
+  description, amount, date and category. Only categories of the chosen type
+  are offered: the API rejects an expense filed under an income category. The
+  amount accepts a comma or a dot for decimals.
+- **Editing and deleting a transaction**: a double click opens it prefilled in
+  the same dialog; deleting asks for confirmation first. After saving, the
+  dashboard reloads and shows the month of that transaction.
 - **Loading, error and empty states**, with a retry button, and a clear
   message when the session expires instead of a silent return to sign-in.
 
 ## 🗺️ Next
 
-Recording and editing transactions, budgets,
+Budgets, a breakdown by category,
 light and dark themes, Spanish and English, and a session that survives
 closing the app.
 
@@ -51,9 +58,9 @@ closing the app.
 ## 📁 Project structure
 
     FinanceTracker.Desktop/
-      Domain/       Month grouping and totals — no WPF, plain C#
+      Domain/       Month grouping, totals and form rules — no WPF, plain C#
       Models/       The API DTOs, as records
-      Services/     HTTP client, session and the error type
+      Services/     HTTP client, session, dialogs and the error type
       ViewModels/   The logic of each screen — no reference to any control
       Views/        XAML windows, with almost empty code-behind
       App.xaml.cs   Creates the services and decides which window is shown
@@ -65,6 +72,17 @@ closing the app.
 **ViewModels do not open windows.** A ViewModel raises an event (`LoggedIn`,
 `LoggedOut`) and `App.xaml.cs` does the navigation. That keeps the ViewModels
 free of any reference to WPF windows, so they can be tested as plain classes.
+
+**ViewModels do not open dialogs either.** Asking "are you sure?" with
+`MessageBox` from a ViewModel would make it untestable. They ask an
+`IDialogService` instead: the app's implementation opens real windows, and the
+tests' one answers yes or no on command, so "the user said no, nothing was
+deleted" is a plain unit test.
+
+**One dialog for creating and editing.** `TransactionEditorViewModel` receives
+the existing transaction or nothing. The same window, the same validation and
+the same API errors, with the delete button shown only when editing — as in the
+web and Android clients.
 
 **The sign-in ViewModel depends on an interface, not on the HTTP client.**
 `LoginViewModel` receives an `IAuthService`. The app passes the real
@@ -96,16 +114,26 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 20 tests, with no window and no network.
+`dotnet test` — 49 tests, with no window and no network.
 
-Eleven cover the ViewModels: sign-in (empty fields, success, wrong password,
-no connection) and the dashboard (newest month selected, changing month,
-empty data, errors, expired session, signing out). Five cover the month
-logic, including the 1st of a month and a list that crosses a year. Four check
-the HTTP client against a fake `HttpMessageHandler`: every page is requested
-with the token and `pageSize=100`, a single page is never followed by a second
-request, and a 401 becomes "wrong password" or "session expired" depending on
-the call.
+Twenty-three cover the ViewModels. Sign-in: empty fields, success, wrong
+password, no connection. Dashboard: newest month selected, changing month,
+empty data, errors, expired session, signing out, and that saving reloads and
+jumps to the saved transaction's month while cancelling does not reload. The
+transaction dialog: defaults for a new one, categories filtered by type, the
+exact input sent, editing by id, delete asking first and doing nothing on "no",
+and API errors keeping the dialog open.
+
+Thirteen cover the form rules (amounts with a comma or a dot, a thousands
+separator rejected as ambiguous, the order in which problems are reported) and
+five the month logic, including the 1st of a month and a list that crosses a
+year.
+
+Eight check the HTTP client against a fake `HttpMessageHandler`: every page is
+requested with the token and `pageSize=100`, the exact JSON body of a new
+transaction, `PUT` and `DELETE` answered with a 204 and no body, a 404 and a
+`category_type_mismatch` turned into their codes, and a 401 becoming "wrong
+password" or "session expired" depending on the call.
 
 ## 🔄 Automation
 

@@ -14,6 +14,7 @@ public partial class App : Application
 {
     private readonly Session session = new();
     private readonly ApiClient api;
+    private readonly DialogService dialogs = new();
 
     public App()
     {
@@ -43,7 +44,7 @@ public partial class App : Application
 
     private void ShowMain()
     {
-        var viewModel = new MainViewModel(session, api);
+        var viewModel = new MainViewModel(session, api, api, dialogs);
         var window = new Views.MainWindow(viewModel);
 
         viewModel.LoggedOut += (_, _) =>

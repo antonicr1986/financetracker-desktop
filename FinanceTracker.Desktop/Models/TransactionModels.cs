@@ -25,3 +25,11 @@ public record TransactionDto(
     string CategoryName);
 
 public record PagedResult<T>(List<T> Items, int TotalCount, int PageNumber, int PageSize, int TotalPages);
+
+public record CategoryDto(int Id, string Name, TransactionType Type);
+
+/// <summary>
+/// Cuerpo de alta y de edicion: la API tiene CreateTransactionDto y
+/// UpdateTransactionDto, pero son identicos, asi que aqui hay uno solo.
+/// </summary>
+public record TransactionInput(string Description, decimal Amount, DateTime Date, TransactionType Type, int CategoryId);
