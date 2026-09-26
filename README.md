@@ -153,7 +153,7 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 58 tests, with no window and no network.
+`dotnet test` — 60 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -170,9 +170,10 @@ saved value counting as no choice, and the settings file round-tripping and
 falling back to defaults when missing or broken.
 
 Thirteen cover the form rules (amounts with a comma or a dot, a thousands
-separator rejected as ambiguous, the order in which problems are reported) and
+separator rejected as ambiguous, the order in which problems are reported),
 five the month logic, including the 1st of a month and a list that crosses a
-year.
+year, and two that a month and a category show their name in a closed
+drop-down rather than the record's default dump.
 
 Eight check the HTTP client against a fake `HttpMessageHandler`: every page is
 requested with the token and `pageSize=100`, the exact JSON body of a new

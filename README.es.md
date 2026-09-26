@@ -160,7 +160,7 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 58 pruebas, sin ventanas ni red.
+`dotnet test` — 60 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -178,8 +178,9 @@ y se lee bien y vuelve a los valores por defecto si falta o está roto.
 
 Trece cubren las reglas del formulario (importes con coma o punto, el
 separador de miles rechazado por ambiguo, el orden en que se avisan los
-problemas) y cinco la lógica de meses, incluido el día 1 y una lista que cruza
-de año.
+problemas), cinco la lógica de meses, incluido el día 1 y una lista que cruza de
+año, y dos que un mes y una categoría muestran su nombre en un desplegable
+cerrado y no el volcado por defecto del record.
 
 Ocho comprueban el cliente HTTP contra un `HttpMessageHandler` falso: se piden
 todas las páginas con el token y `pageSize=100`, el JSON exacto de un

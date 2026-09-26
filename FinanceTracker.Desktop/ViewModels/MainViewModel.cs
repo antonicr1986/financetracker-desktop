@@ -8,7 +8,13 @@ using FinanceTracker.Desktop.Services;
 
 namespace FinanceTracker.Desktop.ViewModels;
 
-public record MonthOption(MonthKey Key, string Label);
+public record MonthOption(MonthKey Key, string Label)
+{
+    // La parte cerrada de un ComboBox pinta el elemento elegido con ToString()
+    // cuando la plantilla no le dice otra cosa. En un record eso seria
+    // "MonthOption { Key = ..., Label = ... }": aqui devuelve solo el texto.
+    public override string ToString() => Label;
+}
 
 /// <summary>
 /// Panel principal: selector de mes, totales del mes y lista de movimientos.

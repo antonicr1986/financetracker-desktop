@@ -71,3 +71,25 @@ public class MonthsTests
         Assert.Equal("Septiembre 2026", label);
     }
 }
+
+public class DisplayTextTests
+{
+    // Lo que se ve en un ComboBox cerrado sale de ToString(): no debe ser el
+    // volcado por defecto de un record.
+    [Fact]
+    public void MonthOption_ShowsItsLabel()
+    {
+        var option = new FinanceTracker.Desktop.ViewModels.MonthOption(new MonthKey(2026, 9), "Septiembre 2026");
+
+        Assert.Equal("Septiembre 2026", option.ToString());
+    }
+
+    [Fact]
+    public void Category_ShowsItsName()
+    {
+        var category = new FinanceTracker.Desktop.Models.CategoryDto(1, "Supermercado",
+            FinanceTracker.Desktop.Models.TransactionType.Expense);
+
+        Assert.Equal("Supermercado", category.ToString());
+    }
+}
