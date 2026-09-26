@@ -12,6 +12,17 @@
         Icon="/Assets/app.ico"
         Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Text}">
 
+    <!-- La barra de titulo de Windows se sustituye por nuestra barra superior
+         (TopBar), para no ver "FinanceTracker" dos veces.
+         CaptionHeight: los 56 de arriba se comportan como barra de titulo
+         (arrastrar, doble clic, ajustar a los bordes). GlassFrameThickness con
+         1 abajo: Windows sigue dibujando la sombra de la ventana.
+         UseAeroCaptionButtons=False: los botones los pone TopBar. -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="56" ResizeBorderThickness="6" GlassFrameThickness="0,0,0,1"
+                      UseAeroCaptionButtons="False" CornerRadius="0" />
+    </WindowChrome.WindowChrome>
+
     <DockPanel>
         <views:TopBar DockPanel.Dock="Top" SignOutCommand="{Binding LogoutCommand}" />
 

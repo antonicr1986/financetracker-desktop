@@ -59,6 +59,11 @@ database wake up — the window says so while it waits.
   in slate-900 (inverted in dark mode), and a shared top bar on every window
   with the name on the left and the language, theme and "Sign out" on the right —
   "Sign out" disabled on the sign-in screen, as in the other clients.
+- **One bar instead of two.** The app's top bar is also the window's title
+  bar, so "FinanceTracker" is not shown twice, as in the web and Android
+  clients, which have a single bar. It still moves the window when dragged,
+  maximises on double click and snaps to the screen edges, and carries its own
+  minimise, maximise and close buttons with Windows' icons and sizes.
 - **The same icon as the Android app** — three rising bars, the tallest in
   the income green, on slate-900 — in the title bar, the taskbar, the
   executable and next to the name in the top bar. The `.ico` holds nine sizes,
@@ -178,6 +183,15 @@ message on screen is not left behind in the other language.
 
 **English is `en-GB` with the euro forced in**, as in the web client: `en-US`
 would write dates month-first, and `en-GB` on its own would show pounds.
+
+**The title bar is ours, through `WindowChrome`.** It tells Windows not to
+draw the title bar and to treat the top 56 pixels as one: dragging, double
+click and snapping keep working. Everything clickable in that strip is marked
+`WindowChrome.IsHitTestVisibleInChrome`, or the click would drag the window
+instead. A maximised `WindowChrome` window overflows the screen by its
+invisible resize border on every side, so the top bar pads the content by
+`SystemParameters.WindowResizeBorderThickness` while maximised. The transaction
+dialog keeps Windows' own title bar: it has no top bar to replace it.
 
 **The theme decision is plain C#.** `ThemePreference` decides which theme
 applies (the saved choice, or Windows' setting when there is none) with no

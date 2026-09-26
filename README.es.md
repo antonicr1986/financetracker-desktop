@@ -62,6 +62,12 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
   común a todas las ventanas, con el nombre a la izquierda y el idioma, el
   tema y "Salir" a la derecha — "Salir" deshabilitado en la pantalla de acceso,
   como en los otros clientes.
+- **Una barra en lugar de dos.** La barra superior de la aplicación es también
+  la barra de título de la ventana, así que "FinanceTracker" no aparece dos
+  veces, igual que en la web y en Android, que tienen una sola barra. Sigue
+  moviendo la ventana al arrastrarla, maximiza con doble clic y se ajusta a los
+  bordes de la pantalla, y lleva sus propios botones de minimizar, maximizar y
+  cerrar con los iconos y tamaños de Windows.
 - **El mismo icono que la app Android** — tres barras ascendentes, la más alta
   en el verde de ingresos, sobre slate-900 — en la barra de título, la barra de
   tareas, el ejecutable y junto al nombre en la barra superior. El `.ico`
@@ -184,6 +190,17 @@ ejecutar, así que un mensaje en pantalla no se queda en el otro idioma.
 
 **El inglés es `en-GB` con el euro fijado**, como en la web: `en-US` pondría el
 mes antes que el día, y `en-GB` por sí solo mostraría libras.
+
+**La barra de título es nuestra, con `WindowChrome`.** Le dice a Windows que no
+dibuje la barra de título y que trate los 56 píxeles de arriba como si lo
+fueran: arrastrar, doble clic y ajustar a los bordes siguen funcionando. Todo
+lo que se pulsa en esa franja lleva `WindowChrome.IsHitTestVisibleInChrome`; si
+no, el clic arrastraría la ventana. Una ventana maximizada con `WindowChrome`
+se sale de la pantalla por cada lado lo que mide su borde invisible de
+redimensionar, así que la barra superior añade al contenido un margen de
+`SystemParameters.WindowResizeBorderThickness` mientras está maximizada. El
+diálogo de movimiento mantiene la barra de título de Windows: no tiene barra
+superior que la sustituya.
 
 **La decisión del tema es C# normal.** `ThemePreference` decide qué tema toca
 (el elegido, o el de Windows si no hay elección) sin ninguna referencia a WPF,

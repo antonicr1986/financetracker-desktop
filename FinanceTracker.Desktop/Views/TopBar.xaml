@@ -1,13 +1,32 @@
 <!-- Barra superior comun a todas las ventanas, como la de la web y Android:
      nombre a la izquierda; idioma, tema y "Salir" a la derecha. "Salir"
-     siempre esta, pero deshabilitado sin sesion. -->
+     siempre esta, pero deshabilitado sin sesion.
+
+     Es ademas la barra de titulo de la ventana (WindowChrome, en cada
+     Window): se arrastra para mover la ventana y lleva los botones de
+     minimizar, maximizar y cerrar. Su altura (56) tiene que coincidir con el
+     CaptionHeight de las ventanas. -->
 <UserControl x:Class="FinanceTracker.Desktop.Views.TopBar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Border Background="{DynamicResource Brush.Surface}" BorderBrush="{DynamicResource Brush.Border}"
-            BorderThickness="0,0,0,1" Padding="24,10">
+            BorderThickness="0,0,0,1" Height="56">
         <DockPanel>
+            <!-- Botones de la ventana, pegados al borde y de toda la altura. -->
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button x:Name="MinimizeButton" Style="{StaticResource CaptionButton}"
+                        Content="&#xE921;" Click="OnMinimizeClick" />
+                <Button x:Name="MaximizeButton" Style="{StaticResource CaptionButton}"
+                        Content="&#xE922;" Click="OnMaximizeClick" />
+                <Button Style="{StaticResource CloseCaptionButton}"
+                        Content="&#xE8BB;" Click="OnCloseClick" />
+            </StackPanel>
+
+            <DockPanel Margin="24,0,16,0">
+            <!-- IsHitTestVisibleInChrome: sin esto, estos controles contarian como
+                 barra de titulo y el clic arrastraria la ventana. -->
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center"
+                        WindowChrome.IsHitTestVisibleInChrome="True">
 
                 <!-- Idioma: dos botones y no un desplegable, como la web: con dos
                      opciones, un desplegable esconde lo que cabe a la vista. -->
@@ -86,6 +105,8 @@
                         VerticalAlignment="Center" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Sin IsHitTestVisibleInChrome: el logo y el nombre son barra de
+                     titulo, asi que desde aqui se arrastra la ventana. -->
                 <!-- El mismo logo que el icono de la app, dibujado en vectorial para que
                      se vea nitido a cualquier escala. Es el vector de Android
                      (ic_launcher_foreground.xml): tres barras con extremos redondeados,
@@ -103,6 +124,7 @@
                 </Viewbox>
                 <TextBlock Text="FinanceTracker" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" />
             </StackPanel>
+            </DockPanel>
         </DockPanel>
     </Border>
 </UserControl>
