@@ -17,6 +17,9 @@ public class LoginViewModelTests
         public string? LastEmail { get; private set; }
         public string? LastPassword { get; private set; }
 
+        public Task<UserInfo> RegisterAsync(string name, string email, string password) =>
+            throw new InvalidOperationException("El login no registra");
+
         public Task<LoginResponse> LoginAsync(string email, string password)
         {
             Calls++;

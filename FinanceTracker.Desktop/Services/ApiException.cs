@@ -7,6 +7,7 @@ namespace FinanceTracker.Desktop.Services;
 public class ApiException(string code) : Exception(code)
 {
     public const string InvalidCredentials = "invalid_credentials";
+    public const string EmailAlreadyExists = "email_already_exists";
     public const string SessionExpired = "session_expired";
     public const string NotFound = "not_found";
     public const string CategoryNotFound = "category_not_found";

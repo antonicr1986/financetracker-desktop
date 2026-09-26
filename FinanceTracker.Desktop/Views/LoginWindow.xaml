@@ -31,7 +31,8 @@
 
         <StackPanel Margin="24">
             <!-- Titulo fuera de la tarjeta y formulario dentro, como la web y Android. -->
-            <TextBlock Text="{DynamicResource login.title}" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,16" />
+            <TextBlock Text="{DynamicResource login.title}" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Text="{DynamicResource login.subtitle}" Style="{StaticResource MutedText}" Margin="0,2,0,16" />
 
             <Border Style="{StaticResource Card}" Padding="24">
                 <StackPanel>
@@ -75,6 +76,13 @@
                                Style="{StaticResource MutedText}" HorizontalAlignment="Center" Margin="0,6,0,0" />
                 </StackPanel>
             </Border>
+
+            <!-- Enlace debajo de la tarjeta, como la web y Android. -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+                <TextBlock Text="{DynamicResource login.noAccount}" Style="{StaticResource MutedText}" Margin="0,0,6,0" />
+                <Button Content="{DynamicResource login.createOne}" Command="{Binding GoToRegisterCommand}"
+                        Style="{StaticResource LinkButton}" Foreground="{DynamicResource Brush.Text}" />
+            </StackPanel>
         </StackPanel>
     </DockPanel>
 </Window>

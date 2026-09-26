@@ -44,6 +44,11 @@ poner avisos. Son los esperados; para pasarlos:
   contraseña incorrecta y para un fallo de conexión.
 - **Entrada a la cuenta de demostración con un clic**, sin rellenar el
   formulario.
+- **Registro de cuentas**, como en la web y Android: nombre, correo, contraseña
+  y su repetición, validados en el orden de Android antes de llamar a la API.
+  La API devuelve el usuario creado y no un token, así que la aplicación inicia
+  sesión con las mismas credenciales y abre el panel. "¿No tienes cuenta? Crear
+  una" y "¿Ya tienes cuenta? Entrar" enlazan las dos pantallas.
 - **Textos de ayuda dentro de las cajas vacías** (`tu@email.com`,
   `Tu contraseña`), que desaparecen en cuanto se escribe algo.
 - **Selector de mes** con todos los meses que tienen datos, del más reciente
@@ -298,7 +303,7 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 135 pruebas, sin ventanas ni red.
+`dotnet test` — 149 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -308,6 +313,14 @@ recarga y salta al mes del movimiento mientras que cancelar no recarga. El
 diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por
 tipo, el cuerpo exacto que se envía, edición por id, borrar pregunta antes y no
 hace nada si se dice que no, y los errores de la API dejan el diálogo abierto.
+
+Catorce cubren el registro: los problemas en el orden de Android, qué cuenta como
+correo, registrar y luego iniciar sesión con el nombre y el correo recortados,
+un formulario no válido o un correo ya en uso que se paran antes del inicio de
+sesión, el mensaje genérico para otros errores, un error reescrito al cambiar de
+idioma, los enlaces entre las dos pantallas, y el cuerpo de
+`POST /api/Users/register` enviado sin token y con su código
+`email_already_exists` conservado.
 
 Dieciséis cubren el diálogo de presupuesto: doce meses a cada lado cruzando de
 año, los problemas del formulario en orden, uno nuevo para el mes que se ve con

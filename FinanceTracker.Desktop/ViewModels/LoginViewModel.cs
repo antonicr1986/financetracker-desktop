@@ -46,6 +46,12 @@ public partial class LoginViewModel : ObservableObject, IDisposable
     /// <summary>Se lanza al iniciar sesion. La ventana lo escucha para navegar.</summary>
     public event EventHandler? LoggedIn;
 
+    /// <summary>"¿No tienes cuenta? Crear una": ir al registro.</summary>
+    public event EventHandler? RegisterRequested;
+
+    [RelayCommand]
+    private void GoToRegister() => RegisterRequested?.Invoke(this, EventArgs.Empty);
+
     /// <summary>Al volver del panel porque el token caduco.</summary>
     public void ShowSessionExpired() => SetError(() => localizer.ApiError(ApiException.SessionExpired));
 

@@ -61,6 +61,32 @@ public partial class App : Application
             ShowMain();
             window.Close();
         };
+        viewModel.RegisterRequested += (_, _) =>
+        {
+            ShowRegister();
+            window.Close();
+        };
+        MainWindow = window;
+        window.Show();
+    }
+
+    private void ShowRegister()
+    {
+        var viewModel = new RegisterViewModel(api, session, localizer);
+        var window = new RegisterWindow(viewModel);
+        window.Closed += (_, _) => viewModel.Dispose();
+
+        // Cuenta creada y sesion iniciada: directo al panel, como la web.
+        viewModel.LoggedIn += (_, _) =>
+        {
+            ShowMain();
+            window.Close();
+        };
+        viewModel.SignInRequested += (_, _) =>
+        {
+            ShowLogin();
+            window.Close();
+        };
         MainWindow = window;
         window.Show();
     }

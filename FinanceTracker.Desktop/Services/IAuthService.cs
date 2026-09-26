@@ -9,4 +9,10 @@ namespace FinanceTracker.Desktop.Services;
 public interface IAuthService
 {
     Task<LoginResponse> LoginAsync(string email, string password);
+
+    /// <summary>
+    /// Crea la cuenta. La API devuelve el usuario creado, no un token: quien
+    /// llama tiene que iniciar sesion despues con las mismas credenciales.
+    /// </summary>
+    Task<UserInfo> RegisterAsync(string name, string email, string password);
 }

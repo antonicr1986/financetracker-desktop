@@ -42,6 +42,11 @@ warnings. They are expected; to get past them:
 - **Sign-in with JWT** against the deployed API, with clear messages for a
   wrong password and for a connection failure.
 - **One-click entry into the demo account**, without filling in the form.
+- **Account registration**, as in the web and Android clients: name, email,
+  password and its repetition, validated in Android's order before calling the
+  API. The API returns the new user and not a token, so the app then signs in
+  with the same credentials and opens the dashboard. "Don't have an account?
+  Create one" and "Already have an account? Sign in" link the two screens.
 - **Hints inside the empty fields** (`tu@email.com`, `Tu contraseña`), which
   disappear as soon as something is typed.
 - **Month selector** with every month that has data, newest first.
@@ -282,7 +287,7 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 135 tests, with no window and no network.
+`dotnet test` — 149 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -292,6 +297,13 @@ jumps to the saved transaction's month while cancelling does not reload. The
 transaction dialog: defaults for a new one, categories filtered by type, the
 exact input sent, editing by id, delete asking first and doing nothing on "no",
 and API errors keeping the dialog open.
+
+Fourteen cover registration: the problems in Android's order, what counts as
+an email, registering and then signing in with the trimmed name and email, an
+invalid form or an email already in use stopping before the sign-in, the
+generic message for other errors, an error rewritten on a language switch, the
+links between the two screens, and the `POST /api/Users/register` body sent
+without a token with its `email_already_exists` code kept.
 
 Sixteen cover the budget dialog: twelve months either side across a year
 boundary, the form's problems in order, a new one for the viewed month with
