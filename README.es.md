@@ -50,7 +50,8 @@ poner avisos. Son los esperados; para pasarlos:
   con un aviso. Salir lo borra.
 - **Registro de cuentas**, como en la web y Android: nombre, correo, contraseña
   y su repetición, validados en el orden de Android antes de llamar a la API.
-  La API devuelve el usuario creado y no un token, así que la aplicación inicia
+  Se envía el idioma de la interfaz, para que las categorías de partida lleguen
+  en español o en inglés. La API devuelve el usuario creado y no un token, así que la aplicación inicia
   sesión con las mismas credenciales y abre el panel. "¿No tienes cuenta? Crear
   una" y "¿Ya tienes cuenta? Entrar" enlazan las dos pantallas.
 - **Textos de ayuda dentro de las cajas vacías** (`tu@email.com`,
@@ -336,7 +337,7 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 159 pruebas, sin ventanas ni red.
+`dotnet test` — 160 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -354,10 +355,11 @@ caducar cuenta como caducado, una caducidad sin zona horaria se lee como UTC, y
 que el token y el correo no se pueden leer en el archivo, que un archivo roto se
 ignora y se borra, y el borrado.
 
-Catorce cubren el registro: los problemas en el orden de Android, qué cuenta como
+Quince cubren el registro: los problemas en el orden de Android, qué cuenta como
 correo, registrar y luego iniciar sesión con el nombre y el correo recortados,
 un formulario no válido o un correo ya en uso que se paran antes del inicio de
-sesión, el mensaje genérico para otros errores, un error reescrito al cambiar de
+sesión, el idioma de la interfaz enviado para las categorías de partida, el
+mensaje genérico para otros errores, un error reescrito al cambiar de
 idioma, los enlaces entre las dos pantallas, y el cuerpo de
 `POST /api/Users/register` enviado sin token y con su código
 `email_already_exists` conservado.

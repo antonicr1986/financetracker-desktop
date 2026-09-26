@@ -14,5 +14,5 @@ public interface IAuthService
     /// Crea la cuenta. La API devuelve el usuario creado, no un token: quien
     /// llama tiene que iniciar sesion despues con las mismas credenciales.
     /// </summary>
-    Task<UserInfo> RegisterAsync(string name, string email, string password);
+    Task<UserInfo> RegisterAsync(string name, string email, string password, string language);
 }

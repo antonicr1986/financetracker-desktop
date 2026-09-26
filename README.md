@@ -49,7 +49,8 @@ warnings. They are expected; to get past them:
 - **Account registration**, as in the web and Android clients: name, email,
   password and its repetition, validated in Android's order before calling the
   API. The API returns the new user and not a token, so the app then signs in
-  with the same credentials and opens the dashboard. "Don't have an account?
+  with the same credentials and opens the dashboard. The interface language is
+  sent too, so the starter categories come in Spanish or English. "Don't have an account?
   Create one" and "Already have an account? Sign in" link the two screens.
 - **Hints inside the empty fields** (`tu@email.com`, `Tu contraseña`), which
   disappear as soon as something is typed.
@@ -319,7 +320,7 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 159 tests, with no window and no network.
+`dotnet test` — 160 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -336,9 +337,10 @@ expire counted as expired, an expiry with no time zone read as UTC, and — with
 real DPAPI against a temporary file — the round trip, the token and email not
 readable in the file, a broken file ignored and removed, and clearing.
 
-Fourteen cover registration: the problems in Android's order, what counts as
+Fifteen cover registration: the problems in Android's order, what counts as
 an email, registering and then signing in with the trimmed name and email, an
 invalid form or an email already in use stopping before the sign-in, the
+interface language sent for the starter categories, the
 generic message for other errors, an error rewritten on a language switch, the
 links between the two screens, and the `POST /api/Users/register` body sent
 without a token with its `email_already_exists` code kept.

@@ -43,11 +43,11 @@ public class ApiClient : IAuthService, ITransactionService, ICategoryService, IB
         return await ReadAsync<LoginResponse>(response);
     }
 
-    public async Task<UserInfo> RegisterAsync(string name, string email, string password)
+    public async Task<UserInfo> RegisterAsync(string name, string email, string password, string language)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/Users/register")
         {
-            Content = JsonContent.Create(new RegisterRequest(name, email, password)),
+            Content = JsonContent.Create(new RegisterRequest(name, email, password, language)),
         };
 
         // Sin sesion todavia: un 401 aqui no significaria nada conocido.

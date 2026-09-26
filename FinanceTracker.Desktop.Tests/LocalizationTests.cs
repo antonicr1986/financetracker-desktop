@@ -196,7 +196,7 @@ public class LanguageSwitchTests
         public Task<LoginResponse> LoginAsync(string email, string password) =>
             throw new InvalidOperationException("No deberia llamarse");
 
-        public Task<UserInfo> RegisterAsync(string name, string email, string password) =>
+        public Task<UserInfo> RegisterAsync(string name, string email, string password, string language) =>
             throw new InvalidOperationException("No deberia llamarse");
     }
 }

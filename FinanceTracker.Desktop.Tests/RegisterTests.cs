@@ -46,9 +46,9 @@ public class RegisterViewModelTests
         public ApiException? RegisterError { get; set; }
         public ApiException? LoginError { get; set; }
 
-        public Task<UserInfo> RegisterAsync(string name, string email, string password)
+        public Task<UserInfo> RegisterAsync(string name, string email, string password, string language)
         {
-            Calls.Add($"register {name} {email} {password}");
+            Calls.Add($"register {name} {email} {password} {language}");
             if (RegisterError is not null) throw RegisterError;
             return Task.FromResult(new UserInfo(1, name, email));
         }
@@ -83,12 +83,23 @@ public class RegisterViewModelTests
 
         Assert.Equal(new[]
         {
-            "register Ana ana@correo.com secreto1", // nombre y correo recortados
+            "register Ana ana@correo.com secreto1 es", // nombre y correo recortados, idioma de la interfaz
             "login ana@correo.com secreto1",
         }, auth.Calls);
         Assert.True(session.IsActive);
         Assert.True(raised);
         Assert.False(vm.IsBusy);
+    }
+
+    [Fact]
+    public async Task Register_InEnglish_AsksForEnglishStarterCategories()
+    {
+        var auth = new FakeAuth();
+        var vm = Filled(auth, localizer: new Localizer(AppLanguage.En));
+
+        await vm.RegisterCommand.ExecuteAsync(null);
+
+        Assert.Equal("register Ana ana@correo.com secreto1 en", auth.Calls[0]);
     }
 
     [Fact]
@@ -187,12 +198,12 @@ public class RegisterApiTests
             Content = new StringContent("""{"id":5,"name":"Ana","email":"ana@correo.com"}""", Encoding.UTF8, "application/json"),
         });
 
-        var user = await Client(handler).RegisterAsync("Ana", "ana@correo.com", "secreto1");
+        var user = await Client(handler).RegisterAsync("Ana", "ana@correo.com", "secreto1", "en");
 
         Assert.Equal(HttpMethod.Post, handler.Last!.Method);
         Assert.Equal("/api/Users/register", handler.Last.RequestUri!.AbsolutePath);
         Assert.Null(handler.Last.Headers.Authorization);
-        Assert.Equal("""{"name":"Ana","email":"ana@correo.com","password":"secreto1"}""", handler.Body);
+        Assert.Equal("""{"name":"Ana","email":"ana@correo.com","password":"secreto1","language":"en"}""", handler.Body);
         Assert.Equal(5, user.Id);
     }
 
@@ -204,7 +215,7 @@ public class RegisterApiTests
             Content = new StringContent("""{"code":"email_already_exists","detail":"..."}""", Encoding.UTF8, "application/json"),
         });
 
-        var e = await Assert.ThrowsAsync<ApiException>(() => Client(handler).RegisterAsync("Ana", "ana@correo.com", "secreto1"));
+        var e = await Assert.ThrowsAsync<ApiException>(() => Client(handler).RegisterAsync("Ana", "ana@correo.com", "secreto1", "es"));
 
         Assert.Equal(ApiException.EmailAlreadyExists, e.Code);
     }

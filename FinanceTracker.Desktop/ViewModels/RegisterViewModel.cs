@@ -76,7 +76,8 @@ public partial class RegisterViewModel : ObservableObject, IDisposable
         IsBusy = true;
         try
         {
-            await auth.RegisterAsync(trimmedName, trimmedEmail, Password);
+            await auth.RegisterAsync(trimmedName, trimmedEmail, Password,
+                localizer.Language == AppLanguage.En ? "en" : "es");
 
             // La API no devuelve token al registrarse: se entra con lo mismo.
             var login = await auth.LoginAsync(trimmedEmail, Password);
