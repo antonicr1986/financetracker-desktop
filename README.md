@@ -410,10 +410,14 @@ password" or "session expired" depending on the call.
 
 - **CI** on every push and pull request, on `windows-latest` because WPF only
   builds on Windows: a formatting check with `dotnet format` against
-  `.editorconfig` (lint), build, tests, and the published app, downloadable from the
-  run itself.
+  `.editorconfig` (lint), a check that fails on NuGet packages with known
+  vulnerabilities (transitive ones included), build, tests, and the published
+  app, downloadable from the run itself.
 - The test count is written to the run summary, and **zero tests fails the
   build**: tests that silently stop running are worse than red ones.
+- **Dependabot** opens a monthly pull request with the minor and patch updates
+  of the NuGet packages and the workflow actions, grouped in one; major
+  versions are left for a manual decision.
 - **Release** on every version tag (`v1.2.3`): runs the tests, publishes the
   app self-contained twice — as a folder in a `.zip`, and as a single `.exe` —
   with the version taken from the tag, checks that the version really reached

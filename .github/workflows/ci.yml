@@ -55,6 +55,18 @@ jobs:
       - name: Lint
         run: dotnet format --no-restore --verify-no-changes --verbosity diagnostic
 
+      # Paquetes NuGet con vulnerabilidades conocidas, tambien transitivos.
+      # "dotnet list package" termina bien aunque encuentre alguna: se busca
+      # en su salida la frase que lo indica. bash porque el runner es Windows.
+      - name: Vulnerable packages
+        shell: bash
+        run: |
+          dotnet list package --vulnerable --include-transitive | tee vulnerable.txt
+          if grep -q "has the following vulnerable packages" vulnerable.txt; then
+            echo "::error::Vulnerable NuGet packages found (see the list above)"
+            exit 1
+          fi
+
       - name: Build
         run: dotnet build --configuration Release --no-restore
 

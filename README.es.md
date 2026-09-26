@@ -432,11 +432,16 @@ incorrecta" o "sesión caducada" según la llamada.
 
 - **CI** en cada push y pull request, en `windows-latest` porque WPF solo
   compila en Windows: comprobación de formato con `dotnet format` frente a
-  `.editorconfig` (lint), compilación, pruebas y la aplicación publicada,
+  `.editorconfig` (lint), una comprobación que falla si algún paquete NuGet
+  tiene vulnerabilidades conocidas (también los transitivos), compilación,
+  pruebas y la aplicación publicada,
   descargable desde la propia ejecución.
 - El número de pruebas se escribe en el resumen de la ejecución, y **cero
   pruebas hace fallar el build**: unas pruebas que dejan de ejecutarse sin
   avisar son peores que unas en rojo.
+- **Dependabot** abre cada mes una pull request con las actualizaciones menores
+  y de parche de los paquetes NuGet y de las acciones, agrupadas en una; las
+  versiones mayores se dejan para decidirlas a mano.
 - **Release** en cada etiqueta de versión (`v1.2.3`): pasa las pruebas, publica
   la aplicación autocontenida dos veces — como carpeta dentro de un `.zip`, y
   como un único `.exe` — con la versión sacada de la etiqueta, comprueba que la
