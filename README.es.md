@@ -44,6 +44,10 @@ poner avisos. Son los esperados; para pasarlos:
   contraseña incorrecta y para un fallo de conexión.
 - **Entrada a la cuenta de demostración con un clic**, sin rellenar el
   formulario.
+- **Una sesión que sobrevive a cerrar la aplicación.** El token se guarda
+  cifrado con DPAPI de Windows, así que la aplicación se abre directamente en
+  el panel mientras sigue valiendo; cuando ha caducado, se abre en el acceso
+  con un aviso. Salir lo borra.
 - **Registro de cuentas**, como en la web y Android: nombre, correo, contraseña
   y su repetición, validados en el orden de Android antes de llamar a la API.
   La API devuelve el usuario creado y no un token, así que la aplicación inicia
@@ -132,9 +136,27 @@ poner avisos. Son los esperados; para pasarlos:
 - **Estados de carga, error y vacío**, con botón de reintentar, y un mensaje
   claro cuando la sesión caduca en lugar de volver al acceso sin explicación.
 
-## 🗺️ Lo siguiente
+## 🖼️ Vista previa
 
-Una sesión que sobreviva a cerrar la aplicación, y capturas en este README.
+El panel en tema claro y oscuro: los totales del mes, presupuestos y gastos por
+categoría uno al lado del otro, y los movimientos.
+
+<p>
+  <img src="screenshots/dashboard-light.png" alt="Panel en modo claro" width="640">
+  <img src="screenshots/dashboard-dark.png" alt="Panel en modo oscuro" width="640">
+</p>
+
+Registrar un movimiento y editar un presupuesto, cada uno en su diálogo.
+
+<p>
+  <img src="screenshots/new-transaction.png" alt="Registrar un movimiento" width="400">
+  <img src="screenshots/budget.png" alt="Editar un presupuesto" width="400">
+</p>
+
+La pantalla de acceso, con la entrada a la cuenta de demostración en un clic y
+el cambio de idioma y de tema en la barra de título única.
+
+<img src="screenshots/login.png" alt="Pantalla de acceso" width="400">
 
 ## 🧰 Tecnologías
 
@@ -291,6 +313,17 @@ misma tecla por el mismo motivo.
 la API aunque luego se cancele el movimiento, así que el panel la añade a su
 lista en el acto en lugar de esperar a la próxima recarga.
 
+**La sesión guardada se cifra con DPAPI, no con una clave nuestra.**
+`DpapiSessionStore` escribe el token y el usuario en
+`%LocalAppData%\FinanceTracker\session.dat` a través de `ProtectedData`, que
+cifra con una clave ligada a la cuenta de Windows y que guarda el propio
+Windows. Copiado a otro equipo o a otra cuenta, el archivo no se puede
+descifrar, y no hay ninguna clave en el código. Al arrancar,
+`Session.TryRestore` compara la caducidad guardada — en UTC, como la calcula la
+API — con la hora actual, con un margen de dos minutos para que el token no
+caduque a mitad de la primera carga. Un archivo roto o de otra cuenta cuenta
+como sin sesión y se borra.
+
 **La decisión del tema es C# normal.** `ThemePreference` decide qué tema toca
 (el elegido, o el de Windows si no hay elección) sin ninguna referencia a WPF,
 así que tiene pruebas unitarias; `ThemeManager` solo pinta. La elección se
@@ -303,7 +336,7 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 149 pruebas, sin ventanas ni red.
+`dotnet test` — 159 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -313,6 +346,13 @@ recarga y salta al mes del movimiento mientras que cancelar no recarga. El
 diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por
 tipo, el cuerpo exacto que se envía, edición por id, borrar pregunta antes y no
 hace nada si se dice que no, y los errores de la API dejan el diálogo abierto.
+
+Diez cubren la sesión guardada: se guarda al iniciar sesión y se borra al salir,
+se recupera mientras vale, se avisa y se olvida al caducar, un token a punto de
+caducar cuenta como caducado, una caducidad sin zona horaria se lee como UTC, y
+— con DPAPI de verdad sobre un archivo temporal — que se guarda y se lee bien,
+que el token y el correo no se pueden leer en el archivo, que un archivo roto se
+ignora y se borra, y el borrado.
 
 Catorce cubren el registro: los problemas en el orden de Android, qué cuenta como
 correo, registrar y luego iniciar sesión con el nombre y el correo recortados,

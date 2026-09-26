@@ -42,6 +42,10 @@ warnings. They are expected; to get past them:
 - **Sign-in with JWT** against the deployed API, with clear messages for a
   wrong password and for a connection failure.
 - **One-click entry into the demo account**, without filling in the form.
+- **A session that survives closing the app.** The token is kept encrypted
+  with Windows' DPAPI, so the app opens straight on the dashboard while it is
+  valid; once it has expired, it opens on sign-in with a notice. Signing out
+  deletes it.
 - **Account registration**, as in the web and Android clients: name, email,
   password and its repetition, validated in Android's order before calling the
   API. The API returns the new user and not a token, so the app then signs in
@@ -124,9 +128,27 @@ warnings. They are expected; to get past them:
 - **Loading, error and empty states**, with a retry button, and a clear
   message when the session expires instead of a silent return to sign-in.
 
-## 🗺️ Next
+## 🖼️ Preview
 
-A session that survives closing the app, and screenshots in this README.
+The dashboard in light and dark themes: the month's totals, budgets and
+expenses by category side by side, and the transactions.
+
+<p>
+  <img src="screenshots/dashboard-light.png" alt="Dashboard in light mode" width="640">
+  <img src="screenshots/dashboard-dark.png" alt="Dashboard in dark mode" width="640">
+</p>
+
+Recording a transaction and editing a budget, each in its own dialog.
+
+<p>
+  <img src="screenshots/new-transaction.png" alt="Recording a transaction" width="400">
+  <img src="screenshots/budget.png" alt="Editing a budget" width="400">
+</p>
+
+The sign-in screen, with one-click entry into the demo account and the language
+and theme switches in the single title bar.
+
+<img src="screenshots/login.png" alt="Sign-in screen" width="400">
 
 ## 🧰 Stack
 
@@ -275,6 +297,16 @@ same reason.
 even if the transaction is then cancelled, so the dashboard adds it to its list
 straight away instead of waiting for the next reload.
 
+**The saved session is encrypted with DPAPI, not with a key of ours.**
+`DpapiSessionStore` writes the token and the user to
+`%LocalAppData%\FinanceTracker\session.dat` through `ProtectedData`, which
+encrypts with a key tied to the Windows account and kept by Windows itself.
+Copied to another machine or another account, the file cannot be decrypted, and
+there is no key anywhere in the code. On start, `Session.TryRestore` compares
+the saved expiry — UTC, as the API computes it — with the current time, with a
+two-minute margin so a token does not expire halfway through the first load. A
+broken or foreign file counts as no session and is deleted.
+
 **The theme decision is plain C#.** `ThemePreference` decides which theme
 applies (the saved choice, or Windows' setting when there is none) with no
 reference to WPF, so it is unit-tested; `ThemeManager` only paints. The choice
@@ -287,7 +319,7 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 149 tests, with no window and no network.
+`dotnet test` — 159 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -297,6 +329,12 @@ jumps to the saved transaction's month while cancelling does not reload. The
 transaction dialog: defaults for a new one, categories filtered by type, the
 exact input sent, editing by id, delete asking first and doing nothing on "no",
 and API errors keeping the dialog open.
+
+Ten cover the saved session: saved on sign-in and deleted on sign-out,
+restored while valid, reported and forgotten once expired, a token about to
+expire counted as expired, an expiry with no time zone read as UTC, and — with
+real DPAPI against a temporary file — the round trip, the token and email not
+readable in the file, a broken file ignored and removed, and clearing.
 
 Fourteen cover registration: the problems in Android's order, what counts as
 an email, registering and then signing in with the trimmed name and email, an

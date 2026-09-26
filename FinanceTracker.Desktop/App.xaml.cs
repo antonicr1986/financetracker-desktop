@@ -14,7 +14,9 @@ namespace FinanceTracker.Desktop;
 /// </summary>
 public partial class App : Application
 {
-    private readonly Session session = new();
+    // La sesion se guarda cifrada entre ejecuciones (DPAPI): no hay que volver
+    // a iniciar sesion cada vez que se abre la aplicacion.
+    private readonly Session session = new(new DpapiSessionStore());
     private readonly ApiClient api;
     private readonly DialogService dialogs = new();
     private readonly Localizer localizer = new();
@@ -46,7 +48,20 @@ public partial class App : Application
         Languages = new LanguageManager(localizer, new LanguagePreference(settings, () => systemLanguage));
         Languages.ApplyInitial();
 
-        ShowLogin();
+        // Con una sesion guardada y valida, directo al panel. Si el token ya
+        // caduco, al login con el aviso, como cuando caduca con la app abierta.
+        switch (session.TryRestore(DateTime.UtcNow))
+        {
+            case SessionRestore.Restored:
+                ShowMain();
+                break;
+            case SessionRestore.Expired:
+                ShowLogin(sessionExpired: true);
+                break;
+            default:
+                ShowLogin();
+                break;
+        }
     }
 
     private void ShowLogin(bool sessionExpired = false)
