@@ -52,9 +52,15 @@
 
         <!-- Categoria nueva, como en la web: un enlace que abre una caja con
              Añadir y Cancelar. Se crea del tipo elegido arriba. -->
-        <Button Content="{DynamicResource dialog.newCategory}" Command="{Binding StartAddingCategoryCommand}"
-                Style="{StaticResource LinkButton}" Margin="0,8,0,12"
-                Visibility="{Binding ShowNewCategoryLink, Converter={StaticResource BoolToVisibility}}" />
+        <StackPanel Orientation="Horizontal" Margin="0,8,0,12"
+                    Visibility="{Binding ShowNewCategoryLink, Converter={StaticResource BoolToVisibility}}">
+            <Button Content="{DynamicResource dialog.newCategory}" Command="{Binding StartAddingCategoryCommand}"
+                    Style="{StaticResource LinkButton}" />
+            <!-- Borra la categoria elegida arriba (pide confirmacion). Deshabilitado
+                 si no hay ninguna elegida. -->
+            <Button Content="{DynamicResource dialog.deleteCategory}" Command="{Binding DeleteCategoryCommand}"
+                    Style="{StaticResource DangerLinkButton}" Margin="16,0,0,0" />
+        </StackPanel>
 
         <Grid Margin="0,8,0,12"
               Visibility="{Binding IsAddingCategory, Converter={StaticResource BoolToVisibility}}">

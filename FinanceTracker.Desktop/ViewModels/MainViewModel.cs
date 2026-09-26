@@ -262,6 +262,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Una categoria creada en el formulario ya existe en la API aunque se
         // haya cancelado el movimiento: la proxima vez tiene que aparecer.
         allCategories.AddRange(editor.CreatedCategories);
+        allCategories.RemoveAll(c => editor.DeletedCategoryIds.Contains(c.Id));
 
         if (editor.SessionHasExpired)
         {

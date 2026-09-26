@@ -72,6 +72,9 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
     /// </summary>
     public List<CategoryDto> CreatedCategories { get; } = [];
 
+    /// <summary>Ids de las categorias borradas aqui: el panel las quita de su lista.</summary>
+    public List<int> DeletedCategoryIds { get; } = [];
+
     /// <summary>Si se esta escribiendo una categoria nueva (caja y botones a la vista).</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowNewCategoryLink))]
@@ -103,7 +106,9 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
     /// <summary>Solo las categorias del tipo elegido: la API rechaza las del otro.</summary>
     public ObservableCollection<CategoryDto> Categories { get; } = [];
 
-    [ObservableProperty] private CategoryDto? selectedCategory;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DeleteCategoryCommand))]
+    private CategoryDto? selectedCategory;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasError))]
@@ -115,6 +120,7 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
     [NotifyCanExecuteChangedFor(nameof(CreateCategoryCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteCategoryCommand))]
     private bool isBusy;
 
     /// <summary>true si la API rechazo el token: el panel se encarga de volver al login.</summary>
@@ -288,6 +294,61 @@ public partial class TransactionEditorViewModel : ObservableObject, IDisposable
         {
             IsBusy = false;
         }
+    }
+
+    private bool CanDeleteCategory() => CanCreateCategories && !IsBusy && SelectedCategory is not null;
+
+    /// <summary>
+    /// Borra la categoria elegida en el desplegable, tras confirmarlo. Solo la
+    /// del propio usuario: la API filtra por el usuario del token. Si tiene
+    /// movimientos, la API lo rechaza y se muestra su mensaje.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanDeleteCategory))]
+    private async Task DeleteCategoryAsync()
+    {
+        if (categoryService is null || SelectedCategory is not { } category) return;
+        SetError(null);
+
+        var confirmed = dialogs.Confirm(localizer.T("dialog.deleteCategoryConfirm"),
+            localizer.T("dialog.deleteConfirmBody", category.Name));
+        if (!confirmed) return;
+
+        IsBusy = true;
+        try
+        {
+            await categoryService.DeleteCategoryAsync(category.Id);
+            Forget(category.Id);
+        }
+        catch (ApiException e) when (e.Code == ApiException.SessionExpired)
+        {
+            SessionHasExpired = true;
+            CloseRequested?.Invoke(this, false);
+        }
+        catch (ApiException e) when (e.Code == ApiException.NotFound)
+        {
+            // Ya no estaba (borrada desde otro cliente): se quita igualmente.
+            Forget(category.Id);
+            SetError(() => localizer.T("errors.categoryGone"));
+        }
+        catch (ApiException e)
+        {
+            SetError(() => e.Code is ApiException.CategoryHasTransactions or ApiException.NetworkError
+                ? localizer.ApiError(e.Code)
+                : localizer.T("errors.deleteCategoryFailed"));
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    /// <summary>Quita una categoria de este formulario y la apunta para el panel.</summary>
+    private void Forget(int id)
+    {
+        allCategories.RemoveAll(c => c.Id == id);
+        CreatedCategories.RemoveAll(c => c.Id == id);
+        DeletedCategoryIds.Add(id);
+        RefreshCategories(preferredId: null);
     }
 
     private void SetError(Func<string>? text)

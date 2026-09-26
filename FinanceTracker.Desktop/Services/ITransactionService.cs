@@ -20,6 +20,13 @@ public interface ICategoryService
 
     /// <summary>Crea una categoria y devuelve la creada (201), con su id.</summary>
     Task<CategoryDto> CreateCategoryAsync(CategoryInput input);
+
+    /// <summary>
+    /// Borra una categoria del usuario. La API filtra por el usuario del token:
+    /// una categoria de otra cuenta responde 404 como si no existiera. Con
+    /// movimientos, rechaza con category_has_transactions.
+    /// </summary>
+    Task DeleteCategoryAsync(int id);
 }
 
 public interface IBudgetService

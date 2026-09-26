@@ -45,6 +45,12 @@ database wake up — the window says so while it waits.
   for it — and is selected once created. The API does not reject repeated
   names, so the client does: same type, ignoring case and surrounding spaces,
   so "Gifts" can still exist as both an expense and an income.
+- **Deleting a category** from the same dialog: "Delete category" removes the
+  one selected in the drop-down, after asking. Only the signed-in user's own
+  categories are affected — the API filters every category operation by the
+  user in the token, so another account's category answers 404 as if it did
+  not exist. A category that still has transactions cannot be deleted; the
+  API refuses and the app shows why, with the web client's message.
 - **Editing and deleting a transaction**: a double click opens it prefilled in
   the same dialog; deleting asks for confirmation first. After saving, the
   dashboard reloads and shows the month of that transaction.
@@ -243,7 +249,7 @@ longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 110 tests, with no window and no network.
+`dotnet test` — 118 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
 password, no connection, and the demo button using the demo credentials
@@ -253,6 +259,13 @@ jumps to the saved transaction's month while cancelling does not reload. The
 transaction dialog: defaults for a new one, categories filtered by type, the
 exact input sent, editing by id, delete asking first and doing nothing on "no",
 and API errors keeping the dialog open.
+
+Eight cover deleting categories: asking first and removing the selected one,
+doing nothing on "no", a category with transactions kept with the API's
+reason shown, one already gone removed anyway, the link disabled when there is
+no category of that type, one created and deleted in the same dialog not
+offered again, and the `DELETE` request sent with the token and its
+`category_has_transactions` code kept.
 
 Twelve cover creating categories: duplicates of the same type (with other case
 or spaces) stopped before calling the API, the same name allowed for the other

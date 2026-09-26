@@ -103,6 +103,13 @@ public class ApiClient : IAuthService, ITransactionService, ICategoryService, IB
         return await ReadAsync<CategoryDto>(response);
     }
 
+    // 204 sin cuerpo, como el resto de DELETE.
+    public async Task DeleteCategoryAsync(int id)
+    {
+        using var request = Authorized(HttpMethod.Delete, $"api/Categories/{id}");
+        using var _ = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+    }
+
     public async Task<List<BudgetDto>> GetBudgetsAsync()
     {
         using var request = Authorized(HttpMethod.Get, "api/Budgets");

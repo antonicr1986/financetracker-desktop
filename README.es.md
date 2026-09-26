@@ -48,6 +48,13 @@ despiertan el servicio y la base de datos — la ventana lo avisa mientras esper
   así que lo hace el cliente: mismo tipo, sin distinguir mayúsculas ni espacios
   de los extremos, de modo que "Regalos" puede existir como gasto y como
   ingreso.
+- **Eliminar una categoría** desde el mismo diálogo: "Eliminar categoría" borra
+  la elegida en el desplegable, tras preguntar. Solo afecta a las categorías del
+  usuario que ha iniciado sesión — la API filtra todas las operaciones de
+  categorías por el usuario del token, así que una categoría de otra cuenta
+  responde 404 como si no existiera. Una categoría que todavía tiene
+  movimientos no se puede eliminar; la API lo rechaza y la aplicación muestra
+  el motivo, con el mensaje de la web.
 - **Edición y borrado de movimientos**: doble clic lo abre relleno en el mismo
   diálogo; borrar pide confirmación antes. Tras guardar, el panel se recarga y
   muestra el mes de ese movimiento.
@@ -255,7 +262,7 @@ puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 110 pruebas, sin ventanas ni red.
+`dotnet test` — 118 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
 incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
@@ -265,6 +272,13 @@ recarga y salta al mes del movimiento mientras que cancelar no recarga. El
 diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por
 tipo, el cuerpo exacto que se envía, edición por id, borrar pregunta antes y no
 hace nada si se dice que no, y los errores de la API dejan el diálogo abierto.
+
+Ocho cubren el borrado de categorías: pregunta antes y quita la elegida, no hace
+nada si se dice que no, una categoría con movimientos se mantiene y se muestra
+el motivo de la API, una que ya no existía se quita igualmente, el enlace se
+deshabilita si no hay ninguna categoría de ese tipo, una creada y borrada en el
+mismo diálogo no se vuelve a ofrecer, y la petición `DELETE` sale con el token
+y conserva su código `category_has_transactions`.
 
 Doce cubren la creación de categorías: los duplicados del mismo tipo (con otras
 mayúsculas o espacios) se paran antes de llamar a la API, el mismo nombre se

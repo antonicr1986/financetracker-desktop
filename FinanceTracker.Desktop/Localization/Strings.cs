@@ -70,6 +70,8 @@ public static class Strings
         ["dialog.newCategory"] = "Nueva categoría",
         ["dialog.newCategoryPlaceholder"] = "Nombre de la categoría",
         ["dialog.add"] = "Añadir",
+        ["dialog.deleteCategory"] = "Eliminar categoría",
+        ["dialog.deleteCategoryConfirm"] = "¿Eliminar esta categoría?",
         ["dialog.noCategoriesOfType"] = "No tienes ninguna categoría de este tipo.",
         ["dialog.save"] = "Guardar",
         ["dialog.delete"] = "Eliminar",
@@ -86,6 +88,8 @@ public static class Strings
         ["errors.writeCategoryName"] = "Escribe un nombre para la categoría.",
         ["errors.categoryExists"] = "Ya tienes una categoría de este tipo con ese nombre.",
         ["errors.createCategoryFailed"] = "No se ha podido crear la categoría.",
+        ["errors.deleteCategoryFailed"] = "No se ha podido eliminar la categoría.",
+        ["errors.categoryGone"] = "Esta categoría ya no existe.",
         ["errors.loadFailed"] = "No se han podido cargar los datos.",
         ["errors.saveFailed"] = "No se ha podido guardar el movimiento.",
         ["errors.deleteFailed"] = "No se ha podido eliminar el movimiento.",
@@ -97,6 +101,7 @@ public static class Strings
         ["apiError.not_found"] = "Este movimiento ya no existe. Cierra y recarga.",
         ["apiError.category_not_found"] = "La categoría seleccionada no existe.",
         ["apiError.category_type_mismatch"] = "La categoría seleccionada no es del mismo tipo que el movimiento.",
+        ["apiError.category_has_transactions"] = "No se puede eliminar la categoría porque tiene movimientos asociados.",
     };
 
     public static readonly IReadOnlyDictionary<string, string> En = new Dictionary<string, string>
@@ -158,6 +163,8 @@ public static class Strings
         ["dialog.newCategory"] = "New category",
         ["dialog.newCategoryPlaceholder"] = "Category name",
         ["dialog.add"] = "Add",
+        ["dialog.deleteCategory"] = "Delete category",
+        ["dialog.deleteCategoryConfirm"] = "Delete this category?",
         ["dialog.noCategoriesOfType"] = "You have no categories of this type.",
         ["dialog.save"] = "Save",
         ["dialog.delete"] = "Delete",
@@ -174,6 +181,8 @@ public static class Strings
         ["errors.writeCategoryName"] = "Enter a name for the category.",
         ["errors.categoryExists"] = "You already have a category of this type with that name.",
         ["errors.createCategoryFailed"] = "Could not create the category.",
+        ["errors.deleteCategoryFailed"] = "Could not delete the category.",
+        ["errors.categoryGone"] = "This category no longer exists.",
         ["errors.loadFailed"] = "Could not load the data.",
         ["errors.saveFailed"] = "Could not save the transaction.",
         ["errors.deleteFailed"] = "Could not delete the transaction.",
@@ -185,5 +194,6 @@ public static class Strings
         ["apiError.not_found"] = "This transaction no longer exists. Close and reload.",
         ["apiError.category_not_found"] = "The selected category does not exist.",
         ["apiError.category_type_mismatch"] = "The selected category is not the same type as the transaction.",
+        ["apiError.category_has_transactions"] = "The category cannot be deleted because it has transactions.",
     };
 }

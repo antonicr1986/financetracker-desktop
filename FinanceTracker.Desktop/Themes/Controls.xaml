@@ -119,8 +119,9 @@
                                FontWeight="Medium" />
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
+                            <!-- Solo subraya: cambiar el color borraria el rojo del
+                                 enlace de peligro, que hereda esta plantilla. -->
                             <Setter TargetName="Text" Property="TextDecorations" Value="Underline" />
-                            <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Text" Property="Opacity" Value="0.45" />
@@ -129,6 +130,11 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!-- Enlace de peligro: como el anterior, en rojo ("Eliminar categoría"). -->
+    <Style x:Key="DangerLinkButton" TargetType="Button" BasedOn="{StaticResource LinkButton}">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Error}" />
     </Style>
 
     <!-- Boton cuadrado de icono (tema). -->

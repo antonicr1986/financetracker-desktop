@@ -34,6 +34,18 @@ internal class FakeTransactionService : ITransactionService, ICategoryService, I
     /// <summary>Si se asigna, crear categoria lanza esta excepcion.</summary>
     public ApiException? CategoryError { get; set; }
 
+    public List<int> DeletedCategories { get; } = [];
+
+    /// <summary>Si se asigna, borrar categoria lanza esta excepcion.</summary>
+    public ApiException? DeleteCategoryError { get; set; }
+
+    public Task DeleteCategoryAsync(int id)
+    {
+        if (DeleteCategoryError is not null) throw DeleteCategoryError;
+        DeletedCategories.Add(id);
+        return Task.CompletedTask;
+    }
+
     public Task<CategoryDto> CreateCategoryAsync(CategoryInput input)
     {
         if (CategoryError is not null) throw CategoryError;
