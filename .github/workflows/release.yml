@@ -25,13 +25,13 @@ jobs:
         # en la release de Android.
         shell: bash
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           # El historial completo y las etiquetas: el changelog se calcula
           # desde la etiqueta anterior.
           fetch-depth: 0
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 8.0.x
 

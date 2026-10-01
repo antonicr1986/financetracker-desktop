@@ -16,7 +16,7 @@ jobs:
     name: secrets
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           # El historial completo: un secreto borrado ayer sigue estando en el
           # commit que lo introdujo, y es ahi donde hay que encontrarlo.
@@ -40,9 +40,9 @@ jobs:
     # WPF solo compila en Windows: net8.0-windows no existe en Linux.
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 8.0.x
 
