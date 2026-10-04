@@ -9,7 +9,7 @@
   <Identity
     Name="CompanySL.FinanceTrackerDesktop"
     Publisher="CN=D976B926-EF94-45D3-94A6-4878360ECECC"
-    Version="1.0.4.0" />
+    Version="1.0.5.0" />
 
   <Properties>
     <DisplayName>FinanceTracker Desktop</DisplayName>
