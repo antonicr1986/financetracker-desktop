@@ -9,11 +9,11 @@
   <Identity
     Name="CompanySL.FinanceTrackerDesktop"
     Publisher="CN=D976B926-EF94-45D3-94A6-4878360ECECC"
-    Version="1.0.3.0" />
+    Version="1.0.4.0" />
 
   <Properties>
     <DisplayName>FinanceTracker Desktop</DisplayName>
-    <PublisherDisplayName>Company SL</PublisherDisplayName>
+    <PublisherDisplayName>Antonio Company</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>
 
