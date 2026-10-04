@@ -22,7 +22,7 @@ a un clic desde la pantalla de acceso. La API se duerme tras 20 minutos sin uso,
 así que el primer acceso del día puede tardar mientras se despiertan el
 servicio y la base de datos — la ventana lo avisa mientras espera.
 
-<a href="https://apps.microsoft.com/detail/9NT27R8DZ2DQ?hl=es-es"><img src="https://get.microsoft.com/images/es-es%20dark.svg" alt="Descargar de Microsoft Store" width="200"/></a>
+<a href="https://apps.microsoft.com/detail/9NT27R8DZ2DQ?hl=es-es"><img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Descargar de Microsoft Store" width="200"/></a>
 
 **La forma recomendada es instalarla desde Microsoft Store**, para Windows 10
 u 11 (x64 y ARM64): se instala con un clic, sin avisos de SmartScreen, y se
