@@ -1,1 +1,9 @@
-* text=auto eol=lf
+# Normaliza los saltos de linea: en el repositorio se guardan como LF, y en
+# Windows Git los convierte a CRLF al hacer checkout (core.autocrlf).
+# No se fuerza "eol=lf": dotnet format espera CRLF en Windows, que es donde
+# corre el CI, y con LF el paso de Lint falla.
+* text=auto
+
+# Binarios: que Git no intente tocarlos nunca
+*.png binary
+*.ico binary
