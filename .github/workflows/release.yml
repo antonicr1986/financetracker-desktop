@@ -128,7 +128,8 @@ jobs:
       # StoreUpload genera el .msixupload que se sube al Partner Center. No se
       # firma: la Store firma el paquete al publicarlo. Sin autoincremento de
       # version (la manda la etiqueta) ni paquete de prueba (necesitaria un
-      # certificado).
+      # certificado). /p:Version llega tambien a la app, que la muestra en la
+      # pantalla de acceso.
       - name: Build the Microsoft Store package
         shell: pwsh
         run: |
@@ -138,6 +139,7 @@ jobs:
             /p:UapAppxPackageBuildMode=StoreUpload `
             /p:AppxBundle=Always /p:AppxBundlePlatforms="x64|arm64" `
             /p:AppxAutoIncrementPackageRevision=false `
+            /p:Version="$env:VERSION" `
             /p:GenerateTestArtifacts=false `
             /p:AppxPackageDir="$PWD/msix/"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

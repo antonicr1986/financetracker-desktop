@@ -83,6 +83,12 @@
                 <Button Content="{DynamicResource login.createOne}" Command="{Binding GoToRegisterCommand}"
                         Style="{StaticResource LinkButton}" Foreground="{DynamicResource Brush.Text}" />
             </StackPanel>
+
+            <!-- Version instalada (la pone el code-behind). Sirve para saber que
+                 version se esta usando, por ejemplo tras una actualizacion de la
+                 Microsoft Store. -->
+            <TextBlock x:Name="VersionText" Style="{StaticResource MutedText}" FontSize="11"
+                       HorizontalAlignment="Center" Margin="0,16,0,0" />
         </StackPanel>
     </DockPanel>
 </Window>
