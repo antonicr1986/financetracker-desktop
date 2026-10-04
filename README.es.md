@@ -22,12 +22,18 @@ a un clic desde la pantalla de acceso. La API se duerme tras 20 minutos sin uso,
 así que el primer acceso del día puede tardar mientras se despiertan el
 servicio y la base de datos — la ventana lo avisa mientras espera.
 
-**[Descargar la última versión](https://github.com/antonicr1986/financetracker-desktop/releases/latest)**
-para Windows 10 u 11 (64 bits), con .NET incluido, así que no hay nada que
-instalar. La descarga recomendada es el `.zip`: descomprímelo y ejecuta
+<a href="https://apps.microsoft.com/detail/9NT27R8DZ2DQ?hl=es-es"><img src="https://get.microsoft.com/images/es-es%20dark.svg" alt="Descargar de Microsoft Store" width="200"/></a>
+
+**La forma recomendada es instalarla desde Microsoft Store**, para Windows 10
+u 11 (x64 y ARM64): se instala con un clic, sin avisos de SmartScreen, y se
+actualiza sola. Microsoft firma el paquete (MSIX) al publicarlo.
+
+También puedes **[descargarla desde GitHub](https://github.com/antonicr1986/financetracker-desktop/releases/latest)**
+sin pasar por la Store, para Windows 10 u 11 (64 bits), con .NET incluido, así
+que no hay nada que instalar. La descarga recomendada es el `.zip`: descomprímelo y ejecuta
 `FinanceTracker.Desktop.exe`. También hay un `.exe` único.
 
-La aplicación no está firmada y es nueva, así que el navegador y Windows pueden
+Esa versión no está firmada, así que el navegador y Windows pueden
 poner avisos. Son los esperados; para pasarlos:
 
 1. **Conserva la descarga.** En Edge: **…** → **Conservar** → **Mostrar más** →
@@ -143,15 +149,17 @@ El panel en tema claro y oscuro: los totales del mes, presupuestos y gastos por
 categoría uno al lado del otro, y los movimientos.
 
 <p>
-  <img src="screenshots/dashboard-light.png" alt="Panel en modo claro" width="640">
-  <img src="screenshots/dashboard-dark.png" alt="Panel en modo oscuro" width="640">
+  <img src="screenshots/store/MainLight.png" alt="Panel en modo claro" width="640">
+  <img src="screenshots/store/MainDark.png" alt="Panel en modo oscuro" width="640">
 </p>
 
-Registrar un movimiento y editar un presupuesto, cada uno en su diálogo.
+Editar un movimiento y registrar uno nuevo, cada uno en su diálogo y sin salir
+del panel. En el tema oscuro se ven además los presupuestos y los gastos por
+categoría desplegados.
 
 <p>
-  <img src="screenshots/new-transaction.png" alt="Registrar un movimiento" width="400">
-  <img src="screenshots/budget.png" alt="Editar un presupuesto" width="400">
+  <img src="screenshots/store/EditLight.png" alt="Editar un movimiento" width="640">
+  <img src="screenshots/store/NewMovDark.png" alt="Registrar un movimiento" width="640">
 </p>
 
 La pantalla de acceso, con la entrada a la cuenta de demostración en un clic y
@@ -452,6 +460,11 @@ incorrecta" o "sesión caducada" según la llamada.
   navegadores desconfían menos de él que de un `.exe` suelto, y una carpeta de
   archivos normales parece menos sospechosa a Defender que un ejecutable que se
   descomprime a sí mismo al arrancar.
+- **Microsoft Store**: un proyecto de empaquetado MSIX
+  (`FinanceTracker.Desktop.Package`, en `FinanceTracker.Desktop.Store.slnx`)
+  genera el paquete para x64 y ARM64 con un solo comando de MSBuild; la Store lo
+  firma al publicarlo. El CI usa `FinanceTracker.Desktop.slnx`, sin ese proyecto,
+  porque solo compila con el MSBuild de Visual Studio, no con `dotnet build`.
 - **Escaneo de secretos** con gitleaks sobre todo el historial, con la misma
   configuración que el resto de repositorios del proyecto y una regla más para
   credenciales escritas a mano en C#.

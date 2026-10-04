@@ -22,12 +22,18 @@ use, reachable in one click from the sign-in screen. The API sleeps after 20
 minutes of inactivity, so the first sign-in of the day can take a while as the
 app service and the database wake up — the window says so while it waits.
 
-**[Download the latest version](https://github.com/antonicr1986/financetracker-desktop/releases/latest)**
-for Windows 10 or 11 (64-bit), with .NET bundled, so there is nothing to
-install. The `.zip` is the recommended download: unzip it and run
+<a href="https://apps.microsoft.com/detail/9NT27R8DZ2DQ?hl=en-us"><img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get it from Microsoft" width="200"/></a>
+
+**The recommended way is to install it from the Microsoft Store**, for Windows
+10 or 11 (x64 and ARM64): one-click install, no SmartScreen warnings, and it
+updates itself. Microsoft signs the package (MSIX) when publishing it.
+
+You can also **[download it from GitHub](https://github.com/antonicr1986/financetracker-desktop/releases/latest)**
+without going through the Store, for Windows 10 or 11 (64-bit), with .NET
+bundled, so there is nothing to install. The `.zip` is the recommended download: unzip it and run
 `FinanceTracker.Desktop.exe`. A single `.exe` is there too.
 
-The app is not code-signed and is new, so the browser and Windows may put up
+That version is not code-signed, so the browser and Windows may put up
 warnings. They are expected; to get past them:
 
 1. **Keep the download.** In Edge: **…** → **Keep** → **Show more** → **Keep
@@ -135,15 +141,17 @@ The dashboard in light and dark themes: the month's totals, budgets and
 expenses by category side by side, and the transactions.
 
 <p>
-  <img src="screenshots/dashboard-light.png" alt="Dashboard in light mode" width="640">
-  <img src="screenshots/dashboard-dark.png" alt="Dashboard in dark mode" width="640">
+  <img src="screenshots/store/MainLight.png" alt="Dashboard in light mode" width="640">
+  <img src="screenshots/store/MainDark.png" alt="Dashboard in dark mode" width="640">
 </p>
 
-Recording a transaction and editing a budget, each in its own dialog.
+Editing a transaction and recording a new one, each in its own dialog without
+leaving the dashboard. The dark-theme shot also shows the budgets and the
+expenses by category expanded.
 
 <p>
-  <img src="screenshots/new-transaction.png" alt="Recording a transaction" width="400">
-  <img src="screenshots/budget.png" alt="Editing a budget" width="400">
+  <img src="screenshots/store/EditLight.png" alt="Editing a transaction" width="640">
+  <img src="screenshots/store/NewMovDark.png" alt="Recording a transaction" width="640">
 </p>
 
 The sign-in screen, with one-click entry into the demo account and the language
@@ -427,6 +435,12 @@ password" or "session expired" depending on the call.
   the recommended one because browsers are less wary of it than of a bare
   `.exe`, and a folder of ordinary files looks less suspicious to Defender
   than an executable that unpacks itself on start.
+- **Microsoft Store**: an MSIX packaging project
+  (`FinanceTracker.Desktop.Package`, in `FinanceTracker.Desktop.Store.slnx`)
+  builds the package for x64 and ARM64 with a single MSBuild command; the Store
+  signs it on publishing. CI uses `FinanceTracker.Desktop.slnx`, without that
+  project, because it only builds with Visual Studio's MSBuild, not with
+  `dotnet build`.
 - **Secret scanning** with gitleaks across the full history, with the same
   configuration as the other repositories in this project plus a rule for
   credentials written by hand in C#.
