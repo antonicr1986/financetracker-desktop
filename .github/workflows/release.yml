@@ -105,6 +105,50 @@ jobs:
             echo "$($asset.Name): $([math]::Round($asset.Length / 1MB, 1)) MB"
           }
 
+      # Paquete para Microsoft Store (MSIX, x64 + ARM64). El proyecto de
+      # empaquetado solo compila con el MSBuild de Visual Studio, no con
+      # "dotnet build"; el runner de Windows lo trae instalado.
+      - uses: microsoft/setup-msbuild@v2
+
+      # La version del paquete sale tambien de la etiqueta. MSIX usa cuatro
+      # numeros y la Store exige que el ultimo sea 0: v1.2.3 -> 1.2.3.0.
+      - name: Set the package version
+        shell: pwsh
+        run: |
+          $file = "FinanceTracker.Desktop.Package/Package.appxmanifest"
+          $xml = Get-Content $file -Raw
+          $new = [regex]::Replace($xml, '(<Identity[^>]*?Version=")[^"]*(")', "`${1}$env:VERSION.0`${2}")
+          if ($new -eq $xml -and -not $xml.Contains("Version=""$env:VERSION.0""")) {
+            echo "::error::Could not set the version in $file"
+            exit 1
+          }
+          Set-Content $file $new -NoNewline
+          Select-String -Path $file -Pattern '<Identity' -Context 0,3
+
+      # StoreUpload genera el .msixupload que se sube al Partner Center. No se
+      # firma: la Store firma el paquete al publicarlo. Sin autoincremento de
+      # version (la manda la etiqueta) ni paquete de prueba (necesitaria un
+      # certificado).
+      - name: Build the Microsoft Store package
+        shell: pwsh
+        run: |
+          msbuild FinanceTracker.Desktop.Package/FinanceTracker.Desktop.Package.wapproj `
+            /restore /t:Rebuild /verbosity:minimal `
+            /p:Configuration=Release /p:Platform=x64 `
+            /p:UapAppxPackageBuildMode=StoreUpload `
+            /p:AppxBundle=Always /p:AppxBundlePlatforms="x64|arm64" `
+            /p:AppxAutoIncrementPackageRevision=false `
+            /p:GenerateTestArtifacts=false `
+            /p:AppxPackageDir="$PWD/msix/"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $upload = Get-ChildItem msix -Filter *.msixupload -Recurse | Select-Object -First 1
+          if (-not $upload) {
+            echo "::error::No .msixupload was produced"
+            exit 1
+          }
+          Copy-Item $upload.FullName "financetracker-desktop-v$env:VERSION-store.msixupload"
+          echo "$($upload.Name): $([math]::Round($upload.Length / 1MB, 1)) MB"
+
       - name: Write the changelog
         run: |
           previous=$(git describe --tags --abbrev=0 "$GITHUB_REF_NAME^" 2>/dev/null || true)
@@ -115,6 +159,7 @@ jobs:
             echo
             echo "- **\`financetracker-desktop-v$VERSION-win-x64.zip\`** (recommended): unzip it and run \`FinanceTracker.Desktop.exe\` inside the folder."
             echo "- \`financetracker-desktop-v$VERSION-win-x64.exe\`: the same app as a single file."
+            echo "- \`financetracker-desktop-v$VERSION-store.msixupload\`: the Microsoft Store package (x64 + ARM64), to upload in Partner Center. Not meant to be installed directly."
             echo
             echo "Windows 10 or 11, 64-bit. Nothing to install: .NET is bundled. Sign in with one click on the demo account, or with your own."
             echo
@@ -145,5 +190,6 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             "financetracker-desktop-v$VERSION-win-x64.zip" \
             "financetracker-desktop-v$VERSION-win-x64.exe" \
+            "financetracker-desktop-v$VERSION-store.msixupload" \
             --title "FinanceTracker Desktop $VERSION" \
             --notes-file release-notes.md
