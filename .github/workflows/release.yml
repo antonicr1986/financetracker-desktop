@@ -46,7 +46,7 @@ jobs:
 
       # Nada se publica si las pruebas fallan.
       - name: Test
-        run: dotnet test --configuration Release
+        run: dotnet test FinanceTracker.Desktop.slnx --configuration Release
 
       # Dos formas de entregar lo mismo, las dos con .NET dentro (nada que instalar):
       #

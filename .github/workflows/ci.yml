@@ -46,14 +46,18 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      # Se indica la solucion de forma explicita: en la raiz hay dos.
+      # FinanceTracker.Desktop.slnx (app + pruebas) es la que usa el CI;
+      # FinanceTracker.Desktop.Store.slnx anade el proyecto de empaquetado MSIX,
+      # que solo compila con MSBuild de Visual Studio, no con "dotnet build".
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore FinanceTracker.Desktop.slnx
 
       # Lint: falla si algun fichero C# no sigue el .editorconfig (espacios,
       # sangria, lineas finales...). Solo comprueba; en local se arregla con
       # "dotnet format". No revisa XAML: dotnet format solo entiende C#.
       - name: Lint
-        run: dotnet format --no-restore --verify-no-changes --verbosity diagnostic
+        run: dotnet format FinanceTracker.Desktop.slnx --no-restore --verify-no-changes --verbosity diagnostic
 
       # Paquetes NuGet con vulnerabilidades conocidas, tambien transitivos.
       # "dotnet list package" termina bien aunque encuentre alguna: se busca
@@ -61,18 +65,18 @@ jobs:
       - name: Vulnerable packages
         shell: bash
         run: |
-          dotnet list package --vulnerable --include-transitive | tee vulnerable.txt
+          dotnet list FinanceTracker.Desktop.slnx package --vulnerable --include-transitive | tee vulnerable.txt
           if grep -q "has the following vulnerable packages" vulnerable.txt; then
             echo "::error::Vulnerable NuGet packages found (see the list above)"
             exit 1
           fi
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build FinanceTracker.Desktop.slnx --configuration Release --no-restore
 
       - name: Test
         run: >
-          dotnet test --configuration Release --no-build
+          dotnet test FinanceTracker.Desktop.slnx --configuration Release --no-build
           --logger "trx;LogFileName=results.trx" --results-directory TestResults
 
       # "dotnet test" termina bien tanto si las pruebas pasan como si no se

@@ -6,8 +6,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <!-- Runtimes para los que se restauran paquetes. El proyecto de empaquetado
+         MSIX (FinanceTracker.Desktop.Package) publica para cada uno y necesita
+         que NuGet haya generado su project.assets.json de antemano. -->
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
     <!-- Icono del .exe: explorador de archivos y barra de tareas. -->
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <!-- Ajustes de Windows para el .exe (reconocimiento de PPP por monitor). -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
