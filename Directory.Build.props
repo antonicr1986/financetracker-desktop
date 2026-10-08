@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!-- Permite restaurar y compilar los proyectos net8.0-windows (WPF) en Linux.
+         Lo necesita el "Automatic dependency submission" de GitHub (check
+         submit-nuget), que restaura los paquetes NuGet en un runner Linux.
+         En Windows no cambia nada. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+</Project>
