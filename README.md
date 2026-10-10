@@ -18,9 +18,10 @@ from a different platform. This one closes the circle in the same language as
 the API: C# on both ends.
 
 There is a **public demo account**, the same one the web and Android clients
-use, reachable in one click from the sign-in screen. The API sleeps after 20
-minutes of inactivity, so the first sign-in of the day can take a while as the
-app service and the database wake up — the window says so while it waits.
+use, reachable in one click from the sign-in screen. The API runs on Azure's free
+tier and sleeps when idle: the app wakes it up as soon as the sign-in window
+opens, so the wait happens while you read it — and if it still runs long, the
+window says so.
 
 <a href="https://apps.microsoft.com/detail/9NT27R8DZ2DQ?hl=en-us"><img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get it from Microsoft" width="200"/></a>
 

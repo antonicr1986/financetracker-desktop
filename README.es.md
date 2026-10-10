@@ -18,9 +18,10 @@ negocio desde una plataforma distinta. Este cierra el círculo en el mismo
 lenguaje que la API: C# en los dos extremos.
 
 Hay una **cuenta de demostración pública**, la misma que usan la web y Android,
-a un clic desde la pantalla de acceso. La API se duerme tras 20 minutos sin uso,
-así que el primer acceso del día puede tardar mientras se despiertan el
-servicio y la base de datos — la ventana lo avisa mientras espera.
+a un clic desde la pantalla de acceso. La API corre en el plan gratuito de
+Azure y se duerme sin uso: la aplicación la despierta en cuanto se abre la
+ventana de acceso, así que la espera ocurre mientras se lee — y si aun así se
+alarga, la ventana lo avisa.
 
 <a href="https://apps.microsoft.com/detail/9NT27R8DZ2DQ?hl=es-es"><img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Descargar de Microsoft Store" width="200"/></a>
 
