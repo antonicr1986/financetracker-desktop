@@ -66,6 +66,10 @@ public partial class App : Application
 
     private void ShowLogin(bool sessionExpired = false)
     {
+        // Precalentamiento: despierta la API y la base de datos mientras se
+        // muestra el login. No se espera; ver ApiClient.WarmUpAsync.
+        _ = api.WarmUpAsync();
+
         var viewModel = new LoginViewModel(api, session, localizer);
         if (sessionExpired) viewModel.ShowSessionExpired();
 

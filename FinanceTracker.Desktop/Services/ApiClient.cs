@@ -31,6 +31,26 @@ public class ApiClient : IAuthService, ITransactionService, ICategoryService, IB
         };
     }
 
+    /// <summary>
+    /// Despierta la API y la base de datos sin esperar a usar el resultado.
+    /// La API corre en el plan gratuito de Azure, que se descarga tras un rato
+    /// sin uso, y Azure SQL serverless se pausa a la hora. Se llama al abrir el
+    /// login (/health/ready consulta la base de datos), asi la espera ocurre
+    /// mientras se mira la pantalla y no al pulsar "Entrar". Cualquier fallo
+    /// se ignora: el login funciona igual, solo que con la espera de siempre.
+    /// </summary>
+    public async Task WarmUpAsync()
+    {
+        try
+        {
+            using var response = await http.GetAsync("health/ready");
+        }
+        catch (Exception)
+        {
+            // Sin red, timeout o la API caida: no es asunto del precalentamiento.
+        }
+    }
+
     public async Task<LoginResponse> LoginAsync(string email, string password)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/Users/login")
