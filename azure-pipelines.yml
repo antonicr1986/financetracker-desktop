@@ -1,0 +1,41 @@
+# CI de FinanceTracker Desktop (WPF + .NET 8) en Azure Pipelines
+# Solo valida: las releases y la Store siguen en GitHub Actions.
+
+trigger:
+  branches:
+    include: [ main ]
+
+pr:
+  branches:
+    include: [ main ]
+
+pool:
+  vmImage: windows-latest   # WPF solo compila en Windows
+
+variables:
+  solution: 'FinanceTracker.Desktop.slnx'
+
+steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: sdk
+      version: '8.x'
+    displayName: Instalar .NET 8
+
+  - task: UseDotNet@2
+    inputs:
+      packageType: sdk
+      version: '9.x'
+    displayName: Instalar SDK .NET 9 (necesario para .slnx)
+
+  - script: dotnet restore $(solution)
+    displayName: Restaurar paquetes
+
+  - script: dotnet format $(solution) --verify-no-changes --no-restore
+    displayName: Lint (dotnet format)
+
+  - script: dotnet build $(solution) --configuration Release --no-restore
+    displayName: Build
+
+  - script: dotnet test $(solution) --configuration Release --no-build
+    displayName: Tests (xUnit)
