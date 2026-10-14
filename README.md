@@ -446,6 +446,14 @@ password" or "session expired" depending on the call.
   configuration as the other repositories in this project plus a rule for
   credentials written by hand in C#.
 
+### Azure DevOps
+
+This repository is also copied automatically to Azure Repos
+(`mirror-azure.yml`) and validated there by Azure Pipelines
+(`azure-pipelines.yml`): format check, build and tests on a Windows agent. It only validates; releases and the Microsoft Store package stay in GitHub
+Actions. How the whole setup works is explained in the
+[API README](https://github.com/antonicr1986/FinanceTracker#-azure-devops).
+
 ## ⚙️ Running locally
 
 Windows, the .NET 8 SDK, and Visual Studio 2022 or any editor.

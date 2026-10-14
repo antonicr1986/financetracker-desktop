@@ -470,6 +470,14 @@ incorrecta" o "sesión caducada" según la llamada.
   configuración que el resto de repositorios del proyecto y una regla más para
   credenciales escritas a mano en C#.
 
+### Azure DevOps
+
+Este repositorio se copia también automáticamente a Azure Repos
+(`mirror-azure.yml`) y Azure Pipelines lo valida allí
+(`azure-pipelines.yml`): comprobación de formato, build y pruebas en un agente Windows. Solo valida; las releases y el paquete de Microsoft Store siguen en GitHub
+Actions. Cómo funciona todo el montaje se explica en el
+[README de la API](https://github.com/antonicr1986/FinanceTracker/blob/master/README.es.md#-azure-devops).
+
 ## ⚙️ Ejecutarlo en local
 
 Windows, el SDK de .NET 8 y Visual Studio 2022 o cualquier editor.
