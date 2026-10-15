@@ -445,6 +445,9 @@ password" or "session expired" depending on the call.
 - **Secret scanning** with gitleaks across the full history, with the same
   configuration as the other repositories in this project plus a rule for
   credentials written by hand in C#.
+- **Tight workflows**: the `GITHUB_TOKEN` is read-only by default (only the jobs
+  that need more ask for it) and every job has a time limit, so a stuck one does
+  not burn minutes for hours.
 
 ### Azure DevOps
 

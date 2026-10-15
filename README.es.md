@@ -469,6 +469,9 @@ incorrecta" o "sesión caducada" según la llamada.
 - **Escaneo de secretos** con gitleaks sobre todo el historial, con la misma
   configuración que el resto de repositorios del proyecto y una regla más para
   credenciales escritas a mano en C#.
+- **Workflows acotados**: el `GITHUB_TOKEN` es de solo lectura por defecto (solo
+  los jobs que lo necesitan piden mas permisos) y cada job tiene un tiempo
+  maximo, para que uno colgado no consuma minutos durante horas.
 
 ### Azure DevOps
 
