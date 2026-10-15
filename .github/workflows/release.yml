@@ -19,6 +19,8 @@ jobs:
     name: release
     # WPF solo compila en Windows.
     runs-on: windows-latest
+    # Publica tres veces (carpeta, exe unico y paquete MSIX x64 + ARM64)
+    timeout-minutes: 45
     defaults:
       run:
         # Git Bash, que viene en el runner de Windows: los mismos scripts que

@@ -11,10 +11,16 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Permisos minimos por defecto para el GITHUB_TOKEN: solo lectura del
+# codigo. Un job que necesite mas lo declara el mismo, solo para el.
+permissions:
+  contents: read
+
 jobs:
   secrets:
     name: secrets
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
         with:
@@ -39,6 +45,7 @@ jobs:
     name: build
     # WPF solo compila en Windows: net8.0-windows no existe en Linux.
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
 
