@@ -436,6 +436,12 @@ password" or "session expired" depending on the call.
   the recommended one because browsers are less wary of it than of a bare
   `.exe`, and a folder of ordinary files looks less suspicious to Defender
   than an executable that unpacks itself on start.
+- **Verifiable supply chain** on every release: a CycloneDX **SBOM** (the
+  packages inside the app, with version and hash) is published next to the
+  installers, and the `.zip`, the `.exe` and the Store package carry a **SLSA
+  build provenance attestation** signed with Sigstore, proving they came from
+  this workflow and that tag. Check it with
+  `gh attestation verify <file> --repo antonicr1986/financetracker-desktop`.
 - **Microsoft Store**: an MSIX packaging project
   (`FinanceTracker.Desktop.Package`, in `FinanceTracker.Desktop.Store.slnx`)
   builds the package for x64 and ARM64 with a single MSBuild command; the Store

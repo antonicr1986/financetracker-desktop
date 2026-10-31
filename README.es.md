@@ -461,6 +461,12 @@ incorrecta" o "sesión caducada" según la llamada.
   navegadores desconfían menos de él que de un `.exe` suelto, y una carpeta de
   archivos normales parece menos sospechosa a Defender que un ejecutable que se
   descomprime a sí mismo al arrancar.
+- **Cadena de suministro verificable** en cada release: un **SBOM** en formato
+  CycloneDX (la lista de paquetes que lleva la app, con versión y hash) se
+  publica junto a los instalables, y el `.zip`, el `.exe` y el paquete de la
+  Store llevan una **atestación de procedencia SLSA** firmada con Sigstore, que
+  demuestra que salieron de este workflow y de esa etiqueta. Se comprueba con
+  `gh attestation verify <archivo> --repo antonicr1986/financetracker-desktop`.
 - **Microsoft Store**: un proyecto de empaquetado MSIX
   (`FinanceTracker.Desktop.Package`, en `FinanceTracker.Desktop.Store.slnx`)
   genera el paquete para x64 y ARM64 con un solo comando de MSBuild; la Store lo

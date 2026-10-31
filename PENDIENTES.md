@@ -12,8 +12,8 @@ con `[x]` y se anota la fecha o el commit.
 - [x] Checksum SHA-256 de gitleaks verificado antes de ejecutarlo. (2026-10-31)
 - [x] `SECURITY.md` con cómo reportar vulnerabilidades en privado. (2026-10-31)
 - [x] `azure-pipelines.yml`: mismo análisis de dependencias que en GitHub Actions y `timeoutInMinutes`. (2026-10-31)
-- [ ] Generar un SBOM de la release y adjuntarlo junto a los instalables.
-- [ ] Atestación de procedencia de los instalables (`actions/attest-build-provenance`).
+- [x] SBOM CycloneDX de la release, adjunto a los instalables y atestado. (2026-10-31)
+- [x] Atestación de procedencia (SLSA) de los instalables con `actions/attest`. (2026-10-31)
 
 ## Hecho
 

@@ -11,8 +11,14 @@ on:
       - 'v*.*.*'
 
 # Crear la Release necesita escribir en el repo. Solo este workflow lo pide.
+# Las atestaciones de procedencia y SBOM necesitan ademas:
+# - id-token: pedir el certificado de firma a Sigstore con el OIDC del run.
+# - attestations y artifact-metadata: guardar la atestacion en el repo.
 permissions:
   contents: write
+  id-token: write
+  attestations: write
+  artifact-metadata: write
 
 jobs:
   release:
@@ -153,6 +159,44 @@ jobs:
           Copy-Item $upload.FullName "financetracker-desktop-v$env:VERSION-store.msixupload"
           echo "$($upload.Name): $([math]::Round($upload.Length / 1MB, 1)) MB"
 
+      # SBOM (lista de materiales del software) en formato CycloneDX: los
+      # paquetes NuGet que lleva la aplicacion, con version y hash. Se publica
+      # junto a los instalables. No incluye el runtime de .NET que va dentro
+      # del instalable autocontenido: solo las dependencias del proyecto.
+      # La version de la herramienta va fijada para que el SBOM sea reproducible.
+      - name: Generate the SBOM
+        run: |
+          dotnet tool install CycloneDX --version 6.3.1 --tool-path .tools
+          ./.tools/dotnet-CycloneDX FinanceTracker.Desktop/FinanceTracker.Desktop.csproj \
+            --runtime win-x64 --configuration Release \
+            --output-format Json --spec-version 1.6 \
+            --set-name FinanceTracker.Desktop --set-version "$VERSION" \
+            --output . --filename "financetracker-desktop-v$VERSION-sbom.cdx.json"
+          echo "Components: $(grep -c '"bom-ref"' "financetracker-desktop-v$VERSION-sbom.cdx.json")"
+
+      # Atestacion de procedencia (SLSA): firma con Sigstore que demuestra que
+      # estos archivos salieron de este workflow, en este repo y de este commit.
+      # Cualquiera puede comprobarlo con:
+      #   gh attestation verify <archivo> --repo antonicr1986/financetracker-desktop
+      - name: Attest build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: |
+            financetracker-desktop-v${{ env.VERSION }}-win-x64.zip
+            financetracker-desktop-v${{ env.VERSION }}-win-x64.exe
+            financetracker-desktop-v${{ env.VERSION }}-store.msixupload
+
+      # Atestacion del SBOM: une la lista de materiales a los mismos archivos,
+      # firmada igual, para que no se pueda cambiar despues sin que se note.
+      - name: Attest the SBOM
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: |
+            financetracker-desktop-v${{ env.VERSION }}-win-x64.zip
+            financetracker-desktop-v${{ env.VERSION }}-win-x64.exe
+            financetracker-desktop-v${{ env.VERSION }}-store.msixupload
+          sbom-path: financetracker-desktop-v${{ env.VERSION }}-sbom.cdx.json
+
       - name: Write the changelog
         run: |
           previous=$(git describe --tags --abbrev=0 "$GITHUB_REF_NAME^" 2>/dev/null || true)
@@ -164,6 +208,7 @@ jobs:
             echo "- **\`financetracker-desktop-v$VERSION-win-x64.zip\`** (recommended): unzip it and run \`FinanceTracker.Desktop.exe\` inside the folder."
             echo "- \`financetracker-desktop-v$VERSION-win-x64.exe\`: the same app as a single file."
             echo "- \`financetracker-desktop-v$VERSION-store.msixupload\`: the Microsoft Store package (x64 + ARM64), to upload in Partner Center. Not meant to be installed directly."
+            echo "- \`financetracker-desktop-v$VERSION-sbom.cdx.json\`: the SBOM (CycloneDX), the list of packages inside the app."
             echo
             echo "Windows 10 or 11, 64-bit. Nothing to install: .NET is bundled. Sign in with one click on the demo account, or with your own."
             echo
@@ -174,6 +219,14 @@ jobs:
             echo "1. **Keep the download.** In Edge: **…** > **Keep** > **Show more** > **Keep anyway**. In Chrome: **Keep**."
             echo "2. **Unblock the file before opening it.** Right-click the \`.zip\` (or the \`.exe\`) > **Properties** > tick **Unblock** > **OK**. Do it on the \`.zip\` *before* extracting, and every file inside comes out unblocked."
             echo "3. If SmartScreen still appears: **More info** > **Run anyway**."
+            echo
+            echo "### Verify the download"
+            echo
+            echo "Every file has a signed build provenance attestation: proof that it was built by this repository's release workflow from this tag. With the [GitHub CLI](https://cli.github.com/):"
+            echo
+            echo '```'
+            echo "gh attestation verify financetracker-desktop-v$VERSION-win-x64.zip --repo $GITHUB_REPOSITORY"
+            echo '```'
             echo
             if [ -n "$previous" ]; then
               echo "### Changes since $previous"
@@ -195,5 +248,6 @@ jobs:
             "financetracker-desktop-v$VERSION-win-x64.zip" \
             "financetracker-desktop-v$VERSION-win-x64.exe" \
             "financetracker-desktop-v$VERSION-store.msixupload" \
+            "financetracker-desktop-v$VERSION-sbom.cdx.json" \
             --title "FinanceTracker Desktop $VERSION" \
             --notes-file release-notes.md

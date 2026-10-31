@@ -22,7 +22,7 @@
     <!-- Version de la app: la muestra la pantalla de acceso. El release la
          sobrescribe con la de la etiqueta (-p:Version); se mantiene igual a
          la ultima etiqueta para que una compilacion local muestre lo mismo. -->
-    <Version>1.4.2</Version>
+    <Version>1.4.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
