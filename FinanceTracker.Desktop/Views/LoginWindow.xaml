@@ -51,8 +51,19 @@
                                TextWrapping="Wrap" Margin="0,0,0,12" />
 
                     <!-- IsDefault: Enter en cualquier caja pulsa este boton. -->
-                    <Button Content="{DynamicResource login.submit}" Command="{Binding LoginCommand}" IsDefault="True"
-                            Style="{StaticResource PrimaryButton}" Padding="0,9" />
+                    <Button Command="{Binding LoginCommand}" IsDefault="True" Padding="0,9">
+                        <!-- Mientras espera, el boton dice que esta en ello, como en la web y Android. -->
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                <Setter Property="Content" Value="{DynamicResource login.submit}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                        <Setter Property="Content" Value="{DynamicResource login.submitting}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
 
                     <TextBlock Text="{DynamicResource login.wakingUp}"
                                Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,12,0,0"

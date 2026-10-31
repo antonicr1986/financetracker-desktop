@@ -50,8 +50,19 @@
                                TextWrapping="Wrap" Margin="0,0,0,12" />
 
                     <!-- IsDefault: Enter en cualquier caja crea la cuenta. -->
-                    <Button Content="{DynamicResource register.title}" Command="{Binding RegisterCommand}" IsDefault="True"
-                            Style="{StaticResource PrimaryButton}" Padding="0,9" />
+                    <Button Command="{Binding RegisterCommand}" IsDefault="True" Padding="0,9">
+                        <!-- Mientras espera, el boton dice que esta en ello, como en la web y Android. -->
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                <Setter Property="Content" Value="{DynamicResource register.title}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                        <Setter Property="Content" Value="{DynamicResource register.submitting}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
 
                     <TextBlock Text="{DynamicResource login.wakingUp}" Style="{StaticResource MutedText}"
                                TextWrapping="Wrap" Margin="0,12,0,0"

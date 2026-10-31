@@ -26,6 +26,7 @@ public static class Strings
         ["login.password"] = "Contraseña",
         ["login.passwordPlaceholder"] = "Tu contraseña",
         ["login.submit"] = "Entrar",
+        ["login.submitting"] = "Entrando…",
         ["login.or"] = "o",
         ["login.demo"] = "Entrar con la cuenta de demostración",
         ["login.demoHint"] = "Datos de ejemplo compartidos, sin registrarse.",
@@ -36,6 +37,7 @@ public static class Strings
 
         ["register.windowTitle"] = "FinanceTracker — Crear cuenta",
         ["register.title"] = "Crear cuenta",
+        ["register.submitting"] = "Creando cuenta…",
         ["register.subtitle"] = "Empieza a llevar tus finanzas",
         ["register.name"] = "Nombre",
         ["register.namePlaceholder"] = "Tu nombre",
@@ -152,6 +154,7 @@ public static class Strings
         ["login.password"] = "Password",
         ["login.passwordPlaceholder"] = "Your password",
         ["login.submit"] = "Sign in",
+        ["login.submitting"] = "Signing in…",
         ["login.or"] = "or",
         ["login.demo"] = "Sign in with the demo account",
         ["login.demoHint"] = "Shared sample data, no sign-up needed.",
@@ -162,6 +165,7 @@ public static class Strings
 
         ["register.windowTitle"] = "FinanceTracker — Create account",
         ["register.title"] = "Create account",
+        ["register.submitting"] = "Creating account…",
         ["register.subtitle"] = "Start tracking your finances",
         ["register.name"] = "Name",
         ["register.namePlaceholder"] = "Your name",
