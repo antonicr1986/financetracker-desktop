@@ -468,7 +468,13 @@ incorrecta" o "sesión caducada" según la llamada.
   porque solo compila con el MSBuild de Visual Studio, no con `dotnet build`.
 - **Escaneo de secretos** con gitleaks sobre todo el historial, con la misma
   configuración que el resto de repositorios del proyecto y una regla más para
-  credenciales escritas a mano en C#.
+  credenciales escritas a mano en C#. El binario de gitleaks se comprueba con su
+  SHA-256 oficial antes de ejecutarlo.
+- **Acciones fijadas por SHA**: cada `uses:` apunta a un commit concreto (con la
+  versión en un comentario), no a una etiqueta que podría moverse. Dependabot
+  las sigue actualizando.
+- **Política de seguridad** en `SECURITY.md`: las vulnerabilidades se avisan en
+  privado con *Report a vulnerability*, no en un issue público.
 - **Workflows acotados**: el `GITHUB_TOKEN` es de solo lectura por defecto (solo
   los jobs que lo necesitan piden mas permisos) y cada job tiene un tiempo
   maximo, para que uno colgado no consuma minutos durante horas.
@@ -477,7 +483,8 @@ incorrecta" o "sesión caducada" según la llamada.
 
 Este repositorio se copia también automáticamente a Azure Repos
 (`mirror-azure.yml`) y Azure Pipelines lo valida allí
-(`azure-pipelines.yml`): comprobación de formato, build y pruebas en un agente Windows. Solo valida; las releases y el paquete de Microsoft Store siguen en GitHub
+(`azure-pipelines.yml`): comprobación de formato, paquetes NuGet vulnerables,
+build y pruebas en un agente Windows, con un tiempo máximo de 30 minutos. Solo valida; las releases y el paquete de Microsoft Store siguen en GitHub
 Actions. Cómo funciona todo el montaje se explica en el
 [README de la API](https://github.com/antonicr1986/FinanceTracker/blob/master/README.es.md#-azure-devops).
 

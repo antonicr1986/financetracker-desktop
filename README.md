@@ -444,7 +444,13 @@ password" or "session expired" depending on the call.
   `dotnet build`.
 - **Secret scanning** with gitleaks across the full history, with the same
   configuration as the other repositories in this project plus a rule for
-  credentials written by hand in C#.
+  credentials written by hand in C#. The gitleaks binary is checked against its
+  official SHA-256 before it runs.
+- **Actions pinned by SHA**: every `uses:` points to a specific commit (with
+  the version in a comment), not to a tag that could move. Dependabot keeps
+  updating them.
+- **Security policy** in `SECURITY.md`: vulnerabilities are reported privately
+  through *Report a vulnerability*, not in a public issue.
 - **Tight workflows**: the `GITHUB_TOKEN` is read-only by default (only the jobs
   that need more ask for it) and every job has a time limit, so a stuck one does
   not burn minutes for hours.
@@ -453,7 +459,8 @@ password" or "session expired" depending on the call.
 
 This repository is also copied automatically to Azure Repos
 (`mirror-azure.yml`) and validated there by Azure Pipelines
-(`azure-pipelines.yml`): format check, build and tests on a Windows agent. It only validates; releases and the Microsoft Store package stay in GitHub
+(`azure-pipelines.yml`): format check, vulnerable NuGet packages, build and
+tests on a Windows agent, with a 30-minute time limit. It only validates; releases and the Microsoft Store package stay in GitHub
 Actions. How the whole setup works is explained in the
 [API README](https://github.com/antonicr1986/FinanceTracker#-azure-devops).
 

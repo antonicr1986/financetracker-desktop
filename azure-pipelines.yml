@@ -15,27 +15,43 @@ pool:
 variables:
   solution: 'FinanceTracker.Desktop.slnx'
 
-steps:
-  - task: UseDotNet@2
-    inputs:
-      packageType: sdk
-      version: '8.x'
-    displayName: Instalar .NET 8
+jobs:
+  - job: build
+    displayName: Build y pruebas
+    # Un job colgado no consume minutos durante horas (60 min por defecto).
+    timeoutInMinutes: 30
+    steps:
+      - task: UseDotNet@2
+        inputs:
+          packageType: sdk
+          version: '8.x'
+        displayName: Instalar .NET 8
 
-  - task: UseDotNet@2
-    inputs:
-      packageType: sdk
-      version: '9.x'
-    displayName: Instalar SDK .NET 9 (necesario para .slnx)
+      - task: UseDotNet@2
+        inputs:
+          packageType: sdk
+          version: '9.x'
+        displayName: Instalar SDK .NET 9 (necesario para .slnx)
 
-  - script: dotnet restore $(solution)
-    displayName: Restaurar paquetes
+      - script: dotnet restore $(solution)
+        displayName: Restaurar paquetes
 
-  - script: dotnet format $(solution) --verify-no-changes --no-restore
-    displayName: Lint (dotnet format)
+      - script: dotnet format $(solution) --verify-no-changes --no-restore
+        displayName: Lint (dotnet format)
 
-  - script: dotnet build $(solution) --configuration Release --no-restore
-    displayName: Build
+      # Paquetes NuGet con vulnerabilidades conocidas, tambien transitivos,
+      # igual que en GitHub Actions. "dotnet list package" termina bien aunque
+      # encuentre alguna: se busca en su salida la frase que lo indica.
+      - bash: |
+          dotnet list $(solution) package --vulnerable --include-transitive | tee vulnerable.txt
+          if grep -q "has the following vulnerable packages" vulnerable.txt; then
+            echo "##vso[task.logissue type=error]Vulnerable NuGet packages found (see the list above)"
+            exit 1
+          fi
+        displayName: Paquetes vulnerables
 
-  - script: dotnet test $(solution) --configuration Release --no-build
-    displayName: Tests (xUnit)
+      - script: dotnet build $(solution) --configuration Release --no-restore
+        displayName: Build
+
+      - script: dotnet test $(solution) --configuration Release --no-build
+        displayName: Tests (xUnit)

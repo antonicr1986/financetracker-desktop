@@ -22,19 +22,27 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # El historial completo: un secreto borrado ayer sigue estando en el
           # commit que lo introdujo, y es ahi donde hay que encontrarlo.
           fetch-depth: 0
 
       - name: Install gitleaks
+        env:
+          # SHA-256 publicado en gitleaks_8.21.2_checksums.txt de la release
+          # oficial. Al subir de version hay que cambiar los dos valores.
+          GITLEAKS_VERSION: 8.21.2
+          GITLEAKS_SHA256: 5bc41815076e6ed6ef8fbecc9d9b75bcae31f39029ceb55da08086315316e3ba
         run: |
           # --retry cubre los cortes de red del runner, que no dicen nada del
           # codigo. Sin esto, un fallo transitorio deja el pipeline en rojo.
           curl -sSL --retry 5 --retry-delay 3 --retry-all-errors --fail \
-            https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
             -o gitleaks.tar.gz
+          # Si el archivo descargado no es exactamente el publicado (descarga
+          # corrupta o binario manipulado), se para aqui y no se ejecuta.
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum --check --strict
           tar -xzf gitleaks.tar.gz gitleaks
           sudo mv gitleaks /usr/local/bin/
 
@@ -47,9 +55,9 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-dotnet@v6
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           dotnet-version: 8.0.x
 
@@ -112,7 +120,7 @@ jobs:
 
       - name: Upload the test report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: test-report
           path: TestResults/
@@ -127,7 +135,7 @@ jobs:
           --output publish
 
       - name: Upload the app
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: financetracker-desktop-win-x64
           path: publish/
