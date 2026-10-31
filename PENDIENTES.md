@@ -5,9 +5,9 @@ con `[x]` y se anota la fecha o el commit.
 
 ## Repositorio y pipeline
 
-- [ ] **SAST con CodeQL** (Settings → Code security → CodeQL, Default setup).
-- [ ] Dependabot alerts + security updates, y secret scanning con push protection.
-- [ ] Branch protection en `main` (PR obligatoria, checks en verde, sin force push).
+- [x] **SAST con CodeQL** (Settings → Code security → CodeQL, Default setup).
+- [x] Dependabot alerts + security updates, y secret scanning con push protection.
+- [x] Ruleset `proteger-main`: sin borrado ni force push en `main` (sin PR obligatoria: se trabaja con push directo).
 - [ ] Fijar las actions por SHA y añadir `.github/dependabot.yml` con `github-actions`.
 - [ ] Verificar el checksum de gitleaks al descargarlo.
 - [ ] `SECURITY.md` con cómo reportar vulnerabilidades.
