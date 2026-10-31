@@ -18,13 +18,17 @@ public partial class LoginViewModel : ObservableObject, IDisposable
     // idioma con un error en pantalla, se vuelve a escribir en el nuevo.
     private Func<string>? error;
 
-    public LoginViewModel(IAuthService auth, Session session, Localizer localizer)
+    public LoginViewModel(IAuthService auth, Session session, Localizer localizer, TimeSpan? wakingNoticeDelay = null)
     {
         this.auth = auth;
         this.session = session;
         this.localizer = localizer;
+        WakingNotice = new WakingNotice(wakingNoticeDelay);
         localizer.Changed += OnLanguageChanged;
     }
+
+    /// <summary>"El servidor esta despertando" si entrar tarda mas de unos segundos.</summary>
+    public WakingNotice WakingNotice { get; }
 
     [ObservableProperty]
     private string email = "";
@@ -93,6 +97,7 @@ public partial class LoginViewModel : ObservableObject, IDisposable
     private async Task SignInAsync(string email, string password)
     {
         IsBusy = true;
+        WakingNotice.Start();
         try
         {
             var login = await auth.LoginAsync(email, password);
@@ -105,10 +110,15 @@ public partial class LoginViewModel : ObservableObject, IDisposable
         }
         finally
         {
+            WakingNotice.Stop();
             IsBusy = false;
         }
     }
 
     /// <summary>Deja de escuchar al Localizer, que vive mas que esta pantalla.</summary>
-    public void Dispose() => localizer.Changed -= OnLanguageChanged;
+    public void Dispose()
+    {
+        localizer.Changed -= OnLanguageChanged;
+        WakingNotice.Stop();
+    }
 }

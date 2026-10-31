@@ -20,13 +20,17 @@ public partial class RegisterViewModel : ObservableObject, IDisposable
     /// <summary>Como escribir el error actual; ver LoginViewModel.</summary>
     private Func<string>? error;
 
-    public RegisterViewModel(IAuthService auth, Session session, Localizer localizer)
+    public RegisterViewModel(IAuthService auth, Session session, Localizer localizer, TimeSpan? wakingNoticeDelay = null)
     {
         this.auth = auth;
         this.session = session;
         this.localizer = localizer;
+        WakingNotice = new WakingNotice(wakingNoticeDelay);
         localizer.Changed += OnLanguageChanged;
     }
+
+    /// <summary>El mismo aviso que el login; ver WakingNotice.</summary>
+    public WakingNotice WakingNotice { get; }
 
     [ObservableProperty] private string name = "";
     [ObservableProperty] private string email = "";
@@ -74,6 +78,7 @@ public partial class RegisterViewModel : ObservableObject, IDisposable
         }
 
         IsBusy = true;
+        WakingNotice.Start();
         try
         {
             await auth.RegisterAsync(trimmedName, trimmedEmail, Password,
@@ -92,6 +97,7 @@ public partial class RegisterViewModel : ObservableObject, IDisposable
         }
         finally
         {
+            WakingNotice.Stop();
             IsBusy = false;
         }
     }
@@ -104,5 +110,9 @@ public partial class RegisterViewModel : ObservableObject, IDisposable
 
     private void OnLanguageChanged(object? sender, EventArgs e) => SetError(error);
 
-    public void Dispose() => localizer.Changed -= OnLanguageChanged;
+    public void Dispose()
+    {
+        localizer.Changed -= OnLanguageChanged;
+        WakingNotice.Stop();
+    }
 }

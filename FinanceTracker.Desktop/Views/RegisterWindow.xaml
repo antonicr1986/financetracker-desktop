@@ -53,9 +53,9 @@
                     <Button Content="{DynamicResource register.title}" Command="{Binding RegisterCommand}" IsDefault="True"
                             Style="{StaticResource PrimaryButton}" Padding="0,9" />
 
-                    <TextBlock Text="{DynamicResource login.connecting}" Style="{StaticResource MutedText}"
+                    <TextBlock Text="{DynamicResource login.wakingUp}" Style="{StaticResource MutedText}"
                                TextWrapping="Wrap" Margin="0,12,0,0"
-                               Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+                               Visibility="{Binding WakingNotice.IsVisible, Converter={StaticResource BoolToVisibility}}" />
                 </StackPanel>
             </Border>
 
