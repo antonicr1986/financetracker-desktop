@@ -49,6 +49,11 @@ poner avisos. Son los esperados; para pasarlos:
 
 - **Acceso con JWT** contra la API desplegada, con mensajes claros para una
   contraseña incorrecta y para un fallo de conexión.
+- **Inicio de sesión con Google**: "Continuar con Google" abre el navegador del
+  sistema para elegir la cuenta, y la app envía el ID token de Google a la API,
+  que lo valida y abre la sesión igual que con contraseña. Sin cuenta, la API la
+  crea (categorías de partida en el idioma de la interfaz); con una cuenta ya
+  existente con ese email verificado, la vincula.
 - **Entrada a la cuenta de demostración con un clic**, sin rellenar el
   formulario.
 - **Una sesión que sobrevive a cerrar la aplicación.** El token se guarda
@@ -173,6 +178,7 @@ el cambio de idioma y de tema en la barra de título única.
 - **.NET 8** y **WPF**
 - **MVVM** con [CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)
 - **HttpClient** con `System.Net.Http.Json`
+- **Google.Apis.Auth** para el inicio de sesión con Google (navegador del sistema + puerto local)
 - **xUnit** para las pruebas
 
 ## 📁 Estructura
@@ -340,17 +346,31 @@ así que tiene pruebas unitarias; `ThemeManager` solo pinta. La elección se
 guarda en `%LocalAppData%\FinanceTracker\settings.json`, aparte de la sesión,
 para que cerrar sesión no la reinicie.
 
+**El inicio de sesión con Google usa el navegador del sistema, y su secreto no
+está en el repo.** `GoogleSignIn` se apoya en la librería oficial de Google:
+abre el navegador, recibe la respuesta en un puerto local (`127.0.0.1`) y no
+guarda ningún token de Google en disco; el ID token solo se cambia una vez por
+nuestro JWT. Las apps de escritorio necesitan su propio cliente OAuth de tipo
+"App de escritorio", así que la API acepta dos audiencias: `Google:ClientId`
+(web y Android) y `Google:DesktopClientId`. El secreto de cliente se inyecta al
+compilar: MSBuild lee la variable de entorno `GOOGLE_DESKTOP_CLIENT_SECRET` (un
+secret de GitHub en el workflow de release) y la deja en el ensamblado. Una
+compilación sin ella funciona igual; solo el botón de Google muestra un aviso.
+`LoginViewModel` recibe un `IGoogleSignIn`, así que sus pruebas usan uno falso,
+sin navegador.
+
 **El tiempo de espera es de 120 segundos, no los 100 por defecto.** Despertar
 el plan gratuito de App Service y la base de datos serverless pausada a la vez
 puede pasar de 100 segundos en la primera petición del día.
 
 ## 🧪 Pruebas
 
-`dotnet test` — 160 pruebas, sin ventanas ni red.
+`dotnet test` — 164 pruebas, sin ventanas ni red.
 
 Veinticinco cubren los ViewModels. Acceso: campos vacíos, éxito, contraseña
-incorrecta, sin conexión, y el botón de la demo, que usa sus credenciales sin
-tocar ni exigir el formulario. Panel: se elige el mes más reciente, cambio de mes,
+incorrecta, sin conexión, el botón de la demo, que usa sus credenciales sin
+tocar ni exigir el formulario, y el inicio de sesión con Google (envía el token
+y el idioma y abre la sesión; si se cancela, avisa y no la abre). Panel: se elige el mes más reciente, cambio de mes,
 sin datos, errores, sesión caducada, cierre de sesión, y que al guardar se
 recarga y salta al mes del movimiento mientras que cancelar no recarga. El
 diálogo de movimiento: valores iniciales de uno nuevo, categorías filtradas por
@@ -503,6 +523,10 @@ Windows, el SDK de .NET 8 y Visual Studio 2022 o cualquier editor.
     dotnet run --project FinanceTracker.Desktop
 
 La URL de la API es `ApiClient.BaseUrl`, en `Services/ApiClient.cs`.
+
+Para probar "Continuar con Google" en local, define una vez el secreto del
+cliente de escritorio (`setx GOOGLE_DESKTOP_CLIENT_SECRET "..."`) y reinicia la
+terminal o Visual Studio. Sin él, todo lo demás funciona igual.
 
 ## ✍️ Autor
 

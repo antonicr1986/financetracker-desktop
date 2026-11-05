@@ -49,6 +49,11 @@ warnings. They are expected; to get past them:
 - **Sign-in with JWT** against the deployed API, with clear messages for a
   wrong password and for a connection failure.
 - **One-click entry into the demo account**, without filling in the form.
+- **Sign-in with Google**: "Continue with Google" opens the system browser to
+  choose the account, and the app sends the Google ID token to the API, which
+  validates it and opens the session as with a password. With no account yet,
+  the API creates one (starter categories in the interface language); with an
+  existing account for that verified email, it links it.
 - **A session that survives closing the app.** The token is kept encrypted
   with Windows' DPAPI, so the app opens straight on the dashboard while it is
   valid; once it has expired, it opens on sign-in with a notice. Signing out
@@ -165,6 +170,7 @@ and theme switches in the single title bar.
 - **.NET 8** and **WPF**
 - **MVVM** with [CommunityToolkit.Mvvm](https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/)
 - **HttpClient** with `System.Net.Http.Json`
+- **Google.Apis.Auth** for Google sign-in (system browser + local port)
 - **xUnit** for the tests
 
 ## 📁 Project structure
@@ -323,17 +329,30 @@ reference to WPF, so it is unit-tested; `ThemeManager` only paints. The choice
 is kept in `%LocalAppData%\FinanceTracker\settings.json`, apart from the
 session, so signing out does not reset it.
 
+**Google sign-in uses the system browser, and its secret is not in the
+repo.** `GoogleSignIn` relies on Google's own library: it opens the browser,
+receives the answer on a local port (`127.0.0.1`) and keeps no Google token on
+disk — the ID token is only exchanged once for our JWT. Desktop apps need their
+own "Desktop app" OAuth client, so the API accepts two audiences:
+`Google:ClientId` (web and Android) and `Google:DesktopClientId`. The client
+secret is injected at build time: MSBuild reads the
+`GOOGLE_DESKTOP_CLIENT_SECRET` environment variable (a GitHub secret in the
+release workflow) into the assembly. A build without it still works; the
+Google button just shows an error. `LoginViewModel` receives an
+`IGoogleSignIn`, so its tests use a fake one with no browser.
+
 **The timeout is 120 seconds, not the default 100.** Waking the free App
 Service plan and the paused serverless database at the same time can take
 longer than 100 seconds on the first request of the day.
 
 ## 🧪 Tests
 
-`dotnet test` — 160 tests, with no window and no network.
+`dotnet test` — 164 tests, with no window and no network.
 
 Twenty-five cover the ViewModels. Sign-in: empty fields, success, wrong
-password, no connection, and the demo button using the demo credentials
-without touching or requiring the form. Dashboard: newest month selected, changing month,
+password, no connection, the demo button using the demo credentials
+without touching or requiring the form, and Google sign-in (token and language
+sent, session started; cancelled, with a message and no session). Dashboard: newest month selected, changing month,
 empty data, errors, expired session, signing out, and that saving reloads and
 jumps to the saved transaction's month while cancelling does not reload. The
 transaction dialog: defaults for a new one, categories filtered by type, the
@@ -479,6 +498,10 @@ Windows, the .NET 8 SDK, and Visual Studio 2022 or any editor.
     dotnet run --project FinanceTracker.Desktop
 
 The API URL is `ApiClient.BaseUrl`, in `Services/ApiClient.cs`.
+
+To try "Continue with Google" locally, set the desktop client secret once
+(`setx GOOGLE_DESKTOP_CLIENT_SECRET "..."`) and restart the terminal or Visual
+Studio. Without it everything else works the same.
 
 ## ✍️ Author
 
