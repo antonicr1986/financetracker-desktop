@@ -27,6 +27,10 @@ jobs:
     runs-on: windows-latest
     # Publica tres veces (carpeta, exe unico y paquete MSIX x64 + ARM64)
     timeout-minutes: 45
+    env:
+      # MSBuild lo lee como propiedad y lo incrusta en el ejecutable para el
+      # inicio de sesion con Google (ver GoogleSignIn.cs). No esta en el repo.
+      GOOGLE_DESKTOP_CLIENT_SECRET: ${{ secrets.GOOGLE_DESKTOP_CLIENT_SECRET }}
     defaults:
       run:
         # Git Bash, que viene en el runner de Windows: los mismos scripts que

@@ -42,6 +42,9 @@ public class RegisterViewModelTests
     /// <summary>API falsa de acceso: apunta el orden de las llamadas.</summary>
     private class FakeAuth : IAuthService
     {
+        public Task<LoginResponse> GoogleLoginAsync(string idToken, string language) =>
+            throw new InvalidOperationException("Sin usar en estas pruebas");
+
         public List<string> Calls { get; } = [];
         public ApiException? RegisterError { get; set; }
         public ApiException? LoginError { get; set; }

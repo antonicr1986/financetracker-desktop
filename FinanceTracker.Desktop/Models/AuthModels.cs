@@ -8,6 +8,9 @@ public record LoginRequest(string Email, string Password);
 /// <summary>Cuerpo de POST /api/Users/register (RegisterUserDto).</summary>
 public record RegisterRequest(string Name, string Email, string Password, string Language);
 
+/// <summary>Cuerpo de POST /api/Users/google (GoogleLoginDto).</summary>
+public record GoogleLoginRequest(string IdToken, string Language);
+
 public record UserInfo(int Id, string Name, string Email);
 
 public record LoginResponse(string Token, DateTime Expiration, UserInfo User);

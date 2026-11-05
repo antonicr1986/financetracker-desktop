@@ -20,6 +20,16 @@ public class LoginViewModelTests
         public Task<UserInfo> RegisterAsync(string name, string email, string password, string language) =>
             throw new InvalidOperationException("El login no registra");
 
+        public string? LastGoogleIdToken { get; private set; }
+        public string? LastGoogleLanguage { get; private set; }
+
+        public Task<LoginResponse> GoogleLoginAsync(string idToken, string language)
+        {
+            LastGoogleIdToken = idToken;
+            LastGoogleLanguage = language;
+            return Task.FromResult(Success("maria@gmail.com"));
+        }
+
         public Task<LoginResponse> LoginAsync(string email, string password)
         {
             Calls++;
@@ -27,6 +37,48 @@ public class LoginViewModelTests
             LastPassword = password;
             return Task.FromResult(Handler(email, password));
         }
+    }
+
+    /// <summary>Sustituye al navegador: devuelve el token o falla como si se cancelara.</summary>
+    private class FakeGoogleSignIn(string? idToken) : IGoogleSignIn
+    {
+        public Task<string> GetIdTokenAsync() =>
+            idToken is null
+                ? throw new ApiException(ApiException.GoogleSignInFailed)
+                : Task.FromResult(idToken);
+    }
+
+    [Fact]
+    public async Task LoginWithGoogle_SendsTokenAndLanguage_AndStartsSession()
+    {
+        var auth = new FakeAuthService();
+        var session = new Session();
+        var vm = new LoginViewModel(auth, session, En, googleSignIn: new FakeGoogleSignIn("google-id-token"));
+        var raised = false;
+        vm.LoggedIn += (_, _) => raised = true;
+
+        await vm.LoginGoogleCommand.ExecuteAsync(null);
+
+        Assert.Equal("google-id-token", auth.LastGoogleIdToken);
+        Assert.Equal("en", auth.LastGoogleLanguage);
+        Assert.Equal("maria@gmail.com", session.User?.Email);
+        Assert.True(raised);
+    }
+
+    [Fact]
+    public async Task LoginWithGoogle_Cancelled_ShowsErrorAndStaysOnLogin()
+    {
+        var session = new Session();
+        var vm = new LoginViewModel(new FakeAuthService(), session, Es, googleSignIn: new FakeGoogleSignIn(null));
+        var raised = false;
+        vm.LoggedIn += (_, _) => raised = true;
+
+        await vm.LoginGoogleCommand.ExecuteAsync(null);
+
+        Assert.Equal("No se ha podido iniciar sesión con Google.", vm.ErrorMessage);
+        Assert.Null(session.Token);
+        Assert.False(raised);
+        Assert.False(vm.IsBusy);
     }
 
     private static LoginResponse Success(string email) =>

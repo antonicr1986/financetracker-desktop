@@ -15,4 +15,10 @@ public interface IAuthService
     /// llama tiene que iniciar sesion despues con las mismas credenciales.
     /// </summary>
     Task<UserInfo> RegisterAsync(string name, string email, string password, string language);
+
+    /// <summary>
+    /// Entra con el ID token que da Google. Misma respuesta que el login; si no
+    /// existe la cuenta, la API la crea con las categorias en ese idioma.
+    /// </summary>
+    Task<LoginResponse> GoogleLoginAsync(string idToken, string language);
 }

@@ -32,6 +32,18 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <!-- Inicio de sesion con Google en apps de escritorio (navegador + puerto local). -->
+    <PackageReference Include="Google.Apis.Auth" Version="1.78.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Secreto del cliente de Google de escritorio: no esta en el repo. MSBuild
+         lee la variable de entorno GOOGLE_DESKTOP_CLIENT_SECRET (en la release,
+         un secret de GitHub) y la deja en el ensamblado. Ver GoogleSignIn.cs. -->
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>GoogleDesktopClientSecret</_Parameter1>
+      <_Parameter2>$(GOOGLE_DESKTOP_CLIENT_SECRET)</_Parameter2>
+    </AssemblyAttribute>
     <!-- DPAPI: cifra la sesion guardada con una clave de la cuenta de Windows. -->
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>

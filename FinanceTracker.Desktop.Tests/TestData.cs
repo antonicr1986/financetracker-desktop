@@ -11,6 +11,7 @@ internal static class TestData
     /// en paralelo y no deben compartir un idioma que otro test pueda cambiar.
     /// </summary>
     public static Localizer Es => new(AppLanguage.Es);
+    public static Localizer En => new(AppLanguage.En);
 
     /// <summary>Texto esperado, leido del diccionario y no escrito a mano.</summary>
     public static string EsText(string key) => Strings.Es[key];

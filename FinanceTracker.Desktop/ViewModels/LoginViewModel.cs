@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FinanceTracker.Desktop.Localization;
+using FinanceTracker.Desktop.Models;
 using FinanceTracker.Desktop.Services;
 
 namespace FinanceTracker.Desktop.ViewModels;
@@ -13,16 +14,19 @@ public partial class LoginViewModel : ObservableObject, IDisposable
     private readonly IAuthService auth;
     private readonly Session session;
     private readonly Localizer localizer;
+    private readonly IGoogleSignIn? googleSignIn;
 
     // El error se guarda como "como escribirlo", no como texto: si se cambia de
     // idioma con un error en pantalla, se vuelve a escribir en el nuevo.
     private Func<string>? error;
 
-    public LoginViewModel(IAuthService auth, Session session, Localizer localizer, TimeSpan? wakingNoticeDelay = null)
+    public LoginViewModel(IAuthService auth, Session session, Localizer localizer, TimeSpan? wakingNoticeDelay = null,
+        IGoogleSignIn? googleSignIn = null)
     {
         this.auth = auth;
         this.session = session;
         this.localizer = localizer;
+        this.googleSignIn = googleSignIn;
         WakingNotice = new WakingNotice(wakingNoticeDelay);
         localizer.Changed += OnLanguageChanged;
     }
@@ -45,6 +49,7 @@ public partial class LoginViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
     [NotifyCanExecuteChangedFor(nameof(LoginDemoCommand))]
+    [NotifyCanExecuteChangedFor(nameof(LoginGoogleCommand))]
     private bool isBusy;
 
     /// <summary>Se lanza al iniciar sesion. La ventana lo escucha para navegar.</summary>
@@ -94,13 +99,33 @@ public partial class LoginViewModel : ObservableObject, IDisposable
         await SignInAsync(DemoEmail, DemoPassword);
     }
 
-    private async Task SignInAsync(string email, string password)
+    /// <summary>
+    /// Abre el navegador para elegir la cuenta de Google y entra con ella.
+    /// Cancelar o cualquier fallo deja a la persona aqui con un aviso.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanLogin))]
+    private async Task LoginGoogleAsync()
+    {
+        SetError(null);
+        if (googleSignIn is null) return;
+
+        await EnterAsync(async () =>
+        {
+            var idToken = await googleSignIn.GetIdTokenAsync();
+            return await auth.GoogleLoginAsync(idToken, localizer.Language == AppLanguage.En ? "en" : "es");
+        });
+    }
+
+    private Task SignInAsync(string email, string password) =>
+        EnterAsync(() => auth.LoginAsync(email, password));
+
+    private async Task EnterAsync(Func<Task<LoginResponse>> signIn)
     {
         IsBusy = true;
         WakingNotice.Start();
         try
         {
-            var login = await auth.LoginAsync(email, password);
+            var login = await signIn();
             session.Start(login);
             LoggedIn?.Invoke(this, EventArgs.Empty);
         }

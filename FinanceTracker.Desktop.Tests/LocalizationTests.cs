@@ -194,6 +194,9 @@ public class LanguageSwitchTests
 
     private class NeverCalledAuth : IAuthService
     {
+        public Task<LoginResponse> GoogleLoginAsync(string idToken, string language) =>
+            throw new InvalidOperationException("Sin usar en estas pruebas");
+
         public Task<LoginResponse> LoginAsync(string email, string password) =>
             throw new InvalidOperationException("No deberia llamarse");
 
