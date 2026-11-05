@@ -63,6 +63,18 @@ public class ApiClient : IAuthService, ITransactionService, ICategoryService, IB
         return await ReadAsync<LoginResponse>(response);
     }
 
+    public async Task<LoginResponse> GoogleLoginAsync(string idToken, string language)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/Users/google")
+        {
+            Content = JsonContent.Create(new GoogleLoginRequest(idToken, language)),
+        };
+
+        // Aqui un 401 es que Google no ha verificado la cuenta.
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.GoogleSignInFailed);
+        return await ReadAsync<LoginResponse>(response);
+    }
+
     public async Task<UserInfo> RegisterAsync(string name, string email, string password, string language)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/Users/register")

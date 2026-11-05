@@ -29,6 +29,7 @@ public static class Strings
         ["login.submitting"] = "Entrando…",
         ["login.or"] = "o",
         ["login.demo"] = "Entrar con la cuenta de demostración",
+        ["login.google"] = "Continuar con Google",
         ["login.demoHint"] = "Datos de ejemplo compartidos, sin registrarse.",
         ["login.wakingUp"] = "El servidor estaba en reposo y está despertando. La primera entrada del día puede tardar unos segundos.",
         ["login.subtitle"] = "Accede para ver tus finanzas",
@@ -132,6 +133,7 @@ public static class Strings
 
         ["apiError.session_expired"] = "Tu sesión ha caducado. Vuelve a iniciar sesión.",
         ["apiError.invalid_credentials"] = "Correo o contraseña incorrectos.",
+        ["apiError.invalid_google_token"] = "No se ha podido iniciar sesión con Google.",
         ["apiError.network_error"] = "No se ha podido contactar con el servidor.",
         ["apiError.not_found"] = "Este movimiento ya no existe. Cierra y recarga.",
         ["apiError.category_not_found"] = "La categoría seleccionada no existe.",
@@ -157,6 +159,7 @@ public static class Strings
         ["login.submitting"] = "Signing in…",
         ["login.or"] = "or",
         ["login.demo"] = "Sign in with the demo account",
+        ["login.google"] = "Continue with Google",
         ["login.demoHint"] = "Shared sample data, no sign-up needed.",
         ["login.wakingUp"] = "The server was idle and is waking up. The first sign-in of the day can take a few seconds.",
         ["login.subtitle"] = "Sign in to see your finances",
@@ -260,6 +263,7 @@ public static class Strings
 
         ["apiError.session_expired"] = "Your session has expired. Please sign in again.",
         ["apiError.invalid_credentials"] = "Incorrect email or password.",
+        ["apiError.invalid_google_token"] = "Could not sign in with Google.",
         ["apiError.network_error"] = "Could not reach the server.",
         ["apiError.not_found"] = "This transaction no longer exists. Close and reload.",
         ["apiError.category_not_found"] = "The selected category does not exist.",

@@ -83,6 +83,8 @@
 
                     <Button Content="{DynamicResource login.demo}" Command="{Binding LoginDemoCommand}"
                             Padding="0,9" />
+                    <Button Content="{DynamicResource login.google}" Command="{Binding LoginGoogleCommand}"
+                            Padding="0,9" Margin="0,8,0,0" />
                     <TextBlock Text="{DynamicResource login.demoHint}"
                                Style="{StaticResource MutedText}" HorizontalAlignment="Center" Margin="0,6,0,0" />
                 </StackPanel>

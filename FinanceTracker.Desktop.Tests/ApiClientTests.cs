@@ -41,6 +41,31 @@ public class ApiClientTests
         new(LoggedInSession(), new HttpClient(handler) { BaseAddress = new Uri("https://api.test/") });
 
     [Fact]
+    public async Task GoogleLogin_PostsIdTokenAndLanguage()
+    {
+        var handler = new FakeHandler(_ => Json("""{"token":"jwt","expiration":"2026-11-05T12:00:00Z","user":{"id":7,"name":"María","email":"maria@gmail.com"}}"""));
+
+        var login = await Client(handler).GoogleLoginAsync("google-id-token", "en");
+
+        var request = Assert.Single(handler.Requests);
+        Assert.Equal(HttpMethod.Post, request.Method);
+        Assert.Equal("/api/Users/google", request.RequestUri!.AbsolutePath);
+        Assert.Contains("\"idToken\":\"google-id-token\"", handler.Body);
+        Assert.Contains("\"language\":\"en\"", handler.Body);
+        Assert.Equal("jwt", login.Token);
+    }
+
+    [Fact]
+    public async Task GoogleLogin_Unauthorized_IsGoogleSignInFailed()
+    {
+        var handler = new FakeHandler(_ => Json("""{"code":"invalid_google_token"}""", HttpStatusCode.Unauthorized));
+
+        var error = await Assert.ThrowsAsync<ApiException>(() => Client(handler).GoogleLoginAsync("x", "es"));
+
+        Assert.Equal(ApiException.GoogleSignInFailed, error.Code);
+    }
+
+    [Fact]
     public async Task GetAll_WalksEveryPageWithTokenAndPageSize100()
     {
         var handler = new FakeHandler(request =>

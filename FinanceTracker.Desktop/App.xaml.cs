@@ -70,7 +70,7 @@ public partial class App : Application
         // muestra el login. No se espera; ver ApiClient.WarmUpAsync.
         _ = api.WarmUpAsync();
 
-        var viewModel = new LoginViewModel(api, session, localizer);
+        var viewModel = new LoginViewModel(api, session, localizer, googleSignIn: new GoogleSignIn());
         if (sessionExpired) viewModel.ShowSessionExpired();
 
         var window = new LoginWindow(viewModel);
