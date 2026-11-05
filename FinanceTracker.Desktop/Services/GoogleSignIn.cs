@@ -15,7 +15,7 @@ public class GoogleSignIn : IGoogleSignIn
 {
     // Cliente "App de escritorio" de Google Cloud. El client ID no es secreto;
     // la API lo acepta como audiencia (Google:DesktopClientId).
-    private const string ClientId = "718720619866-io9ff8nbeh69gb73hknqbr9s3cjfichh.apps.googleusercontent.com";
+    private const string ClientId = "718720619866-c03ve2b6hgmeg9dsquoe8clhtms2k1kh.apps.googleusercontent.com";
 
     // Si se cierra el navegador sin elegir cuenta, Google no avisa: se deja
     // de esperar pasado este tiempo.
