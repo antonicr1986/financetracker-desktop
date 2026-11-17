@@ -15,12 +15,12 @@ public class RegistrationFormTests
     [Fact]
     public void Validate_ReportsTheFirstProblem_InTheAndroidOrder()
     {
-        Assert.Equal(RegistrationProblem.MissingFields, RegistrationForm.Validate("", "a@b.com", "123456", "123456"));
-        Assert.Equal(RegistrationProblem.MissingFields, RegistrationForm.Validate("Ana", "", "123456", "123456"));
+        Assert.Equal(RegistrationProblem.MissingFields, RegistrationForm.Validate("", "a@b.com", "123456789012", "123456789012"));
+        Assert.Equal(RegistrationProblem.MissingFields, RegistrationForm.Validate("Ana", "", "123456789012", "123456789012"));
         Assert.Equal(RegistrationProblem.InvalidEmail, RegistrationForm.Validate("Ana", "ana@correo", "12", "34"));
-        Assert.Equal(RegistrationProblem.PasswordTooShort, RegistrationForm.Validate("Ana", "ana@correo.com", "12345", "12345"));
-        Assert.Equal(RegistrationProblem.PasswordsDontMatch, RegistrationForm.Validate("Ana", "ana@correo.com", "123456", "1234567"));
-        Assert.Null(RegistrationForm.Validate("Ana", "ana@correo.com", "123456", "123456"));
+        Assert.Equal(RegistrationProblem.PasswordTooShort, RegistrationForm.Validate("Ana", "ana@correo.com", "12345678901", "12345678901"));
+        Assert.Equal(RegistrationProblem.PasswordsDontMatch, RegistrationForm.Validate("Ana", "ana@correo.com", "123456789012", "1234567890123"));
+        Assert.Null(RegistrationForm.Validate("Ana", "ana@correo.com", "123456789012", "123456789012"));
     }
 
     [Theory]
@@ -31,7 +31,7 @@ public class RegistrationFormTests
     [InlineData("@correo.com", false)]
     public void Email_NeedsSomethingAtSomethingDotSomething(string email, bool valid)
     {
-        var problem = RegistrationForm.Validate("Ana", email, "123456", "123456");
+        var problem = RegistrationForm.Validate("Ana", email, "123456789012", "123456789012");
 
         Assert.Equal(valid, problem is null);
     }
@@ -69,8 +69,8 @@ public class RegisterViewModelTests
         {
             Name = "  Ana ",
             Email = " ana@correo.com ",
-            Password = "secreto1",
-            Confirmation = "secreto1",
+            Password = "secreto-largo1",
+            Confirmation = "secreto-largo1",
         };
 
     [Fact]
@@ -86,8 +86,8 @@ public class RegisterViewModelTests
 
         Assert.Equal(new[]
         {
-            "register Ana ana@correo.com secreto1 es", // nombre y correo recortados, idioma de la interfaz
-            "login ana@correo.com secreto1",
+            "register Ana ana@correo.com secreto-largo1 es", // nombre y correo recortados, idioma de la interfaz
+            "login ana@correo.com secreto-largo1",
         }, auth.Calls);
         Assert.True(session.IsActive);
         Assert.True(raised);
@@ -102,7 +102,7 @@ public class RegisterViewModelTests
 
         await vm.RegisterCommand.ExecuteAsync(null);
 
-        Assert.Equal("register Ana ana@correo.com secreto1 en", auth.Calls[0]);
+        Assert.Equal("register Ana ana@correo.com secreto-largo1 en", auth.Calls[0]);
     }
 
     [Fact]
@@ -201,12 +201,12 @@ public class RegisterApiTests
             Content = new StringContent("""{"id":5,"name":"Ana","email":"ana@correo.com"}""", Encoding.UTF8, "application/json"),
         });
 
-        var user = await Client(handler).RegisterAsync("Ana", "ana@correo.com", "secreto1", "en");
+        var user = await Client(handler).RegisterAsync("Ana", "ana@correo.com", "secreto-largo1", "en");
 
         Assert.Equal(HttpMethod.Post, handler.Last!.Method);
         Assert.Equal("/api/Users/register", handler.Last.RequestUri!.AbsolutePath);
         Assert.Null(handler.Last.Headers.Authorization);
-        Assert.Equal("""{"name":"Ana","email":"ana@correo.com","password":"secreto1","language":"en"}""", handler.Body);
+        Assert.Equal("""{"name":"Ana","email":"ana@correo.com","password":"secreto-largo1","language":"en"}""", handler.Body);
         Assert.Equal(5, user.Id);
     }
 
@@ -218,7 +218,7 @@ public class RegisterApiTests
             Content = new StringContent("""{"code":"email_already_exists","detail":"..."}""", Encoding.UTF8, "application/json"),
         });
 
-        var e = await Assert.ThrowsAsync<ApiException>(() => Client(handler).RegisterAsync("Ana", "ana@correo.com", "secreto1", "es"));
+        var e = await Assert.ThrowsAsync<ApiException>(() => Client(handler).RegisterAsync("Ana", "ana@correo.com", "secreto-largo1", "es"));
 
         Assert.Equal(ApiException.EmailAlreadyExists, e.Code);
     }

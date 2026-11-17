@@ -14,8 +14,8 @@ public enum RegistrationProblem
 /// <summary>Reglas del formulario de registro, en C# puro, como Validation.kt en Android.</summary>
 public static partial class RegistrationForm
 {
-    /// <summary>MinLength(6) de RegisterUserDto en la API.</summary>
-    public const int MinPasswordLength = 6;
+    /// <summary>MinLength(12) de RegisterUserDto en la API.</summary>
+    public const int MinPasswordLength = 12;
 
     /// <summary>
     /// Forma basica de un correo: algo@algo.algo, sin espacios. La misma que en
