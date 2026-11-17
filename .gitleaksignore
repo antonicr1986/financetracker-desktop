@@ -1,0 +1,6 @@
+# Falsos positivos revisados a mano. Cada linea es el fingerprint que da
+# gitleaks: commit:archivo:regla:linea.
+
+# ApiException.PasswordBreached = "password_breached" es un codigo de error de
+# la API, no una contraseña.
+f25b23e5056d0797cfad87c58286824ab064cf73:FinanceTracker.Desktop/Services/ApiException.cs:hardcoded-credential-assignment:19
