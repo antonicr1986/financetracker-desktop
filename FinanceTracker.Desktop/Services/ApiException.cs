@@ -17,6 +17,10 @@ public class ApiException(string code) : Exception(code)
     public const string NetworkError = "network_error";
     public const string TooManyRequests = "too_many_requests";
     public const string PasswordBreached = "password_breached";
+    public const string InvalidMfaCode = "invalid_mfa_code";
+    public const string InvalidMfaToken = "invalid_mfa_token";
+    public const string MfaAlreadyEnabled = "mfa_already_enabled";
+    public const string MfaNotEnabled = "mfa_not_enabled";
     public const string Unknown = "unknown";
 
     public string Code { get; } = code;

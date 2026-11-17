@@ -122,6 +122,18 @@ public partial class App : Application
             window.Close();
         };
 
+        viewModel.MfaRequested += (_, _) =>
+        {
+            var mfaViewModel = new MfaViewModel(api, session, localizer);
+            var mfaWindow = new MfaWindow(mfaViewModel) { Owner = window };
+            mfaViewModel.SessionExpired += (_, _) =>
+            {
+                ShowLogin(sessionExpired: true);
+                window.Close();
+            };
+            mfaWindow.ShowDialog();
+        };
+
         // Un 401 en el panel no es una contrasena incorrecta: habia un token y
         // la API lo ha rechazado (caduca a los 60 minutos).
         viewModel.SessionExpired += (_, _) =>

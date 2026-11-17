@@ -133,6 +133,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public bool HasData => !IsLoading && !HasError && !IsEmpty;
 
     public event EventHandler? LoggedOut;
+
+    /// <summary>"Verificación en dos pasos": la aplicacion abre su ventana.</summary>
+    public event EventHandler? MfaRequested;
+
+    [RelayCommand]
+    private void OpenMfa() => MfaRequested?.Invoke(this, EventArgs.Empty);
     public event EventHandler? SessionExpired;
 
     private bool CanLoad() => !IsLoading;

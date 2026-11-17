@@ -34,7 +34,27 @@
             <TextBlock Text="{DynamicResource login.title}" FontSize="22" FontWeight="SemiBold" />
             <TextBlock Text="{DynamicResource login.subtitle}" Style="{StaticResource MutedText}" Margin="0,2,0,16" />
 
-            <Border Style="{StaticResource Card}" Padding="24">
+            <!-- Segundo paso del acceso (cuenta con MFA): solo el codigo. -->
+            <Border Style="{StaticResource Card}" Padding="24"
+                    Visibility="{Binding IsMfaStep, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource mfa.title}" FontSize="16" FontWeight="SemiBold" />
+                    <TextBlock Text="{DynamicResource mfa.loginBody}" Style="{StaticResource MutedText}"
+                               TextWrapping="Wrap" Margin="0,4,0,12" />
+                    <TextBlock Text="{DynamicResource mfa.loginCode}" Margin="0,0,0,4" />
+                    <TextBox x:Name="MfaCodeInput" Text="{Binding MfaCode, UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="32" FontFamily="Consolas" Margin="0,0,0,12" />
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}"
+                               TextWrapping="Wrap" Margin="0,0,0,12" />
+                    <Button Content="{DynamicResource mfa.verify}" Command="{Binding VerifyMfaCommand}"
+                            IsDefault="{Binding IsMfaStep}" Style="{StaticResource PrimaryButton}" Padding="0,9" />
+                    <Button Content="{DynamicResource mfa.back}" Command="{Binding BackToPasswordCommand}"
+                            Padding="0,9" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Padding="24"
+                    Visibility="{Binding IsPasswordStep, Converter={StaticResource BoolToVisibility}}">
                 <StackPanel>
                     <TextBlock Text="{DynamicResource login.email}" Margin="0,0,0,4" />
                     <!-- UpdateSourceTrigger=PropertyChanged: el ViewModel se entera en
@@ -51,7 +71,7 @@
                                TextWrapping="Wrap" Margin="0,0,0,12" />
 
                     <!-- IsDefault: Enter en cualquier caja pulsa este boton. -->
-                    <Button Command="{Binding LoginCommand}" IsDefault="True" Padding="0,9">
+                    <Button Command="{Binding LoginCommand}" IsDefault="{Binding IsPasswordStep}" Padding="0,9">
                         <!-- Mientras espera, el boton dice que esta en ello, como en la web y Android. -->
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">

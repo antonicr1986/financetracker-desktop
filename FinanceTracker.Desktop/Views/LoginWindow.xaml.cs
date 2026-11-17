@@ -15,6 +15,13 @@ public partial class LoginWindow : Window
         DataContext = viewModel;
 
         Loaded += (_, _) => EmailInput.Focus();
+
+        // Al pasar al codigo del MFA, el cursor va directo a su caja.
+        viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(LoginViewModel.IsMfaStep) && viewModel.IsMfaStep)
+                Dispatcher.BeginInvoke(new Action(() => MfaCodeInput.Focus()));
+        };
         VersionText.Text = $"v{AppVersion()}";
     }
 

@@ -44,12 +44,29 @@ public partial class LoginViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string errorMessage = "";
 
+    /// <summary>
+    /// true cuando la contraseña ya es correcta y falta el codigo del MFA: la
+    /// ventana cambia el formulario por el del codigo.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPasswordStep))]
+    private bool isMfaStep;
+
+    public bool IsPasswordStep => !IsMfaStep;
+
+    [ObservableProperty]
+    private string mfaCode = "";
+
+    /// <summary>Token temporal del segundo paso (5 minutos).</summary>
+    private string? mfaToken;
+
     // NotifyCanExecuteChangedFor: cada vez que cambia IsBusy, los botones
     // vuelven a preguntar si pueden ejecutarse, y se deshabilitan mientras se espera.
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
     [NotifyCanExecuteChangedFor(nameof(LoginDemoCommand))]
     [NotifyCanExecuteChangedFor(nameof(LoginGoogleCommand))]
+    [NotifyCanExecuteChangedFor(nameof(VerifyMfaCommand))]
     private bool isBusy;
 
     /// <summary>Se lanza al iniciar sesion. La ventana lo escucha para navegar.</summary>
@@ -126,6 +143,16 @@ public partial class LoginViewModel : ObservableObject, IDisposable
         try
         {
             var login = await signIn();
+
+            // Con MFA el login no abre la sesion: falta el codigo.
+            if (login.MfaRequired && login.MfaToken is not null)
+            {
+                mfaToken = login.MfaToken;
+                MfaCode = "";
+                IsMfaStep = true;
+                return;
+            }
+
             session.Start(login);
             LoggedIn?.Invoke(this, EventArgs.Empty);
         }
@@ -138,6 +165,41 @@ public partial class LoginViewModel : ObservableObject, IDisposable
             WakingNotice.Stop();
             IsBusy = false;
         }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanLogin))]
+    private async Task VerifyMfaAsync()
+    {
+        SetError(null);
+        var code = MfaCode.Trim();
+        if (mfaToken is null || code.Length == 0) return;
+
+        IsBusy = true;
+        try
+        {
+            var login = await auth.VerifyMfaAsync(mfaToken, code);
+            session.Start(login);
+            LoggedIn?.Invoke(this, EventArgs.Empty);
+        }
+        catch (ApiException e)
+        {
+            // Han pasado los 5 minutos: vuelta a la contraseña.
+            if (e.Code == ApiException.InvalidMfaToken) BackToPassword();
+            SetError(() => localizer.ApiError(e.Code));
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private void BackToPassword()
+    {
+        mfaToken = null;
+        MfaCode = "";
+        IsMfaStep = false;
+        SetError(null);
     }
 
     /// <summary>Deja de escuchar al Localizer, que vive mas que esta pantalla.</summary>

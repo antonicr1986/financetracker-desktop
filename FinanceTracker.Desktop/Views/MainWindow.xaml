@@ -40,6 +40,7 @@
                 <!-- Selector de mes y acciones -->
                 <DockPanel Margin="0,0,0,16">
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button Content="{DynamicResource mfa.title}" Command="{Binding OpenMfaCommand}" Margin="0,0,8,0" />
                         <Button Content="{DynamicResource dashboard.reload}" Command="{Binding LoadCommand}" Margin="0,0,8,0" />
                         <Button Content="{DynamicResource dashboard.newTransactionButton}" Command="{Binding NewTransactionCommand}"
                                 Style="{StaticResource PrimaryButton}" />

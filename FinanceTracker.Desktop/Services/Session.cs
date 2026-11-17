@@ -39,6 +39,15 @@ public class Session(ISessionStore? store = null)
         store?.Save(login);
     }
 
+    /// <summary>
+    /// Tras activar o desactivar el MFA. Solo en memoria: la sesion guardada
+    /// se queda como estaba y, si no coincide, la API lo dice y se corrige.
+    /// </summary>
+    public void SetMfaEnabled(bool enabled)
+    {
+        if (User is not null) User = User with { MfaEnabled = enabled };
+    }
+
     public void Clear()
     {
         Token = null;

@@ -21,4 +21,10 @@ public interface IAuthService
     /// existe la cuenta, la API la crea con las categorias en ese idioma.
     /// </summary>
     Task<LoginResponse> GoogleLoginAsync(string idToken, string language);
+
+    /// <summary>
+    /// Segundo paso del login con MFA. Errores: "invalid_mfa_code" si el
+    /// codigo no vale, "invalid_mfa_token" si han pasado los 5 minutos.
+    /// </summary>
+    Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code);
 }

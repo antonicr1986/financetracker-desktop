@@ -7,7 +7,7 @@ using FinanceTracker.Desktop.Models;
 namespace FinanceTracker.Desktop.Services;
 
 /// <summary>Llamadas HTTP a la API de FinanceTracker.</summary>
-public class ApiClient : IAuthService, ITransactionService, ICategoryService, IBudgetService
+public class ApiClient : IAuthService, IMfaService, ITransactionService, ICategoryService, IBudgetService
 {
     public const string BaseUrl =
         "https://financetracker-api-cpctbta0gddddge5.belgiumcentral-01.azurewebsites.net/";
@@ -73,6 +73,42 @@ public class ApiClient : IAuthService, ITransactionService, ICategoryService, IB
         // Aqui un 401 es que Google no ha verificado la cuenta.
         using var response = await SendAsync(request, unauthorizedCode: ApiException.GoogleSignInFailed);
         return await ReadAsync<LoginResponse>(response);
+    }
+
+    public async Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/users/mfa/verify")
+        {
+            Content = JsonContent.Create(new MfaVerifyRequest(mfaToken, code)),
+        };
+
+        // Aqui un 401 puede ser dos cosas (codigo malo o token caducado): se
+        // lee el codigo del cuerpo en lugar de fijarlo.
+        using var response = await SendAsync(request, unauthorizedCode: null);
+        return await ReadAsync<LoginResponse>(response);
+    }
+
+    public async Task<MfaSetupResponse> SetupMfaAsync()
+    {
+        using var request = Authorized(HttpMethod.Post, "api/users/mfa/setup");
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+        return await ReadAsync<MfaSetupResponse>(response);
+    }
+
+    public async Task<MfaRecoveryCodesResponse> ConfirmMfaAsync(string code)
+    {
+        using var request = Authorized(HttpMethod.Post, "api/users/mfa/confirm");
+        request.Content = JsonContent.Create(new MfaCodeRequest(code));
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+        return await ReadAsync<MfaRecoveryCodesResponse>(response);
+    }
+
+    // 204 sin cuerpo, como PUT y DELETE.
+    public async Task DisableMfaAsync(string code)
+    {
+        using var request = Authorized(HttpMethod.Post, "api/users/mfa/disable");
+        request.Content = JsonContent.Create(new MfaCodeRequest(code));
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
     }
 
     public async Task<UserInfo> RegisterAsync(string name, string email, string password, string language)
@@ -194,7 +230,7 @@ public class ApiClient : IAuthService, ITransactionService, ICategoryService, IB
     /// codigo. Un 401 significa cosas distintas segun donde ocurra, asi que
     /// quien llama dice que codigo le corresponde.
     /// </summary>
-    private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, string unauthorizedCode)
+    private async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, string? unauthorizedCode)
     {
         HttpResponseMessage response;
         try
@@ -210,7 +246,8 @@ public class ApiClient : IAuthService, ITransactionService, ICategoryService, IB
 
         using (response)
         {
-            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            // Sin codigo fijo (null), el 401 se lee del cuerpo como cualquier otro error.
+            if (response.StatusCode == HttpStatusCode.Unauthorized && unauthorizedCode is not null)
                 throw new ApiException(unauthorizedCode);
 
             // El 404 de editar o borrar llega sin cuerpo: el movimiento ya no existe.

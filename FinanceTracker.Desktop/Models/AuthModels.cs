@@ -11,9 +11,31 @@ public record RegisterRequest(string Name, string Email, string Password, string
 /// <summary>Cuerpo de POST /api/Users/google (GoogleLoginDto).</summary>
 public record GoogleLoginRequest(string IdToken, string Language);
 
-public record UserInfo(int Id, string Name, string Email);
+/// <summary>MfaEnabled: si la cuenta tiene verificacion en dos pasos.</summary>
+public record UserInfo(int Id, string Name, string Email, bool MfaEnabled = false);
 
-public record LoginResponse(string Token, DateTime Expiration, UserInfo User);
+/// <summary>
+/// Respuesta del login. Con MFA activo no trae Token ni User: trae
+/// MfaRequired y un MfaToken temporal para POST /api/users/mfa/verify.
+/// </summary>
+public record LoginResponse(
+    string Token,
+    DateTime Expiration,
+    UserInfo User,
+    bool MfaRequired = false,
+    string? MfaToken = null);
+
+/// <summary>Cuerpo de POST /api/users/mfa/verify: codigo TOTP o de recuperacion.</summary>
+public record MfaVerifyRequest(string MfaToken, string Code);
+
+/// <summary>Cuerpo de confirm y disable: los 6 digitos de la app autenticadora.</summary>
+public record MfaCodeRequest(string Code);
+
+/// <summary>Respuesta de POST /api/users/mfa/setup.</summary>
+public record MfaSetupResponse(string Secret, string OtpAuthUri);
+
+/// <summary>Respuesta de POST /api/users/mfa/confirm. Se muestran una sola vez.</summary>
+public record MfaRecoveryCodesResponse(List<string> RecoveryCodes);
 
 /// <summary>Cuerpo de error de la API (ProblemDetails). Solo nos interesa el codigo.</summary>
 public record ApiProblem(string? Code, string? Detail);

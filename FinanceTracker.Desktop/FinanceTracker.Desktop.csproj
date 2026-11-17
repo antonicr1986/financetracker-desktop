@@ -34,6 +34,8 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <!-- Inicio de sesion con Google en apps de escritorio (navegador + puerto local). -->
     <PackageReference Include="Google.Apis.Auth" Version="1.78.0" />
+    <!-- QR del MFA, generado en el equipo (sin servicios externos). -->
+    <PackageReference Include="QRCoder" Version="1.8.1" />
   </ItemGroup>
 
   <ItemGroup>

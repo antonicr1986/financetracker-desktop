@@ -30,6 +30,17 @@ public class LoginViewModelTests
             return Task.FromResult(Success("maria@gmail.com"));
         }
 
+        public Func<string, string, LoginResponse> MfaHandler { get; set; } =
+            (_, _) => throw new InvalidOperationException("No configurado");
+
+        public string? LastMfaToken { get; private set; }
+
+        public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code)
+        {
+            LastMfaToken = mfaToken;
+            return Task.FromResult(MfaHandler(mfaToken, code));
+        }
+
         public Task<LoginResponse> LoginAsync(string email, string password)
         {
             Calls++;
@@ -83,6 +94,67 @@ public class LoginViewModelTests
 
     private static LoginResponse Success(string email) =>
         new("token-123", DateTime.UtcNow.AddHours(1), new UserInfo(1, "Antonio", email));
+
+    // Lo que responde la API a una cuenta con MFA: ni token ni usuario.
+    private static LoginResponse MfaChallenge() =>
+        new(null!, DateTime.UtcNow.AddMinutes(5), null!, MfaRequired: true, MfaToken: "mfa-token");
+
+    [Fact]
+    public async Task Login_WithMfa_AsksForTheCode_AndDoesNotStartTheSession()
+    {
+        var auth = new FakeAuthService { Handler = (_, _) => MfaChallenge() };
+        var session = new Session();
+        var vm = new LoginViewModel(auth, session, Es) { Email = "ana@correo.com", Password = "una-clave-larga" };
+        var raised = false;
+        vm.LoggedIn += (_, _) => raised = true;
+
+        await vm.LoginCommand.ExecuteAsync(null);
+
+        Assert.True(vm.IsMfaStep);
+        Assert.False(vm.IsPasswordStep);
+        Assert.Null(session.Token);
+        Assert.False(raised);
+    }
+
+    [Fact]
+    public async Task VerifyMfa_WithAValidCode_StartsTheSession()
+    {
+        var auth = new FakeAuthService
+        {
+            Handler = (_, _) => MfaChallenge(),
+            MfaHandler = (_, _) => Success("ana@correo.com"),
+        };
+        var session = new Session();
+        var vm = new LoginViewModel(auth, session, Es) { Email = "ana@correo.com", Password = "una-clave-larga" };
+        var raised = false;
+        vm.LoggedIn += (_, _) => raised = true;
+
+        await vm.LoginCommand.ExecuteAsync(null);
+        vm.MfaCode = " 123456 ";
+        await vm.VerifyMfaCommand.ExecuteAsync(null);
+
+        Assert.Equal("mfa-token", auth.LastMfaToken);
+        Assert.Equal("token-123", session.Token);
+        Assert.True(raised);
+    }
+
+    [Fact]
+    public async Task VerifyMfa_WithAnExpiredStep_GoesBackToThePassword()
+    {
+        var auth = new FakeAuthService
+        {
+            Handler = (_, _) => MfaChallenge(),
+            MfaHandler = (_, _) => throw new ApiException(ApiException.InvalidMfaToken),
+        };
+        var vm = new LoginViewModel(auth, new Session(), Es) { Email = "ana@correo.com", Password = "una-clave-larga" };
+
+        await vm.LoginCommand.ExecuteAsync(null);
+        vm.MfaCode = "123456";
+        await vm.VerifyMfaCommand.ExecuteAsync(null);
+
+        Assert.False(vm.IsMfaStep);
+        Assert.Equal("Ha pasado demasiado tiempo. Vuelve a introducir tu contraseña.", vm.ErrorMessage);
+    }
 
     [Fact]
     public async Task Login_WithEmptyFields_ShowsErrorAndDoesNotCallApi()
