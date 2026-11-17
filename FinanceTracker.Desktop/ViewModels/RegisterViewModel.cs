@@ -91,7 +91,8 @@ public partial class RegisterViewModel : ObservableObject, IDisposable
         }
         catch (ApiException e)
         {
-            SetError(() => e.Code is ApiException.EmailAlreadyExists or ApiException.NetworkError
+            SetError(() => e.Code is ApiException.EmailAlreadyExists or ApiException.PasswordBreached
+                or ApiException.TooManyRequests or ApiException.NetworkError
                 ? localizer.ApiError(e.Code)
                 : localizer.T("errors.createAccountFailed"));
         }

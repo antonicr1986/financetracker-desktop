@@ -118,6 +118,20 @@ public class RegisterViewModelTests
         Assert.Empty(auth.Calls);
     }
 
+    [Theory]
+    [InlineData(ApiException.PasswordBreached)]
+    [InlineData(ApiException.TooManyRequests)]
+    public async Task Register_RejectedByTheApi_ShowsItsMessage_AndDoesNotSignIn(string code)
+    {
+        var auth = new FakeAuth { RegisterError = new ApiException(code) };
+        var vm = Filled(auth);
+
+        await vm.RegisterCommand.ExecuteAsync(null);
+
+        Assert.Equal(EsText("apiError." + code), vm.ErrorMessage);
+        Assert.Single(auth.Calls);
+    }
+
     [Fact]
     public async Task Register_WithAnEmailInUse_SaysSo_AndDoesNotSignIn()
     {

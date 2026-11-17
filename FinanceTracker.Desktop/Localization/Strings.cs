@@ -139,6 +139,8 @@ public static class Strings
         ["apiError.category_not_found"] = "La categoría seleccionada no existe.",
         ["apiError.category_type_mismatch"] = "La categoría seleccionada no es del mismo tipo que el movimiento.",
         ["apiError.category_has_transactions"] = "No se puede eliminar la categoría porque tiene movimientos asociados.",
+        ["apiError.too_many_requests"] = "Demasiados intentos. Espera un minuto y vuelve a probar.",
+        ["apiError.password_breached"] = "Esta contraseña aparece en filtraciones de datos conocidas. Elige otra.",
     };
 
     public static readonly IReadOnlyDictionary<string, string> En = new Dictionary<string, string>
@@ -269,5 +271,7 @@ public static class Strings
         ["apiError.category_not_found"] = "The selected category does not exist.",
         ["apiError.category_type_mismatch"] = "The selected category is not the same type as the transaction.",
         ["apiError.category_has_transactions"] = "The category cannot be deleted because it has transactions.",
+        ["apiError.too_many_requests"] = "Too many attempts. Wait a minute and try again.",
+        ["apiError.password_breached"] = "This password has appeared in known data breaches. Choose a different one.",
     };
 }
