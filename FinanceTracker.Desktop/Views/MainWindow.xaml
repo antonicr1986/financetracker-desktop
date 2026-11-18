@@ -24,7 +24,7 @@
     </WindowChrome.WindowChrome>
 
     <DockPanel>
-        <views:TopBar DockPanel.Dock="Top" SignOutCommand="{Binding LogoutCommand}" />
+        <views:TopBar DockPanel.Dock="Top" SignOutCommand="{Binding LogoutCommand}" SettingsCommand="{Binding OpenMfaCommand}" />
 
         <!-- Se desplaza toda la pantalla, no solo la lista, como en Android: con
              presupuestos y desglose, una lista de altura fija quedaria diminuta. -->
@@ -40,7 +40,6 @@
                 <!-- Selector de mes y acciones -->
                 <DockPanel Margin="0,0,0,16">
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                        <Button Content="{DynamicResource mfa.title}" Command="{Binding OpenMfaCommand}" Margin="0,0,8,0" />
                         <Button Content="{DynamicResource dashboard.reload}" Command="{Binding LoadCommand}" Margin="0,0,8,0" />
                         <Button Content="{DynamicResource dashboard.newTransactionButton}" Command="{Binding NewTransactionCommand}"
                                 Style="{StaticResource PrimaryButton}" />

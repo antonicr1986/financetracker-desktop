@@ -1,5 +1,5 @@
 <!-- Barra superior comun a todas las ventanas, como la de la web y Android:
-     nombre a la izquierda; idioma, tema y "Salir" a la derecha. "Salir"
+     nombre a la izquierda; idioma, tema, configuracion y "Salir" a la derecha. "Salir"
      siempre esta, pero deshabilitado sin sesion.
 
      Es ademas la barra de titulo de la ventana (WindowChrome, en cada
@@ -98,6 +98,21 @@
                             </Canvas>
                         </Viewbox>
                     </Grid>
+                </Button>
+
+                <!-- Engranaje: verificacion en dos pasos, como en la web y Android.
+                     Solo se ve si la ventana le da un comando (SettingsCommand). -->
+                <Button x:Name="SettingsButton" Style="{StaticResource IconButton}"
+                        Margin="0,0,12,0" ToolTip="{DynamicResource header.settings}"
+                        AutomationProperties.Name="{DynamicResource header.settings}"
+                        VerticalAlignment="Center" Visibility="Collapsed">
+                    <Viewbox Width="16" Height="16">
+                        <Canvas Width="24" Height="24">
+                            <Path Stroke="{Binding Foreground, ElementName=SettingsButton}" StrokeThickness="2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  Data="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6z" />
+                        </Canvas>
+                    </Viewbox>
                 </Button>
 
                 <!-- Ancho fijo, como en Android: no cambia entre "Salir" y "Sign out". -->

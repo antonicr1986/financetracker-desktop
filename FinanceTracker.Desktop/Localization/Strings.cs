@@ -17,6 +17,7 @@ public static class Strings
         ["locale.es"] = "Español",
         ["locale.en"] = "Inglés",
         ["header.signOut"] = "Salir",
+        ["header.settings"] = "Configuración",
         ["theme.toggle"] = "Cambiar entre tema claro y oscuro",
 
         ["login.windowTitle"] = "FinanceTracker — Iniciar sesión",
@@ -174,6 +175,7 @@ public static class Strings
         ["locale.es"] = "Spanish",
         ["locale.en"] = "English",
         ["header.signOut"] = "Sign out",
+        ["header.settings"] = "Settings",
         ["theme.toggle"] = "Switch between light and dark theme",
 
         ["login.windowTitle"] = "FinanceTracker — Sign in",

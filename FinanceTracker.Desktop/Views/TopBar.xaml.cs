@@ -21,10 +21,25 @@ public partial class TopBar : UserControl
         set => SetValue(SignOutCommandProperty, value);
     }
 
+    /// <summary>
+    /// Comando del engranaje (verificacion en dos pasos). Sin comando, como en
+    /// el login, el engranaje no se muestra.
+    /// </summary>
+    public static readonly DependencyProperty SettingsCommandProperty = DependencyProperty.Register(
+        nameof(SettingsCommand), typeof(ICommand), typeof(TopBar),
+        new PropertyMetadata(null, (d, e) => ((TopBar)d).UpdateSettings()));
+
+    public ICommand? SettingsCommand
+    {
+        get => (ICommand?)GetValue(SettingsCommandProperty);
+        set => SetValue(SettingsCommandProperty, value);
+    }
+
     public TopBar()
     {
         InitializeComponent();
         UpdateSignOut();
+        UpdateSettings();
 
         // Marca el idioma activo ahora y cada vez que cambie. Se deja de
         // escuchar al quitar la barra, porque el Localizer vive mas que ella.
@@ -41,6 +56,12 @@ public partial class TopBar : UserControl
     {
         SignOutButton.Command = SignOutCommand;
         SignOutButton.IsEnabled = SignOutCommand is not null;
+    }
+
+    private void UpdateSettings()
+    {
+        SettingsButton.Command = SettingsCommand;
+        SettingsButton.Visibility = SettingsCommand is null ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void OnLanguageChanged(object? sender, EventArgs e) => MarkActiveLanguage();
