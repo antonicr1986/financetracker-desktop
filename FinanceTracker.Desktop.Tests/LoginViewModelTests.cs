@@ -34,10 +34,12 @@ public class LoginViewModelTests
             (_, _) => throw new InvalidOperationException("No configurado");
 
         public string? LastMfaToken { get; private set; }
+        public bool LastRememberDevice { get; private set; }
 
-        public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code)
+        public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code, bool rememberDevice = false)
         {
             LastMfaToken = mfaToken;
+            LastRememberDevice = rememberDevice;
             return Task.FromResult(MfaHandler(mfaToken, code));
         }
 
@@ -131,9 +133,11 @@ public class LoginViewModelTests
 
         await vm.LoginCommand.ExecuteAsync(null);
         vm.MfaCode = " 123456 ";
+        vm.RememberDevice = true;
         await vm.VerifyMfaCommand.ExecuteAsync(null);
 
         Assert.Equal("mfa-token", auth.LastMfaToken);
+        Assert.True(auth.LastRememberDevice);
         Assert.Equal("token-123", session.Token);
         Assert.True(raised);
     }

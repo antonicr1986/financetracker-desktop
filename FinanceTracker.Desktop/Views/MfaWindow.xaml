@@ -39,6 +39,17 @@
                 <Button Content="{Binding ActionText}" Command="{Binding StartCommand}" Padding="0,9"
                         Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}" />
 
+                <!-- Equipos donde se marco "no volver a pedir el codigo". -->
+                <StackPanel Margin="0,16,0,0"
+                            Visibility="{Binding ShowDevices, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{DynamicResource mfa.forgetDevicesHelp}" Style="{StaticResource MutedText}"
+                               TextWrapping="Wrap" Margin="0,0,0,8" />
+                    <Button Content="{DynamicResource mfa.forgetDevices}" Command="{Binding ForgetDevicesCommand}"
+                            Padding="0,9" />
+                    <TextBlock Text="{Binding DevicesMessage}" Foreground="{DynamicResource Brush.Income}"
+                               TextWrapping="Wrap" Margin="0,8,0,0" />
+                </StackPanel>
+
                 <!-- Activar: QR + clave + primer codigo. -->
                 <StackPanel Visibility="{Binding IsSetup, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Text="{DynamicResource mfa.scan}" TextWrapping="Wrap" Margin="0,0,0,8" />

@@ -34,7 +34,7 @@ public class WakingNoticeTests
         public Task<LoginResponse> GoogleLoginAsync(string idToken, string language) =>
             throw new InvalidOperationException("Sin usar en estas pruebas");
 
-        public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code) =>
+        public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code, bool rememberDevice = false) =>
             throw new InvalidOperationException("Sin usar en estas pruebas");
 
         public Task<UserInfo> RegisterAsync(string name, string email, string password, string language) =>

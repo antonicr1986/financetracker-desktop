@@ -57,6 +57,10 @@ public partial class LoginViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string mfaCode = "";
 
+    /// <summary>"No volver a pedir el codigo en este equipo durante 30 dias". Desmarcada por defecto.</summary>
+    [ObservableProperty]
+    private bool rememberDevice;
+
     /// <summary>Token temporal del segundo paso (5 minutos).</summary>
     private string? mfaToken;
 
@@ -177,7 +181,7 @@ public partial class LoginViewModel : ObservableObject, IDisposable
         IsBusy = true;
         try
         {
-            var login = await auth.VerifyMfaAsync(mfaToken, code);
+            var login = await auth.VerifyMfaAsync(mfaToken, code, RememberDevice);
             session.Start(login);
             LoggedIn?.Invoke(this, EventArgs.Empty);
         }

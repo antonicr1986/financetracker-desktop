@@ -36,7 +36,14 @@ public partial class MfaViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(IsSetup))]
     [NotifyPropertyChangedFor(nameof(IsDisabling))]
     [NotifyPropertyChangedFor(nameof(IsShowingCodes))]
+    [NotifyPropertyChangedFor(nameof(ShowDevices))]
     private MfaStep step = MfaStep.Idle;
+
+    /// <summary>"Olvidar todos los dispositivos": solo con el MFA activo y sin otro paso abierto.</summary>
+    public bool ShowDevices => IsIdle && IsEnabled;
+
+    [ObservableProperty]
+    private string devicesMessage = "";
 
     public bool IsIdle => Step == MfaStep.Idle;
     public bool IsSetup => Step == MfaStep.Setup;
@@ -64,6 +71,7 @@ public partial class MfaViewModel : ObservableObject, IDisposable
     [NotifyCanExecuteChangedFor(nameof(StartCommand))]
     [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
     [NotifyCanExecuteChangedFor(nameof(DisableCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ForgetDevicesCommand))]
     private bool isBusy;
 
     /// <summary>401: la sesion ha caducado. La aplicacion vuelve al login.</summary>
@@ -123,6 +131,16 @@ public partial class MfaViewModel : ObservableObject, IDisposable
         });
     }
 
+    [RelayCommand(CanExecute = nameof(CanAct))]
+    private async Task ForgetDevicesAsync()
+    {
+        await RunAsync(async () =>
+        {
+            await mfa.ForgetDevicesAsync();
+            DevicesMessage = localizer.T("mfa.devicesForgotten");
+        });
+    }
+
     /// <summary>Cancelar, o "ya los he guardado" tras ver los codigos.</summary>
     [RelayCommand]
     private void BackToIdle()
@@ -130,6 +148,7 @@ public partial class MfaViewModel : ObservableObject, IDisposable
         ClearSetup();
         RecoveryCodes = "";
         Code = "";
+        DevicesMessage = "";
         SetError(null);
         Step = MfaStep.Idle;
     }
@@ -176,6 +195,7 @@ public partial class MfaViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(IsEnabled));
         OnPropertyChanged(nameof(Status));
         OnPropertyChanged(nameof(ActionText));
+        OnPropertyChanged(nameof(ShowDevices));
     }
 
     private void SetError(Func<string>? text)

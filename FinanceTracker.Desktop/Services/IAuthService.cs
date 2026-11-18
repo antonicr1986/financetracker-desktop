@@ -25,6 +25,8 @@ public interface IAuthService
     /// <summary>
     /// Segundo paso del login con MFA. Errores: "invalid_mfa_code" si el
     /// codigo no vale, "invalid_mfa_token" si han pasado los 5 minutos.
+    /// Con rememberDevice, la API devuelve un token de dispositivo de confianza
+    /// y se guarda para los siguientes accesos.
     /// </summary>
-    Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code);
+    Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code, bool rememberDevice = false);
 }

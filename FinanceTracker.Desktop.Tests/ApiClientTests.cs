@@ -37,8 +37,38 @@ public class ApiClientTests
         return $$"""{"items":[{{items}}],"totalCount":0,"pageNumber":{{pageNumber}},"pageSize":100,"totalPages":{{totalPages}}}""";
     }
 
-    private static ApiClient Client(FakeHandler handler) =>
-        new(LoggedInSession(), new HttpClient(handler) { BaseAddress = new Uri("https://api.test/") });
+    private static ApiClient Client(FakeHandler handler, ITrustedDeviceStore? trustedDevices = null) =>
+        new(LoggedInSession(), new HttpClient(handler) { BaseAddress = new Uri("https://api.test/") }, trustedDevices);
+
+    [Fact]
+    public async Task VerifyMfa_RememberingTheDevice_SavesItsToken_AndLoginSendsIt()
+    {
+        var store = new MemoryTrustedDeviceStore();
+        var handler = new FakeHandler(_ => Json(
+            "{\"token\":\"jwt\",\"expiration\":\"2026-11-05T12:00:00Z\",\"user\":{\"id\":7,\"name\":\"Ana\",\"email\":\"ana@correo.com\"},\"trustedDeviceToken\":\"device-123\"}"));
+
+        await Client(handler, store).VerifyMfaAsync("mfa-token", "123456", rememberDevice: true);
+
+        Assert.Contains("\"rememberDevice\":true", handler.Body);
+        Assert.Equal("device-123", store.Load());
+
+        await Client(handler, store).LoginAsync("ana@correo.com", "una-clave-larga");
+
+        Assert.Contains("\"trustedDeviceToken\":\"device-123\"", handler.Body);
+    }
+
+    [Fact]
+    public async Task ForgetDevices_ClearsTheSavedToken()
+    {
+        var store = new MemoryTrustedDeviceStore();
+        store.Save("device-123");
+        var handler = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
+
+        await Client(handler, store).ForgetDevicesAsync();
+
+        Assert.Equal("https://api.test/api/users/mfa/forget-devices", Assert.Single(handler.Requests).RequestUri!.ToString());
+        Assert.Null(store.Load());
+    }
 
     [Fact]
     public async Task GoogleLogin_PostsIdTokenAndLanguage()

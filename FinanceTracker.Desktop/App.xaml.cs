@@ -30,7 +30,7 @@ public partial class App : Application
 
     public App()
     {
-        api = new ApiClient(session);
+        api = new ApiClient(session, trustedDevices: new DpapiTrustedDeviceStore());
     }
 
     protected override void OnStartup(StartupEventArgs e)

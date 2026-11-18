@@ -167,6 +167,10 @@ public static class Strings
         ["mfa.loginCode"] = "Código",
         ["mfa.verify"] = "Verificar",
         ["mfa.back"] = "Volver",
+        ["mfa.rememberDevice"] = "No volver a pedir el código en este equipo durante 30 días",
+        ["mfa.forgetDevicesHelp"] = "Los equipos en los que marcaste \"no volver a pedir el código\" entran sin él durante 30 días.",
+        ["mfa.forgetDevices"] = "Olvidar todos los dispositivos",
+        ["mfa.devicesForgotten"] = "Hecho: el próximo acceso pedirá el código en todos tus dispositivos.",
     };
 
     public static readonly IReadOnlyDictionary<string, string> En = new Dictionary<string, string>
@@ -325,5 +329,9 @@ public static class Strings
         ["mfa.loginCode"] = "Code",
         ["mfa.verify"] = "Verify",
         ["mfa.back"] = "Back",
+        ["mfa.rememberDevice"] = "Don't ask for the code on this computer for 30 days",
+        ["mfa.forgetDevicesHelp"] = "Devices where you ticked \"don't ask for the code\" sign in without it for 30 days.",
+        ["mfa.forgetDevices"] = "Forget all devices",
+        ["mfa.devicesForgotten"] = "Done: your next sign-in will ask for the code on every device.",
     };
 }

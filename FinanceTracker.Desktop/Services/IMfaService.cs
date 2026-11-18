@@ -12,4 +12,7 @@ public interface IMfaService
     Task<MfaRecoveryCodesResponse> ConfirmMfaAsync(string code);
 
     Task DisableMfaAsync(string code);
+
+    /// <summary>"Olvidar todos los dispositivos": el siguiente acceso pide el codigo en todos.</summary>
+    Task ForgetDevicesAsync();
 }

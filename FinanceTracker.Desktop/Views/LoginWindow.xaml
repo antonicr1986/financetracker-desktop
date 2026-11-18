@@ -44,6 +44,10 @@
                     <TextBlock Text="{DynamicResource mfa.loginCode}" Margin="0,0,0,4" />
                     <TextBox x:Name="MfaCodeInput" Text="{Binding MfaCode, UpdateSourceTrigger=PropertyChanged}"
                              MaxLength="32" FontFamily="Consolas" Margin="0,0,0,12" />
+                    <!-- Desmarcada por defecto: en un equipo compartido no conviene. -->
+                    <CheckBox IsChecked="{Binding RememberDevice}" Margin="0,0,0,12">
+                        <TextBlock Text="{DynamicResource mfa.rememberDevice}" TextWrapping="Wrap" />
+                    </CheckBox>
                     <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}"
                                TextWrapping="Wrap" Margin="0,0,0,12" />
                     <Button Content="{DynamicResource mfa.verify}" Command="{Binding VerifyMfaCommand}"

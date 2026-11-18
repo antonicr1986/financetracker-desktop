@@ -197,7 +197,7 @@ public class LanguageSwitchTests
         public Task<LoginResponse> GoogleLoginAsync(string idToken, string language) =>
             throw new InvalidOperationException("Sin usar en estas pruebas");
 
-        public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code) =>
+        public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code, bool rememberDevice = false) =>
             throw new InvalidOperationException("Sin usar en estas pruebas");
 
         public Task<LoginResponse> LoginAsync(string email, string password) =>

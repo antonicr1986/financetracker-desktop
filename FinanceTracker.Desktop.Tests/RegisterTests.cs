@@ -45,7 +45,7 @@ public class RegisterViewModelTests
         public Task<LoginResponse> GoogleLoginAsync(string idToken, string language) =>
             throw new InvalidOperationException("Sin usar en estas pruebas");
 
-        public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code) =>
+        public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code, bool rememberDevice = false) =>
             throw new InvalidOperationException("Sin usar en estas pruebas");
 
         public List<string> Calls { get; } = [];

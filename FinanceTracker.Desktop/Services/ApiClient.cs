@@ -17,10 +17,12 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
 
     private readonly HttpClient http;
     private readonly Session session;
+    private readonly ITrustedDeviceStore? trustedDevices;
 
-    public ApiClient(Session session, HttpClient? http = null)
+    public ApiClient(Session session, HttpClient? http = null, ITrustedDeviceStore? trustedDevices = null)
     {
         this.session = session;
+        this.trustedDevices = trustedDevices;
 
         // El plan F1 de Azure se duerme y la base de datos serverless se pausa:
         // la primera peticion del dia puede superar los 100 s por defecto.
@@ -55,7 +57,8 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/Users/login")
         {
-            Content = JsonContent.Create(new LoginRequest(email, password)),
+            // Con un dispositivo de confianza valido, la API se salta el codigo del MFA.
+            Content = JsonContent.Create(new LoginRequest(email, password, trustedDevices?.Load())),
         };
 
         // En el login un 401 es una contrasena incorrecta, no una sesion caducada.
@@ -67,7 +70,7 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/Users/google")
         {
-            Content = JsonContent.Create(new GoogleLoginRequest(idToken, language)),
+            Content = JsonContent.Create(new GoogleLoginRequest(idToken, language, trustedDevices?.Load())),
         };
 
         // Aqui un 401 es que Google no ha verificado la cuenta.
@@ -75,17 +78,22 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
         return await ReadAsync<LoginResponse>(response);
     }
 
-    public async Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code)
+    public async Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code, bool rememberDevice = false)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/users/mfa/verify")
         {
-            Content = JsonContent.Create(new MfaVerifyRequest(mfaToken, code)),
+            Content = JsonContent.Create(new MfaVerifyRequest(mfaToken, code, rememberDevice)),
         };
 
         // Aqui un 401 puede ser dos cosas (codigo malo o token caducado): se
         // lee el codigo del cuerpo en lugar de fijarlo.
         using var response = await SendAsync(request, unauthorizedCode: null);
-        return await ReadAsync<LoginResponse>(response);
+        var login = await ReadAsync<LoginResponse>(response);
+
+        // "No volver a pedir el codigo en este equipo": se guarda (cifrado).
+        if (login.TrustedDeviceToken is not null) trustedDevices?.Save(login.TrustedDeviceToken);
+
+        return login;
     }
 
     public async Task<MfaSetupResponse> SetupMfaAsync()
@@ -109,6 +117,16 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
         using var request = Authorized(HttpMethod.Post, "api/users/mfa/disable");
         request.Content = JsonContent.Create(new MfaCodeRequest(code));
         using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+
+        // La API ya ha olvidado los dispositivos: el token guardado no sirve.
+        trustedDevices?.Save(null);
+    }
+
+    public async Task ForgetDevicesAsync()
+    {
+        using var request = Authorized(HttpMethod.Post, "api/users/mfa/forget-devices");
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+        trustedDevices?.Save(null);
     }
 
     public async Task<UserInfo> RegisterAsync(string name, string email, string password, string language)
