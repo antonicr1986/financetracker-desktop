@@ -7,7 +7,7 @@
         xmlns:controls="clr-namespace:FinanceTracker.Desktop.Controls"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MfaViewModel}"
-        Title="{DynamicResource mfa.title}" Width="460" SizeToContent="Height" ResizeMode="NoResize"
+        Title="{DynamicResource security.title}" Width="460" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
         Icon="/Assets/app.ico"
         Background="{DynamicResource Brush.Surface}" Foreground="{DynamicResource Brush.Text}">
@@ -27,12 +27,13 @@
             <DockPanel Height="64">
                 <Button DockPanel.Dock="Right" Style="{StaticResource CloseCaptionButton}" VerticalAlignment="Top"
                         Height="40" Content="&#xE8BB;" Click="OnCloseClick" />
-                <TextBlock Text="{DynamicResource mfa.title}" FontSize="20" FontWeight="SemiBold"
+                <TextBlock Text="{DynamicResource security.title}" FontSize="20" FontWeight="SemiBold"
                            VerticalAlignment="Bottom" Margin="24,0,0,4" />
             </DockPanel>
 
             <StackPanel Margin="24,12,24,24">
-                <TextBlock Text="{Binding Status}" FontWeight="SemiBold" />
+                <TextBlock Text="{DynamicResource mfa.title}" FontSize="16" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Status}" FontWeight="SemiBold" Margin="0,4,0,0" />
                 <TextBlock Text="{DynamicResource mfa.description}" Style="{StaticResource MutedText}"
                            TextWrapping="Wrap" Margin="0,4,0,16" />
 
@@ -92,6 +93,16 @@
                              AcceptsReturn="True" Margin="0,0,0,12" />
                     <Button Content="{DynamicResource mfa.recoveryDone}" Command="{Binding BackToIdleCommand}"
                             Style="{StaticResource PrimaryButton}" Padding="0,9" />
+                </StackPanel>
+
+                <!-- Cerrar sesion en todos los dispositivos: independiente del MFA. -->
+                <StackPanel Margin="0,32,0,0"
+                            Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{DynamicResource security.signOutEverywhereHelp}" Style="{StaticResource MutedText}"
+                               TextWrapping="Wrap" Margin="0,0,0,8" />
+                    <Button Content="{DynamicResource security.signOutEverywhere}"
+                            Command="{Binding SignOutEverywhereCommand}"
+                            Foreground="{DynamicResource Brush.Error}" Padding="0,9" />
                 </StackPanel>
 
                 <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}"

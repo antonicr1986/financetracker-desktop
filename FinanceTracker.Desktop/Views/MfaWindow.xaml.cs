@@ -13,6 +13,7 @@ public partial class MfaWindow : Window
         // Si la sesion caduca mientras esta abierta, se cierra; el panel
         // (que escucha el mismo evento) vuelve al login.
         viewModel.SessionExpired += (_, _) => Close();
+        viewModel.SignedOut += (_, _) => Close();
         Closed += (_, _) => viewModel.Dispose();
     }
 

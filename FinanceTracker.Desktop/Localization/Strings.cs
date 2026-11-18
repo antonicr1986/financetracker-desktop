@@ -171,6 +171,10 @@ public static class Strings
         ["mfa.forgetDevicesHelp"] = "Los equipos en los que marcaste \"no volver a pedir el código\" entran sin él durante 30 días.",
         ["mfa.forgetDevices"] = "Olvidar todos los dispositivos",
         ["mfa.devicesForgotten"] = "Hecho: el próximo acceso pedirá el código en todos tus dispositivos.",
+        ["security.title"] = "Seguridad",
+        ["security.signOutEverywhere"] = "Cerrar sesión en todos los dispositivos",
+        ["security.signOutEverywhereHelp"] = "Cierra la sesión aquí y en cualquier otro navegador, móvil o equipo. Úsalo si pierdes un dispositivo o crees que alguien ha entrado en tu cuenta.",
+        ["security.signOutEverywhereConfirm"] = "¿Cerrar la sesión en todos los dispositivos, también en este?",
     };
 
     public static readonly IReadOnlyDictionary<string, string> En = new Dictionary<string, string>
@@ -333,5 +337,9 @@ public static class Strings
         ["mfa.forgetDevicesHelp"] = "Devices where you ticked \"don't ask for the code\" sign in without it for 30 days.",
         ["mfa.forgetDevices"] = "Forget all devices",
         ["mfa.devicesForgotten"] = "Done: your next sign-in will ask for the code on every device.",
+        ["security.title"] = "Security",
+        ["security.signOutEverywhere"] = "Sign out of all devices",
+        ["security.signOutEverywhereHelp"] = "Signs you out here and on any other browser, phone or computer. Use it if you lose a device or think someone has accessed your account.",
+        ["security.signOutEverywhereConfirm"] = "Sign out of every device, including this one?",
     };
 }

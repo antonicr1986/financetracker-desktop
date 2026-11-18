@@ -129,6 +129,13 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
         trustedDevices?.Save(null);
     }
 
+    // El dispositivo de confianza del MFA se conserva: eso es ForgetDevicesAsync.
+    public async Task RevokeSessionsAsync()
+    {
+        using var request = Authorized(HttpMethod.Post, "api/users/sessions/revoke");
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+    }
+
     public async Task<UserInfo> RegisterAsync(string name, string email, string password, string language)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/Users/register")

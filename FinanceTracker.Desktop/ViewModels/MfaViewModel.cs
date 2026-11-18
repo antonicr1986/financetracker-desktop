@@ -15,13 +15,15 @@ public partial class MfaViewModel : ObservableObject, IDisposable
     private readonly IMfaService mfa;
     private readonly Session session;
     private readonly Localizer localizer;
+    private readonly IDialogService dialogs;
     private Func<string>? error;
 
-    public MfaViewModel(IMfaService mfa, Session session, Localizer localizer)
+    public MfaViewModel(IMfaService mfa, Session session, Localizer localizer, IDialogService dialogs)
     {
         this.mfa = mfa;
         this.session = session;
         this.localizer = localizer;
+        this.dialogs = dialogs;
         localizer.Changed += OnLanguageChanged;
     }
 
@@ -72,10 +74,14 @@ public partial class MfaViewModel : ObservableObject, IDisposable
     [NotifyCanExecuteChangedFor(nameof(ConfirmCommand))]
     [NotifyCanExecuteChangedFor(nameof(DisableCommand))]
     [NotifyCanExecuteChangedFor(nameof(ForgetDevicesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SignOutEverywhereCommand))]
     private bool isBusy;
 
     /// <summary>401: la sesion ha caducado. La aplicacion vuelve al login.</summary>
     public event EventHandler? SessionExpired;
+
+    /// <summary>Se han cerrado todas las sesiones, tambien esta: vuelta al login.</summary>
+    public event EventHandler? SignedOut;
 
     private bool CanAct() => !IsBusy;
 
@@ -138,6 +144,25 @@ public partial class MfaViewModel : ObservableObject, IDisposable
         {
             await mfa.ForgetDevicesAsync();
             DevicesMessage = localizer.T("mfa.devicesForgotten");
+        });
+    }
+
+    /// <summary>
+    /// "Cerrar sesion en todos los dispositivos", previa confirmacion. Los demas
+    /// equipos reciben un 401 en su siguiente peticion y vuelven al login.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanAct))]
+    private async Task SignOutEverywhereAsync()
+    {
+        var confirmed = dialogs.Confirm(localizer.T("security.signOutEverywhere"),
+            localizer.T("security.signOutEverywhereConfirm"), localizer.T("security.signOutEverywhere"));
+        if (!confirmed) return;
+
+        await RunAsync(async () =>
+        {
+            await mfa.RevokeSessionsAsync();
+            session.Clear();
+            SignedOut?.Invoke(this, EventArgs.Empty);
         });
     }
 

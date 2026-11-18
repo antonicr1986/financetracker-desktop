@@ -15,4 +15,10 @@ public interface IMfaService
 
     /// <summary>"Olvidar todos los dispositivos": el siguiente acceso pide el codigo en todos.</summary>
     Task ForgetDevicesAsync();
+
+    /// <summary>
+    /// "Cerrar sesion en todos los dispositivos": la API invalida todos los JWT
+    /// de la cuenta, tambien el de este equipo.
+    /// </summary>
+    Task RevokeSessionsAsync();
 }

@@ -124,11 +124,16 @@ public partial class App : Application
 
         viewModel.MfaRequested += (_, _) =>
         {
-            var mfaViewModel = new MfaViewModel(api, session, localizer);
+            var mfaViewModel = new MfaViewModel(api, session, localizer, dialogs);
             var mfaWindow = new MfaWindow(mfaViewModel) { Owner = window };
             mfaViewModel.SessionExpired += (_, _) =>
             {
                 ShowLogin(sessionExpired: true);
+                window.Close();
+            };
+            mfaViewModel.SignedOut += (_, _) =>
+            {
+                ShowLogin();
                 window.Close();
             };
             mfaWindow.ShowDialog();

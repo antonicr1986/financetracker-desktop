@@ -71,6 +71,21 @@ public class ApiClientTests
     }
 
     [Fact]
+    public async Task RevokeSessions_PostsToItsEndpoint_AndKeepsTheTrustedDevice()
+    {
+        var store = new MemoryTrustedDeviceStore();
+        store.Save("device-123");
+        var handler = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
+
+        await Client(handler, store).RevokeSessionsAsync();
+
+        var request = Assert.Single(handler.Requests);
+        Assert.Equal(HttpMethod.Post, request.Method);
+        Assert.Equal("https://api.test/api/users/sessions/revoke", request.RequestUri!.ToString());
+        Assert.Equal("device-123", store.Load());
+    }
+
+    [Fact]
     public async Task GoogleLogin_PostsIdTokenAndLanguage()
     {
         var handler = new FakeHandler(_ => Json("""{"token":"jwt","expiration":"2026-11-05T12:00:00Z","user":{"id":7,"name":"María","email":"maria@gmail.com"}}"""));
