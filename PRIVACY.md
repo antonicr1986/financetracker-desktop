@@ -13,7 +13,7 @@ Solo los que introduces tú al usar la aplicación:
 - **Datos de la cuenta:** nombre, correo electrónico y contraseña.
 - **Si entras con Google:** tu nombre, tu correo electrónico y el identificador de tu cuenta de Google, que Google nos facilita cuando lo autorizas. Se usan solo para crear tu cuenta o vincularla con la que ya tengas con ese correo; al vincularla, la contraseña que tuviera deja de servir y se entra con Google. Las cuentas creadas así no tienen contraseña, y la aplicación no recibe ni guarda tu contraseña de Google ni ningún otro dato de tu cuenta de Google.
 - **Tus datos financieros:** los movimientos, presupuestos y categorías que creas.
-- **Si activas la verificación en dos pasos:** la clave secreta de tu app autenticadora, guardada cifrada, y tus códigos de recuperación, de los que solo se guarda un hash. Desactivarla los borra.
+- **Si activas la verificación en dos pasos:** la clave secreta de tu app autenticadora, guardada cifrada, y tus códigos de recuperación, de los que solo se guarda un hash. Si marcas «No volver a pedir el código en este equipo», también se guarda un hash del token de ese equipo durante 30 días. Desactivarla lo borra todo.
 
 La aplicación **no** recoge datos de ubicación, contactos, archivos del equipo ni ninguna otra información del dispositivo.
 
@@ -22,6 +22,7 @@ La aplicación **no** recoge datos de ubicación, contactos, archivos del equipo
 - **En el servidor:** la cuenta y los datos financieros se guardan en la API de FinanceTracker, alojada en Microsoft Azure en la región de Bélgica (Unión Europea). La contraseña nunca se guarda tal cual: se almacena como un hash. Toda la comunicación entre la aplicación y el servidor va cifrada por HTTPS.
 - **En tu equipo:**
   - La **sesión iniciada**, cifrada con la protección de datos de Windows (DPAPI), de forma que solo tu cuenta de usuario de Windows puede leerla.
+  - Si marcas «No volver a pedir el código en este equipo», el **token de este equipo**, cifrado también con DPAPI. Se borra al pulsar «Olvidar todos los dispositivos» o al desactivar la verificación en dos pasos.
   - Tus **preferencias** de la aplicación (tema claro u oscuro, idioma y qué secciones tienes desplegadas).
 
   La sesión se borra al cerrar sesión. Si desinstalas la versión de la Microsoft Store, Windows borra también las preferencias.
@@ -68,7 +69,7 @@ Only what you enter while using the app:
 - **Account details:** name, email address and password.
 - **If you sign in with Google:** your name, email address and Google account identifier, which Google shares with us when you authorise it. They are only used to create your account or link it to the one you already have with that email; once linked, any password it had stops working and you sign in with Google. Accounts created this way have no password, and the app never receives or stores your Google password or any other Google account data.
 - **Your financial data:** the transactions, budgets and categories you create.
-- **If you turn on two-step verification:** the secret key of your authenticator app, stored encrypted, and your recovery codes, of which only a hash is kept. Turning it off deletes them.
+- **If you turn on two-step verification:** the secret key of your authenticator app, stored encrypted, and your recovery codes, of which only a hash is kept. If you tick "Don't ask for the code on this computer", a hash of that computer's token is also kept for 30 days. Turning it off deletes all of it.
 
 The app does **not** collect location, contacts, files on your computer or any other device information.
 
@@ -77,6 +78,7 @@ The app does **not** collect location, contacts, files on your computer or any o
 - **On the server:** your account and financial data are stored by the FinanceTracker API, hosted on Microsoft Azure in the Belgium region (European Union). Passwords are never stored as-is: only a hash is kept. All communication between the app and the server is encrypted over HTTPS.
 - **On your computer:**
   - Your **signed-in session**, encrypted with Windows Data Protection (DPAPI), so only your Windows user account can read it.
+  - If you tick "Don't ask for the code on this computer", this **computer's token**, also encrypted with DPAPI. It is removed when you click "Forget all devices" or turn off two-step verification.
   - Your app **preferences** (light or dark theme, language and which sections are expanded).
 
   The session is removed when you sign out. If you uninstall the Microsoft Store version, Windows removes your preferences too.
