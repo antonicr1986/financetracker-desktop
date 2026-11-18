@@ -2,7 +2,7 @@
 
 # Política de privacidad — FinanceTracker Desktop
 
-*Última actualización: 5 de noviembre de 2026*
+*Última actualización: 18 de noviembre de 2026*
 
 FinanceTracker Desktop es un proyecto personal de **Antonio Company**, desarrollado como demostración técnica. Esta política explica qué datos maneja la aplicación, dónde se guardan y cómo puedes pedir que se borren.
 
@@ -11,8 +11,9 @@ FinanceTracker Desktop es un proyecto personal de **Antonio Company**, desarroll
 Solo los que introduces tú al usar la aplicación:
 
 - **Datos de la cuenta:** nombre, correo electrónico y contraseña.
-- **Si entras con Google:** tu nombre, tu correo electrónico y el identificador de tu cuenta de Google, que Google nos facilita cuando lo autorizas. Se usan solo para crear tu cuenta o vincularla con la que ya tengas con ese correo. Las cuentas creadas así no tienen contraseña, y la aplicación no recibe ni guarda tu contraseña de Google ni ningún otro dato de tu cuenta de Google.
+- **Si entras con Google:** tu nombre, tu correo electrónico y el identificador de tu cuenta de Google, que Google nos facilita cuando lo autorizas. Se usan solo para crear tu cuenta o vincularla con la que ya tengas con ese correo; al vincularla, la contraseña que tuviera deja de servir y se entra con Google. Las cuentas creadas así no tienen contraseña, y la aplicación no recibe ni guarda tu contraseña de Google ni ningún otro dato de tu cuenta de Google.
 - **Tus datos financieros:** los movimientos, presupuestos y categorías que creas.
+- **Si activas la verificación en dos pasos:** la clave secreta de tu app autenticadora, guardada cifrada, y tus códigos de recuperación, de los que solo se guarda un hash. Desactivarla los borra.
 
 La aplicación **no** recoge datos de ubicación, contactos, archivos del equipo ni ninguna otra información del dispositivo.
 
@@ -28,6 +29,7 @@ La aplicación **no** recoge datos de ubicación, contactos, archivos del equipo
 ## Qué no se hace con tus datos
 
 - No se venden ni se comparten con terceros.
+- Al registrarte, para rechazar contraseñas que ya circulan en filtraciones, se consulta el servicio Pwned Passwords de Have I Been Pwned enviando solo los 5 primeros caracteres de un hash de la contraseña. Ni la contraseña ni el hash completo salen del servidor, y no se envía tu correo ni ningún otro dato.
 - No hay publicidad.
 - No hay analítica, telemetría ni rastreo de ningún tipo.
 
@@ -55,7 +57,7 @@ Antonio Company — **antonicr1986@hotmail.com**
 
 # Privacy policy — FinanceTracker Desktop
 
-*Last updated: 5 November 2026*
+*Last updated: 18 November 2026*
 
 FinanceTracker Desktop is a personal project by **Antonio Company**, built as a technical showcase. This policy explains what data the app handles, where it is stored and how you can ask for it to be deleted.
 
@@ -64,8 +66,9 @@ FinanceTracker Desktop is a personal project by **Antonio Company**, built as a 
 Only what you enter while using the app:
 
 - **Account details:** name, email address and password.
-- **If you sign in with Google:** your name, email address and Google account identifier, which Google shares with us when you authorise it. They are only used to create your account or link it to the one you already have with that email. Accounts created this way have no password, and the app never receives or stores your Google password or any other Google account data.
+- **If you sign in with Google:** your name, email address and Google account identifier, which Google shares with us when you authorise it. They are only used to create your account or link it to the one you already have with that email; once linked, any password it had stops working and you sign in with Google. Accounts created this way have no password, and the app never receives or stores your Google password or any other Google account data.
 - **Your financial data:** the transactions, budgets and categories you create.
+- **If you turn on two-step verification:** the secret key of your authenticator app, stored encrypted, and your recovery codes, of which only a hash is kept. Turning it off deletes them.
 
 The app does **not** collect location, contacts, files on your computer or any other device information.
 
@@ -81,6 +84,7 @@ The app does **not** collect location, contacts, files on your computer or any o
 ## What is not done with your data
 
 - It is not sold or shared with third parties.
+- When you register, to reject passwords already exposed in data breaches, the Have I Been Pwned "Pwned Passwords" service is queried with only the first 5 characters of a hash of the password. Neither the password nor the full hash ever leaves the server, and no email or other data is sent.
 - There is no advertising.
 - There is no analytics, telemetry or tracking of any kind.
 
