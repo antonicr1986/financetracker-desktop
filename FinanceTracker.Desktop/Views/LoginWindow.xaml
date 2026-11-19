@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:LoginViewModel}"
         Title="{DynamicResource login.windowTitle}"
-        Width="540" SizeToContent="Height" ResizeMode="NoResize"
+        Width="540" SizeToContent="Height" ResizeMode="CanMinimize"
         WindowStartupLocation="CenterScreen"
         Icon="/Assets/app.ico"
         Background="{DynamicResource Brush.Background}" Foreground="{DynamicResource Brush.Text}">

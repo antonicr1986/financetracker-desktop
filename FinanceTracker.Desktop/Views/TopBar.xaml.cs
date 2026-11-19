@@ -83,7 +83,8 @@ public partial class TopBar : UserControl
         window = Window.GetWindow(this);
         if (window is null) return;
 
-        // Una ventana de tamaño fijo (el login) no se maximiza ni minimiza.
+        // Una ventana de tamaño fijo (el login) no se maximiza; se minimiza si su
+        // ResizeMode es CanMinimize (NoResize la deja solo con la X).
         var resizable = window.ResizeMode is ResizeMode.CanResize or ResizeMode.CanResizeWithGrip;
         MaximizeButton.Visibility = resizable ? Visibility.Visible : Visibility.Collapsed;
         MinimizeButton.Visibility = window.ResizeMode == ResizeMode.NoResize ? Visibility.Collapsed : Visibility.Visible;
