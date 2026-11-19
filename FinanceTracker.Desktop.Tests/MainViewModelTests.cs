@@ -20,6 +20,63 @@ public class MainViewModelTests
     ];
 
     [Fact]
+    public async Task RefreshOnReturn_SkipsIt_RightAfterALoad()
+    {
+        var api = new FakeTransactionService { Handler = SampleData };
+        var vm = Vm(api);
+        await vm.LoadCommand.ExecuteAsync(null);
+
+        await vm.RefreshOnReturnAsync(DateTime.UtcNow);
+
+        Assert.Equal(1, api.LoadCount);
+    }
+
+    [Fact]
+    public async Task RefreshOnReturn_ReloadsQuietly_AfterTheInterval()
+    {
+        var api = new FakeTransactionService { Handler = SampleData };
+        var vm = Vm(api);
+        await vm.LoadCommand.ExecuteAsync(null);
+
+        await vm.RefreshOnReturnAsync(DateTime.UtcNow + MainViewModel.ReturnRefreshInterval);
+
+        Assert.Equal(2, api.LoadCount);
+        Assert.False(vm.IsLoading);
+        Assert.Equal("Septiembre 2026", vm.SelectedMonth?.Label);
+    }
+
+    [Fact]
+    public async Task RefreshOnReturn_GoesToLogin_WhenTheSessionWasRevoked()
+    {
+        var api = new FakeTransactionService { Handler = SampleData };
+        var session = LoggedInSession();
+        var vm = Vm(api, session: session);
+        await vm.LoadCommand.ExecuteAsync(null);
+        var raised = false;
+        vm.SessionExpired += (_, _) => raised = true;
+
+        api.Handler = () => throw new ApiException(ApiException.SessionExpired);
+        await vm.RefreshOnReturnAsync(DateTime.UtcNow + MainViewModel.ReturnRefreshInterval);
+
+        Assert.True(raised);
+        Assert.False(session.IsActive);
+    }
+
+    [Fact]
+    public async Task RefreshOnReturn_KeepsTheDataWithoutAnError_WhenTheNetworkFails()
+    {
+        var api = new FakeTransactionService { Handler = SampleData };
+        var vm = Vm(api);
+        await vm.LoadCommand.ExecuteAsync(null);
+
+        api.Handler = () => throw new ApiException(ApiException.NetworkError);
+        await vm.RefreshOnReturnAsync(DateTime.UtcNow + MainViewModel.ReturnRefreshInterval);
+
+        Assert.False(vm.HasError);
+        Assert.True(vm.HasData);
+    }
+
+    [Fact]
     public void Greeting_UsesUserName()
     {
         var vm = Vm(new FakeTransactionService());

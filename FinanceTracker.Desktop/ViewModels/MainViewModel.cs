@@ -143,24 +143,21 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private bool CanLoad() => !IsLoading;
 
+    /// <summary>Tiempo minimo entre recargas al volver a la ventana.</summary>
+    public static readonly TimeSpan ReturnRefreshInterval = TimeSpan.FromSeconds(30);
+
+    private DateTime lastLoadUtc = DateTime.MinValue;
+    private bool isRefreshing;
+
     [RelayCommand(CanExecute = nameof(CanLoad))]
     private async Task LoadAsync()
     {
         SetError(null);
         IsLoading = true;
+        lastLoadUtc = DateTime.UtcNow;
         try
         {
-            // Las tres peticiones a la vez: no dependen unas de otras. Los
-            // presupuestos se recargan con los movimientos porque lo gastado
-            // lo calcula la API: tras guardar un movimiento, cambia.
-            var transactionsTask = transactions.GetAllTransactionsAsync();
-            var categoriesTask = categories.GetCategoriesAsync();
-            var budgetsTask = budgets.GetBudgetsAsync();
-            await Task.WhenAll(transactionsTask, categoriesTask, budgetsTask);
-
-            all = transactionsTask.Result;
-            allCategories = categoriesTask.Result;
-            allBudgets = budgetsTask.Result;
+            await FetchAllAsync();
             Render();
         }
         catch (ApiException e) when (e.Code == ApiException.SessionExpired)
@@ -178,6 +175,57 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             IsLoading = false;
         }
+    }
+
+    /// <summary>
+    /// Al volver a la ventana se recarga en silencio (sin esqueleto ni errores).
+    /// Si la sesion se cerro desde otro dispositivo, la API responde 401 y se
+    /// vuelve al login; sin esto se seguia viendo lo ya cargado hasta pulsar
+    /// "Recargar". Como mucho una vez cada <see cref="ReturnRefreshInterval"/>:
+    /// la ventana tambien se activa al cerrar cada formulario.
+    /// </summary>
+    public async Task RefreshOnReturnAsync(DateTime utcNow)
+    {
+        if (IsLoading || isRefreshing || !session.IsActive) return;
+        if (utcNow - lastLoadUtc < ReturnRefreshInterval) return;
+
+        lastLoadUtc = utcNow;
+        isRefreshing = true;
+        try
+        {
+            await FetchAllAsync();
+            SetError(null);
+            Render();
+        }
+        catch (ApiException e) when (e.Code == ApiException.SessionExpired)
+        {
+            session.Clear();
+            SessionExpired?.Invoke(this, EventArgs.Empty);
+        }
+        catch (ApiException)
+        {
+            // Red caida o API dormida: se queda lo que habia y se reintenta la
+            // proxima vez. No es motivo para pintar un error.
+        }
+        finally
+        {
+            isRefreshing = false;
+        }
+    }
+
+    // Las tres peticiones a la vez: no dependen unas de otras. Los presupuestos
+    // se recargan con los movimientos porque lo gastado lo calcula la API: tras
+    // guardar un movimiento, cambia.
+    private async Task FetchAllAsync()
+    {
+        var transactionsTask = transactions.GetAllTransactionsAsync();
+        var categoriesTask = categories.GetCategoriesAsync();
+        var budgetsTask = budgets.GetBudgetsAsync();
+        await Task.WhenAll(transactionsTask, categoriesTask, budgetsTask);
+
+        all = transactionsTask.Result;
+        allCategories = categoriesTask.Result;
+        allBudgets = budgetsTask.Result;
     }
 
     private void Render()

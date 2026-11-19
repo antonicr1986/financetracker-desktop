@@ -9,5 +9,9 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = viewModel;
+
+        // Al volver a la aplicacion: si la sesion se cerro desde otro
+        // dispositivo, se nota aqui y no al pulsar "Recargar".
+        Activated += async (_, _) => await viewModel.RefreshOnReturnAsync(DateTime.UtcNow);
     }
 }
