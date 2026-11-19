@@ -15,6 +15,9 @@ public record GoogleLoginRequest(string IdToken, string Language, string? Truste
 /// <summary>MfaEnabled: si la cuenta tiene verificacion en dos pasos.</summary>
 public record UserInfo(int Id, string Name, string Email, bool MfaEnabled = false);
 
+/// <summary>Cuerpo de POST /api/users/password. Responde un LoginResponse con el token nuevo.</summary>
+public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+
 /// <summary>
 /// Respuesta del login. Con MFA activo no trae Token ni User: trae
 /// MfaRequired y un MfaToken temporal para POST /api/users/mfa/verify.

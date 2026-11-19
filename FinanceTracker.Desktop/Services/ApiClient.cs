@@ -136,6 +136,16 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
         using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
     }
 
+    // Los errores del cambio (contraseña actual mal, filtrada...) llegan como
+    // 400 con su codigo; un 401 solo puede ser la sesion caducada o revocada.
+    public async Task<LoginResponse> ChangePasswordAsync(string currentPassword, string newPassword)
+    {
+        using var request = Authorized(HttpMethod.Post, "api/users/password");
+        request.Content = JsonContent.Create(new ChangePasswordRequest(currentPassword, newPassword));
+        using var response = await SendAsync(request, unauthorizedCode: ApiException.SessionExpired);
+        return await ReadAsync<LoginResponse>(response);
+    }
+
     public async Task<UserInfo> RegisterAsync(string name, string email, string password, string language)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/Users/register")

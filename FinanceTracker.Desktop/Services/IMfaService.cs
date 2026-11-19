@@ -21,4 +21,10 @@ public interface IMfaService
     /// de la cuenta, tambien el de este equipo.
     /// </summary>
     Task RevokeSessionsAsync();
+
+    /// <summary>
+    /// Cambia la contraseña. La API cierra todas las sesiones y devuelve un
+    /// token nuevo para que este equipo siga dentro.
+    /// </summary>
+    Task<LoginResponse> ChangePasswordAsync(string currentPassword, string newPassword);
 }

@@ -71,6 +71,29 @@ public class ApiClientTests
     }
 
     [Fact]
+    public async Task ChangePassword_PostsBothPasswords_AndReturnsTheNewToken()
+    {
+        var handler = new FakeHandler(_ => Json("""{"token":"new-jwt","expiration":"2026-11-20T12:00:00Z","user":{"id":7,"name":"Ana","email":"ana@correo.com"}}"""));
+
+        var login = await Client(handler).ChangePasswordAsync("la-actual-larga", "la-nueva-larga");
+
+        Assert.Equal("https://api.test/api/users/password", Assert.Single(handler.Requests).RequestUri!.ToString());
+        Assert.Contains("\"currentPassword\":\"la-actual-larga\"", handler.Body);
+        Assert.Contains("\"newPassword\":\"la-nueva-larga\"", handler.Body);
+        Assert.Equal("new-jwt", login.Token);
+    }
+
+    [Fact]
+    public async Task ChangePassword_ReadsTheErrorCode_OfAWrongCurrentPassword()
+    {
+        var handler = new FakeHandler(_ => Json("""{"code":"invalid_current_password"}""", HttpStatusCode.BadRequest));
+
+        var error = await Assert.ThrowsAsync<ApiException>(() => Client(handler).ChangePasswordAsync("mal", "la-nueva-larga"));
+
+        Assert.Equal("invalid_current_password", error.Code);
+    }
+
+    [Fact]
     public async Task RevokeSessions_PostsToItsEndpoint_AndKeepsTheTrustedDevice()
     {
         var store = new MemoryTrustedDeviceStore();

@@ -175,6 +175,17 @@ public static class Strings
         ["security.signOutEverywhere"] = "Cerrar sesión en todos los dispositivos",
         ["security.signOutEverywhereHelp"] = "Cierra la sesión aquí y en cualquier otro navegador, móvil o equipo. Úsalo si pierdes un dispositivo o crees que alguien ha entrado en tu cuenta.",
         ["security.signOutEverywhereConfirm"] = "¿Cerrar la sesión en todos los dispositivos, también en este?",
+        ["password.title"] = "Contraseña",
+        ["password.description"] = "Al cambiarla se cerrará la sesión en tus demás dispositivos.",
+        ["password.change"] = "Cambiar contraseña",
+        ["password.current"] = "Contraseña actual",
+        ["password.new"] = "Nueva contraseña",
+        ["password.confirm"] = "Repite la nueva contraseña",
+        ["password.save"] = "Guardar contraseña",
+        ["password.changed"] = "Contraseña cambiada. Se ha cerrado la sesión en tus demás dispositivos.",
+        ["apiError.invalid_current_password"] = "La contraseña actual no es correcta.",
+        ["apiError.password_unchanged"] = "La nueva contraseña tiene que ser distinta de la actual.",
+        ["apiError.password_not_available"] = "Tu cuenta entra con Google (o es la de demostración): no tiene contraseña que cambiar.",
     };
 
     public static readonly IReadOnlyDictionary<string, string> En = new Dictionary<string, string>
@@ -341,5 +352,16 @@ public static class Strings
         ["security.signOutEverywhere"] = "Sign out of all devices",
         ["security.signOutEverywhereHelp"] = "Signs you out here and on any other browser, phone or computer. Use it if you lose a device or think someone has accessed your account.",
         ["security.signOutEverywhereConfirm"] = "Sign out of every device, including this one?",
+        ["password.title"] = "Password",
+        ["password.description"] = "Changing it will sign you out of your other devices.",
+        ["password.change"] = "Change password",
+        ["password.current"] = "Current password",
+        ["password.new"] = "New password",
+        ["password.confirm"] = "Repeat the new password",
+        ["password.save"] = "Save password",
+        ["password.changed"] = "Password changed. You have been signed out of your other devices.",
+        ["apiError.invalid_current_password"] = "The current password is not correct.",
+        ["apiError.password_unchanged"] = "The new password must be different from the current one.",
+        ["apiError.password_not_available"] = "Your account signs in with Google (or is the demo account): there is no password to change.",
     };
 }

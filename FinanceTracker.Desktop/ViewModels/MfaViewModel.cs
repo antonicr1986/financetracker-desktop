@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FinanceTracker.Desktop.Domain;
 using FinanceTracker.Desktop.Localization;
 using FinanceTracker.Desktop.Services;
 
@@ -39,6 +40,7 @@ public partial class MfaViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(IsDisabling))]
     [NotifyPropertyChangedFor(nameof(IsShowingCodes))]
     [NotifyPropertyChangedFor(nameof(ShowDevices))]
+    [NotifyPropertyChangedFor(nameof(IsChangingPassword))]
     private MfaStep step = MfaStep.Idle;
 
     /// <summary>"Olvidar todos los dispositivos": solo con el MFA activo y sin otro paso abierto.</summary>
@@ -51,6 +53,18 @@ public partial class MfaViewModel : ObservableObject, IDisposable
     public bool IsSetup => Step == MfaStep.Setup;
     public bool IsDisabling => Step == MfaStep.Disable;
     public bool IsShowingCodes => Step == MfaStep.Codes;
+    public bool IsChangingPassword => Step == MfaStep.ChangePassword;
+
+    // Las PasswordBox no admiten binding: las rellena el code-behind.
+    public string CurrentPassword { get; set; } = "";
+    public string NewPassword { get; set; } = "";
+    public string PasswordConfirmation { get; set; } = "";
+
+    [ObservableProperty]
+    private string passwordMessage = "";
+
+    /// <summary>Hay que vaciar las PasswordBox (se cancelo o se guardo).</summary>
+    public event EventHandler? PasswordFormCleared;
 
     /// <summary>Enlace otpauth:// que la ventana pinta como QR.</summary>
     [ObservableProperty]
@@ -75,6 +89,7 @@ public partial class MfaViewModel : ObservableObject, IDisposable
     [NotifyCanExecuteChangedFor(nameof(DisableCommand))]
     [NotifyCanExecuteChangedFor(nameof(ForgetDevicesCommand))]
     [NotifyCanExecuteChangedFor(nameof(SignOutEverywhereCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ChangePasswordCommand))]
     private bool isBusy;
 
     /// <summary>401: la sesion ha caducado. La aplicacion vuelve al login.</summary>
@@ -166,6 +181,42 @@ public partial class MfaViewModel : ObservableObject, IDisposable
         });
     }
 
+    [RelayCommand]
+    private void StartChangePassword()
+    {
+        BackToIdle();
+        Step = MfaStep.ChangePassword;
+    }
+
+    /// <summary>
+    /// Cambiar la contraseña. La API cierra la sesion en los demas equipos y
+    /// devuelve un token nuevo, que se guarda para seguir dentro en este.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanAct))]
+    private async Task ChangePasswordAsync()
+    {
+        // Las mismas comprobaciones que el registro, antes de llamar a la API.
+        var problem = CurrentPassword.Length == 0 ? "apiError.invalid_current_password"
+            : NewPassword.Length < RegistrationForm.MinPasswordLength ? "errors.passwordTooShort"
+            : NewPassword != PasswordConfirmation ? "errors.passwordsDontMatch"
+            : null;
+
+        if (problem is not null)
+        {
+            string key = problem;
+            SetError(() => localizer.T(key));
+            return;
+        }
+
+        await RunAsync(async () =>
+        {
+            var login = await mfa.ChangePasswordAsync(CurrentPassword, NewPassword);
+            session.Start(login);
+            BackToIdle();
+            PasswordMessage = localizer.T("password.changed");
+        });
+    }
+
     /// <summary>Cancelar, o "ya los he guardado" tras ver los codigos.</summary>
     [RelayCommand]
     private void BackToIdle()
@@ -174,6 +225,11 @@ public partial class MfaViewModel : ObservableObject, IDisposable
         RecoveryCodes = "";
         Code = "";
         DevicesMessage = "";
+        PasswordMessage = "";
+        CurrentPassword = "";
+        NewPassword = "";
+        PasswordConfirmation = "";
+        PasswordFormCleared?.Invoke(this, EventArgs.Empty);
         SetError(null);
         Step = MfaStep.Idle;
     }
@@ -244,4 +300,5 @@ public enum MfaStep
     Setup,
     Disable,
     Codes,
+    ChangePassword,
 }

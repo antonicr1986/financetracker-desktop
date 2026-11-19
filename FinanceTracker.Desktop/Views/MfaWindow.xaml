@@ -95,6 +95,36 @@
                             Style="{StaticResource PrimaryButton}" Padding="0,9" />
                 </StackPanel>
 
+                <!-- Contraseña: el boton abre el formulario de abajo. -->
+                <StackPanel Margin="0,32,0,0"
+                            Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{DynamicResource password.title}" FontSize="16" FontWeight="SemiBold" />
+                    <TextBlock Text="{DynamicResource password.description}" Style="{StaticResource MutedText}"
+                               TextWrapping="Wrap" Margin="0,4,0,8" />
+                    <Button Content="{DynamicResource password.change}" Command="{Binding StartChangePasswordCommand}"
+                            Padding="0,9" />
+                    <TextBlock Text="{Binding PasswordMessage}" Foreground="{DynamicResource Brush.Income}"
+                               TextWrapping="Wrap" Margin="0,8,0,0" />
+                </StackPanel>
+
+                <StackPanel Visibility="{Binding IsChangingPassword, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="{DynamicResource password.change}" FontSize="16" FontWeight="SemiBold"
+                               Margin="0,16,0,12" />
+                    <TextBlock Text="{DynamicResource password.current}" Margin="0,0,0,4" />
+                    <PasswordBox x:Name="CurrentPasswordInput" PasswordChanged="OnCurrentPasswordChanged"
+                                 Margin="0,0,0,12" />
+                    <TextBlock Text="{DynamicResource password.new}" Margin="0,0,0,4" />
+                    <PasswordBox x:Name="NewPasswordInput" PasswordChanged="OnNewPasswordChanged"
+                                 controls:Hint.Text="{DynamicResource register.passwordPlaceholder}" Margin="0,0,0,12" />
+                    <TextBlock Text="{DynamicResource password.confirm}" Margin="0,0,0,4" />
+                    <PasswordBox x:Name="ConfirmPasswordInput" PasswordChanged="OnConfirmPasswordChanged"
+                                 Margin="0,0,0,12" />
+                    <Button Content="{DynamicResource password.save}" Command="{Binding ChangePasswordCommand}"
+                            Style="{StaticResource PrimaryButton}" Padding="0,9" />
+                    <Button Content="{DynamicResource mfa.cancel}" Command="{Binding BackToIdleCommand}"
+                            Padding="0,9" Margin="0,8,0,0" />
+                </StackPanel>
+
                 <!-- Cerrar sesion en todos los dispositivos: independiente del MFA. -->
                 <StackPanel Margin="0,32,0,0"
                             Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}">
