@@ -68,8 +68,8 @@
                              controls:Hint.Text="{DynamicResource login.emailPlaceholder}" Margin="0,0,0,12" />
 
                     <TextBlock Text="{DynamicResource login.password}" Margin="0,0,0,4" />
-                    <PasswordBox x:Name="PasswordInput" PasswordChanged="OnPasswordChanged"
-                                 controls:Hint.Text="{DynamicResource login.passwordPlaceholder}" Margin="0,0,0,12" />
+                    <controls:RevealPasswordBox x:Name="PasswordInput" PasswordChanged="OnPasswordChanged"
+                                                HintText="{DynamicResource login.passwordPlaceholder}" Margin="0,0,0,12" />
 
                     <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}"
                                TextWrapping="Wrap" Margin="0,0,0,12" />

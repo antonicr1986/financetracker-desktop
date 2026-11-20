@@ -111,14 +111,14 @@
                     <TextBlock Text="{DynamicResource password.change}" FontSize="16" FontWeight="SemiBold"
                                Margin="0,16,0,12" />
                     <TextBlock Text="{DynamicResource password.current}" Margin="0,0,0,4" />
-                    <PasswordBox x:Name="CurrentPasswordInput" PasswordChanged="OnCurrentPasswordChanged"
-                                 Margin="0,0,0,12" />
+                    <controls:RevealPasswordBox x:Name="CurrentPasswordInput" PasswordChanged="OnCurrentPasswordChanged"
+                                                Margin="0,0,0,12" />
                     <TextBlock Text="{DynamicResource password.new}" Margin="0,0,0,4" />
-                    <PasswordBox x:Name="NewPasswordInput" PasswordChanged="OnNewPasswordChanged"
-                                 controls:Hint.Text="{DynamicResource register.passwordPlaceholder}" Margin="0,0,0,12" />
+                    <controls:RevealPasswordBox x:Name="NewPasswordInput" PasswordChanged="OnNewPasswordChanged"
+                                                HintText="{DynamicResource register.passwordPlaceholder}" Margin="0,0,0,12" />
                     <TextBlock Text="{DynamicResource password.confirm}" Margin="0,0,0,4" />
-                    <PasswordBox x:Name="ConfirmPasswordInput" PasswordChanged="OnConfirmPasswordChanged"
-                                 Margin="0,0,0,12" />
+                    <controls:RevealPasswordBox x:Name="ConfirmPasswordInput" PasswordChanged="OnConfirmPasswordChanged"
+                                                Margin="0,0,0,12" />
                     <Button Content="{DynamicResource password.save}" Command="{Binding ChangePasswordCommand}"
                             Style="{StaticResource PrimaryButton}" Padding="0,9" />
                     <Button Content="{DynamicResource mfa.cancel}" Command="{Binding BackToIdleCommand}"
