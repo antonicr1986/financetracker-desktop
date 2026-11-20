@@ -8,3 +8,7 @@ f25b23e5056d0797cfad87c58286824ab064cf73:FinanceTracker.Desktop/Services/ApiExce
 # ApiException.InvalidMfaToken = "invalid_mfa_token": codigo de error de la API,
 # no un token.
 ec42d86e7c41adae1d7433166c9ea109c3d13277:FinanceTracker.Desktop/Services/ApiException.cs:hardcoded-credential-assignment:21
+
+# ApiException.InvalidVerificationToken = "invalid_verification_token": codigo de
+# error de la API, no un token.
+1ca7ca467ca1c4d0bbc2d03d3edcba669a301ab7:FinanceTracker.Desktop/Services/ApiException.cs:hardcoded-credential-assignment:24
