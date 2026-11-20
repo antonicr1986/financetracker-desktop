@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using FinanceTracker.Desktop.Localization;
+using FinanceTracker.Desktop.Models;
 using FinanceTracker.Desktop.Services;
 using FinanceTracker.Desktop.ViewModels;
 using FinanceTracker.Desktop.Views;
@@ -64,7 +65,7 @@ public partial class App : Application
         }
     }
 
-    private void ShowLogin(bool sessionExpired = false)
+    private void ShowLogin(bool sessionExpired = false, LoginResponse? emailChallenge = null)
     {
         // Precalentamiento: despierta la API y la base de datos mientras se
         // muestra el login. No se espera; ver ApiClient.WarmUpAsync.
@@ -72,6 +73,8 @@ public partial class App : Application
 
         var viewModel = new LoginViewModel(api, session, localizer, googleSignIn: new GoogleSignIn());
         if (sessionExpired) viewModel.ShowSessionExpired();
+        if (emailChallenge?.VerificationToken is not null)
+            viewModel.StartEmailVerification(emailChallenge.VerificationToken, emailChallenge.Email ?? "");
 
         var window = new LoginWindow(viewModel);
         window.Closed += (_, _) => viewModel.Dispose();
@@ -104,6 +107,12 @@ public partial class App : Application
         viewModel.SignInRequested += (_, _) =>
         {
             ShowLogin();
+            window.Close();
+        };
+        // Cuenta creada con el correo sin verificar: al acceso, ya en el paso del codigo.
+        viewModel.EmailVerificationRequired += (_, login) =>
+        {
+            ShowLogin(emailChallenge: login);
             window.Close();
         };
         MainWindow = window;

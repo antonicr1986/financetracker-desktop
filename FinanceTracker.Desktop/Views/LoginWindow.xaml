@@ -57,6 +57,30 @@
                 </StackPanel>
             </Border>
 
+            <!-- Correo sin verificar: el codigo de 6 digitos que ha llegado al correo. -->
+            <Border Style="{StaticResource Card}" Padding="24"
+                    Visibility="{Binding IsEmailStep, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel>
+                    <TextBlock Text="{DynamicResource emailVerification.title}" FontSize="16" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding EmailStepBody}" Style="{StaticResource MutedText}"
+                               TextWrapping="Wrap" Margin="0,4,0,16" />
+                    <TextBlock Text="{DynamicResource mfa.loginCode}" Margin="0,0,0,4" />
+                    <TextBox x:Name="EmailCodeInput" Text="{Binding EmailCode, UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="6" FontFamily="Consolas" Margin="0,0,0,12" />
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}"
+                               TextWrapping="Wrap" Margin="0,0,0,12" />
+                    <Button Content="{DynamicResource mfa.verify}" Command="{Binding VerifyEmailCommand}"
+                            IsDefault="{Binding IsEmailStep}" Style="{StaticResource PrimaryButton}" Padding="0,9" />
+                    <Button Content="{DynamicResource emailVerification.resend}" Command="{Binding ResendEmailCodeCommand}"
+                            Style="{StaticResource LinkButton}" Foreground="{DynamicResource Brush.Text}"
+                            HorizontalAlignment="Center" Margin="0,12,0,0" />
+                    <TextBlock Text="{Binding ResendMessage}" Style="{StaticResource MutedText}"
+                               TextWrapping="Wrap" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                    <Button Content="{DynamicResource mfa.back}" Command="{Binding BackToPasswordCommand}"
+                            Padding="0,9" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+
             <Border Style="{StaticResource Card}" Padding="24"
                     Visibility="{Binding IsPasswordStep, Converter={StaticResource BoolToVisibility}}">
                 <StackPanel>

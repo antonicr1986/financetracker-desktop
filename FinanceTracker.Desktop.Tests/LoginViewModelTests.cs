@@ -43,6 +43,20 @@ public class LoginViewModelTests
             return Task.FromResult(MfaHandler(mfaToken, code));
         }
 
+        public Func<string, string, LoginResponse> EmailHandler { get; set; } =
+            (_, _) => throw new InvalidOperationException("No configurado");
+
+        public int Resends { get; private set; }
+
+        public Task<LoginResponse> VerifyEmailAsync(string verificationToken, string code) =>
+            Task.FromResult(EmailHandler(verificationToken, code));
+
+        public Task ResendEmailCodeAsync(string verificationToken)
+        {
+            Resends++;
+            return Task.CompletedTask;
+        }
+
         public Task<LoginResponse> LoginAsync(string email, string password)
         {
             Calls++;
@@ -100,6 +114,96 @@ public class LoginViewModelTests
     // Lo que responde la API a una cuenta con MFA: ni token ni usuario.
     private static LoginResponse MfaChallenge() =>
         new(null!, DateTime.UtcNow.AddMinutes(5), null!, MfaRequired: true, MfaToken: "mfa-token");
+
+    // Lo que responde la API a una cuenta con el correo sin verificar.
+    private static LoginResponse EmailChallenge() =>
+        new(null!, DateTime.UtcNow.AddMinutes(30), null!, EmailVerificationRequired: true,
+            VerificationToken: "verify-token", Email: "ana@correo.com");
+
+    [Fact]
+    public async Task Login_WithAnUnverifiedEmail_AsksForTheEmailCode()
+    {
+        var auth = new FakeAuthService { Handler = (_, _) => EmailChallenge() };
+        var session = new Session();
+        var vm = new LoginViewModel(auth, session, Es) { Email = "ana@correo.com", Password = "una-clave-larga" };
+
+        await vm.LoginCommand.ExecuteAsync(null);
+
+        Assert.True(vm.IsEmailStep);
+        Assert.False(vm.IsPasswordStep);
+        Assert.Contains("ana@correo.com", vm.EmailStepBody);
+        Assert.False(session.IsActive);
+    }
+
+    [Fact]
+    public async Task VerifyEmail_WithTheRightCode_StartsTheSession()
+    {
+        var auth = new FakeAuthService
+        {
+            Handler = (_, _) => EmailChallenge(),
+            EmailHandler = (token, code) => token == "verify-token" && code == "123456"
+                ? Success("ana@correo.com")
+                : throw new ApiException("invalid_email_code"),
+        };
+        var session = new Session();
+        var vm = new LoginViewModel(auth, session, Es) { Email = "ana@correo.com", Password = "una-clave-larga" };
+        var loggedIn = false;
+        vm.LoggedIn += (_, _) => loggedIn = true;
+        await vm.LoginCommand.ExecuteAsync(null);
+
+        vm.EmailCode = "123456";
+        await vm.VerifyEmailCommand.ExecuteAsync(null);
+
+        Assert.True(loggedIn);
+        Assert.True(session.IsActive);
+    }
+
+    [Theory]
+    [InlineData("12345")]
+    [InlineData("12a456")]
+    public async Task VerifyEmail_ChecksTheFormat_BeforeCallingTheApi(string code)
+    {
+        var auth = new FakeAuthService { Handler = (_, _) => EmailChallenge() };
+        var vm = new LoginViewModel(auth, new Session(), Es) { Email = "ana@correo.com", Password = "una-clave-larga" };
+        await vm.LoginCommand.ExecuteAsync(null);
+
+        vm.EmailCode = code;
+        await vm.VerifyEmailCommand.ExecuteAsync(null);
+
+        Assert.Equal("Escribe los 6 dígitos del código.", vm.ErrorMessage);
+        Assert.True(vm.IsEmailStep);
+    }
+
+    [Fact]
+    public async Task VerifyEmail_WithAnExpiredStep_GoesBackToThePassword()
+    {
+        var auth = new FakeAuthService
+        {
+            Handler = (_, _) => EmailChallenge(),
+            EmailHandler = (_, _) => throw new ApiException(ApiException.InvalidVerificationToken),
+        };
+        var vm = new LoginViewModel(auth, new Session(), Es) { Email = "ana@correo.com", Password = "una-clave-larga" };
+        await vm.LoginCommand.ExecuteAsync(null);
+
+        vm.EmailCode = "123456";
+        await vm.VerifyEmailCommand.ExecuteAsync(null);
+
+        Assert.True(vm.IsPasswordStep);
+        Assert.NotEqual("", vm.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ResendEmailCode_AsksTheApi_AndSaysSo()
+    {
+        var auth = new FakeAuthService { Handler = (_, _) => EmailChallenge() };
+        var vm = new LoginViewModel(auth, new Session(), Es) { Email = "ana@correo.com", Password = "una-clave-larga" };
+        await vm.LoginCommand.ExecuteAsync(null);
+
+        await vm.ResendEmailCodeCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, auth.Resends);
+        Assert.NotEqual("", vm.ResendMessage);
+    }
 
     [Fact]
     public async Task Login_WithMfa_AsksForTheCode_AndDoesNotStartTheSession()

@@ -33,7 +33,16 @@ public record LoginResponse(
     UserInfo User,
     bool MfaRequired = false,
     string? MfaToken = null,
-    string? TrustedDeviceToken = null);
+    string? TrustedDeviceToken = null,
+    bool EmailVerificationRequired = false,
+    string? VerificationToken = null,
+    string? Email = null);
+
+/// <summary>Cuerpo de POST /api/users/email/verify: el codigo de 6 digitos enviado al correo.</summary>
+public record EmailVerifyRequest(string VerificationToken, string Code);
+
+/// <summary>Cuerpo de POST /api/users/email/resend.</summary>
+public record EmailResendRequest(string VerificationToken);
 
 /// <summary>Cuerpo de POST /api/users/mfa/verify: codigo TOTP o de recuperacion.</summary>
 /// <summary>RememberDevice: "no volver a pedir el codigo en este dispositivo durante 30 dias".</summary>

@@ -96,6 +96,26 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
         return login;
     }
 
+    // Sin sesion todavia: un 401 aqui es el paso caducado, y se lee su codigo.
+    public async Task<LoginResponse> VerifyEmailAsync(string verificationToken, string code)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/users/email/verify")
+        {
+            Content = JsonContent.Create(new EmailVerifyRequest(verificationToken, code)),
+        };
+        using var response = await SendAsync(request, unauthorizedCode: null);
+        return await ReadAsync<LoginResponse>(response);
+    }
+
+    public async Task ResendEmailCodeAsync(string verificationToken)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/users/email/resend")
+        {
+            Content = JsonContent.Create(new EmailResendRequest(verificationToken)),
+        };
+        using var response = await SendAsync(request, unauthorizedCode: null);
+    }
+
     public async Task<MfaSetupResponse> SetupMfaAsync()
     {
         using var request = Authorized(HttpMethod.Post, "api/users/mfa/setup");

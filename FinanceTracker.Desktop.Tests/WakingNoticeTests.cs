@@ -37,6 +37,12 @@ public class WakingNoticeTests
         public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code, bool rememberDevice = false) =>
             throw new InvalidOperationException("Sin usar en estas pruebas");
 
+        public Task<LoginResponse> VerifyEmailAsync(string verificationToken, string code) =>
+            throw new InvalidOperationException("Sin usar en estas pruebas");
+
+        public Task ResendEmailCodeAsync(string verificationToken) =>
+            throw new InvalidOperationException("Sin usar en estas pruebas");
+
         public Task<UserInfo> RegisterAsync(string name, string email, string password, string language) =>
             throw new InvalidOperationException("El login no registra");
     }

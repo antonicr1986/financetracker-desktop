@@ -29,4 +29,14 @@ public interface IAuthService
     /// y se guarda para los siguientes accesos.
     /// </summary>
     Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code, bool rememberDevice = false);
+
+    /// <summary>
+    /// Codigo de 6 digitos enviado al correo para verificarlo. Errores:
+    /// "invalid_email_code", "email_code_expired" (pedir otro) e
+    /// "invalid_verification_token" (han pasado los 30 minutos).
+    /// </summary>
+    Task<LoginResponse> VerifyEmailAsync(string verificationToken, string code);
+
+    /// <summary>Codigo nuevo; "email_code_recently_sent" si se pidio hace menos de un minuto.</summary>
+    Task ResendEmailCodeAsync(string verificationToken);
 }

@@ -52,7 +52,30 @@ public partial class LoginViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(IsPasswordStep))]
     private bool isMfaStep;
 
-    public bool IsPasswordStep => !IsMfaStep;
+    /// <summary>
+    /// true cuando la contraseña es correcta pero el correo esta sin verificar:
+    /// falta el codigo de 6 digitos que la API ha enviado al correo.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPasswordStep))]
+    private bool isEmailStep;
+
+    public bool IsPasswordStep => !IsMfaStep && !IsEmailStep;
+
+    [ObservableProperty]
+    private string emailCode = "";
+
+    /// <summary>"Te hemos enviado un codigo a ..." (se reescribe al cambiar de idioma).</summary>
+    [ObservableProperty]
+    private string emailStepBody = "";
+
+    /// <summary>Resultado de "Reenviar codigo".</summary>
+    [ObservableProperty]
+    private string resendMessage = "";
+
+    /// <summary>Token temporal del paso del correo (30 minutos) y correo al que se envio.</summary>
+    private string? verificationToken;
+    private string verificationEmail = "";
 
     [ObservableProperty]
     private string mfaCode = "";
@@ -71,6 +94,8 @@ public partial class LoginViewModel : ObservableObject, IDisposable
     [NotifyCanExecuteChangedFor(nameof(LoginDemoCommand))]
     [NotifyCanExecuteChangedFor(nameof(LoginGoogleCommand))]
     [NotifyCanExecuteChangedFor(nameof(VerifyMfaCommand))]
+    [NotifyCanExecuteChangedFor(nameof(VerifyEmailCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ResendEmailCodeCommand))]
     private bool isBusy;
 
     /// <summary>Se lanza al iniciar sesion. La ventana lo escucha para navegar.</summary>
@@ -91,7 +116,26 @@ public partial class LoginViewModel : ObservableObject, IDisposable
         ErrorMessage = text?.Invoke() ?? "";
     }
 
-    private void OnLanguageChanged(object? sender, EventArgs e) => SetError(error);
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        SetError(error);
+        if (IsEmailStep) EmailStepBody = localizer.T("emailVerification.body", verificationEmail);
+    }
+
+    /// <summary>
+    /// Pasa directamente al paso del codigo del correo. Lo usa el registro:
+    /// la cuenta ya esta creada y solo falta verificarla.
+    /// </summary>
+    public void StartEmailVerification(string token, string email)
+    {
+        verificationToken = token;
+        verificationEmail = email;
+        EmailStepBody = localizer.T("emailVerification.body", email);
+        EmailCode = "";
+        ResendMessage = "";
+        IsMfaStep = false;
+        IsEmailStep = true;
+    }
 
     private bool CanLogin() => !IsBusy;
 
@@ -146,19 +190,7 @@ public partial class LoginViewModel : ObservableObject, IDisposable
         WakingNotice.Start();
         try
         {
-            var login = await signIn();
-
-            // Con MFA el login no abre la sesion: falta el codigo.
-            if (login.MfaRequired && login.MfaToken is not null)
-            {
-                mfaToken = login.MfaToken;
-                MfaCode = "";
-                IsMfaStep = true;
-                return;
-            }
-
-            session.Start(login);
-            LoggedIn?.Invoke(this, EventArgs.Empty);
+            Continue(await signIn());
         }
         catch (ApiException e)
         {
@@ -167,6 +199,88 @@ public partial class LoginViewModel : ObservableObject, IDisposable
         finally
         {
             WakingNotice.Stop();
+            IsBusy = false;
+        }
+    }
+
+    /// <summary>
+    /// Lo que toca tras una respuesta del login: el codigo del correo, el del
+    /// MFA o la sesion.
+    /// </summary>
+    private void Continue(LoginResponse login)
+    {
+        if (login.EmailVerificationRequired && login.VerificationToken is not null)
+        {
+            StartEmailVerification(login.VerificationToken, login.Email ?? Email.Trim());
+            return;
+        }
+
+        IsEmailStep = false;
+
+        // Con MFA el login no abre la sesion: falta el codigo.
+        if (login.MfaRequired && login.MfaToken is not null)
+        {
+            mfaToken = login.MfaToken;
+            MfaCode = "";
+            IsMfaStep = true;
+            return;
+        }
+
+        session.Start(login);
+        LoggedIn?.Invoke(this, EventArgs.Empty);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanLogin))]
+    private async Task VerifyEmailAsync()
+    {
+        SetError(null);
+        ResendMessage = "";
+        var code = EmailCode.Trim();
+        if (verificationToken is null) return;
+
+        if (code.Length != 6 || !code.All(char.IsAsciiDigit))
+        {
+            SetError(() => localizer.T("emailVerification.codeFormat"));
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            Continue(await auth.VerifyEmailAsync(verificationToken, code));
+        }
+        catch (ApiException e)
+        {
+            // Han pasado los 30 minutos: vuelta a la contraseña.
+            if (e.Code == ApiException.InvalidVerificationToken) BackToPassword();
+            SetError(() => localizer.ApiError(e.Code));
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanLogin))]
+    private async Task ResendEmailCodeAsync()
+    {
+        SetError(null);
+        ResendMessage = "";
+        if (verificationToken is null) return;
+
+        IsBusy = true;
+        try
+        {
+            await auth.ResendEmailCodeAsync(verificationToken);
+            ResendMessage = localizer.T("emailVerification.resent");
+        }
+        catch (ApiException e)
+        {
+            if (e.Code == ApiException.InvalidVerificationToken) BackToPassword();
+            SetError(() => localizer.ApiError(e.Code));
+        }
+        finally
+        {
             IsBusy = false;
         }
     }
@@ -203,6 +317,10 @@ public partial class LoginViewModel : ObservableObject, IDisposable
         mfaToken = null;
         MfaCode = "";
         IsMfaStep = false;
+        verificationToken = null;
+        EmailCode = "";
+        ResendMessage = "";
+        IsEmailStep = false;
         SetError(null);
     }
 

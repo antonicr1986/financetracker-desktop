@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FinanceTracker.Desktop.Domain;
 using FinanceTracker.Desktop.Localization;
+using FinanceTracker.Desktop.Models;
 using FinanceTracker.Desktop.Services;
 
 namespace FinanceTracker.Desktop.ViewModels;
@@ -48,6 +49,12 @@ public partial class RegisterViewModel : ObservableObject, IDisposable
     /// <summary>Cuenta creada y sesion iniciada: la ventana navega al panel.</summary>
     public event EventHandler? LoggedIn;
 
+    /// <summary>
+    /// Cuenta creada pero con el correo sin verificar: la aplicacion abre el
+    /// acceso directamente en el paso del codigo (lleva el token y el correo).
+    /// </summary>
+    public event EventHandler<LoginResponse>? EmailVerificationRequired;
+
     /// <summary>"¿Ya tienes cuenta? Entrar": volver al login.</summary>
     public event EventHandler? SignInRequested;
 
@@ -86,6 +93,13 @@ public partial class RegisterViewModel : ObservableObject, IDisposable
 
             // La API no devuelve token al registrarse: se entra con lo mismo.
             var login = await auth.LoginAsync(trimmedEmail, Password);
+
+            if (login.EmailVerificationRequired && login.VerificationToken is not null)
+            {
+                EmailVerificationRequired?.Invoke(this, login);
+                return;
+            }
+
             session.Start(login);
             LoggedIn?.Invoke(this, EventArgs.Empty);
         }

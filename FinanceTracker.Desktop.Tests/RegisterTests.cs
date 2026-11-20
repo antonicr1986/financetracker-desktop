@@ -48,9 +48,16 @@ public class RegisterViewModelTests
         public Task<LoginResponse> VerifyMfaAsync(string mfaToken, string code, bool rememberDevice = false) =>
             throw new InvalidOperationException("Sin usar en estas pruebas");
 
+        public Task<LoginResponse> VerifyEmailAsync(string verificationToken, string code) =>
+            throw new InvalidOperationException("Sin usar en estas pruebas");
+
+        public Task ResendEmailCodeAsync(string verificationToken) =>
+            throw new InvalidOperationException("Sin usar en estas pruebas");
+
         public List<string> Calls { get; } = [];
         public ApiException? RegisterError { get; set; }
         public ApiException? LoginError { get; set; }
+        public LoginResponse? LoginResponse { get; set; }
 
         public Task<UserInfo> RegisterAsync(string name, string email, string password, string language)
         {
@@ -63,8 +70,28 @@ public class RegisterViewModelTests
         {
             Calls.Add($"login {email} {password}");
             if (LoginError is not null) throw LoginError;
-            return Task.FromResult(new LoginResponse("token", DateTime.UtcNow.AddHours(1), new UserInfo(1, "Ana", email)));
+            return Task.FromResult(LoginResponse
+                ?? new LoginResponse("token", DateTime.UtcNow.AddHours(1), new UserInfo(1, "Ana", email)));
         }
+    }
+
+    [Fact]
+    public async Task Register_WithEmailVerification_HandsTheStepToTheSignIn_WithoutASession()
+    {
+        var auth = new FakeAuth
+        {
+            LoginResponse = new LoginResponse(null!, DateTime.UtcNow.AddMinutes(30), null!,
+                EmailVerificationRequired: true, VerificationToken: "verify-token", Email: "ana@correo.com"),
+        };
+        var session = new Session();
+        var vm = Filled(auth, session);
+        LoginResponse? handed = null;
+        vm.EmailVerificationRequired += (_, login) => handed = login;
+
+        await vm.RegisterCommand.ExecuteAsync(null);
+
+        Assert.Equal("verify-token", handed?.VerificationToken);
+        Assert.False(session.IsActive);
     }
 
     private static RegisterViewModel Filled(FakeAuth auth, Session? session = null, Localizer? localizer = null) =>

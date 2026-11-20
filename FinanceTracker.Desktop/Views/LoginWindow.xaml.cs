@@ -21,6 +21,8 @@ public partial class LoginWindow : Window
         {
             if (e.PropertyName == nameof(LoginViewModel.IsMfaStep) && viewModel.IsMfaStep)
                 Dispatcher.BeginInvoke(new Action(() => MfaCodeInput.Focus()));
+            if (e.PropertyName == nameof(LoginViewModel.IsEmailStep) && viewModel.IsEmailStep)
+                Dispatcher.BeginInvoke(new Action(() => EmailCodeInput.Focus()));
         };
         VersionText.Text = $"v{AppVersion()}";
     }
