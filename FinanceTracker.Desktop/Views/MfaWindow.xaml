@@ -38,7 +38,12 @@
                            TextWrapping="Wrap" Margin="0,4,0,16" />
 
                 <Button Content="{Binding ActionText}" Command="{Binding StartCommand}" Padding="0,9"
-                        Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}" />
+                        Visibility="{Binding ShowAction, Converter={StaticResource BoolToVisibility}}" />
+
+                <!-- Cuentas de Google o la demo: en lugar de "Activar". -->
+                <TextBlock Text="{DynamicResource apiError.mfa_not_available}" Style="{StaticResource MutedText}"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding ShowMfaUnavailable, Converter={StaticResource BoolToVisibility}}" />
 
                 <!-- Equipos donde se marco "no volver a pedir el codigo". -->
                 <StackPanel Margin="0,16,0,0"
@@ -99,10 +104,11 @@
                 <StackPanel Margin="0,32,0,0"
                             Visibility="{Binding IsIdle, Converter={StaticResource BoolToVisibility}}">
                     <TextBlock Text="{DynamicResource password.title}" FontSize="16" FontWeight="SemiBold" />
-                    <TextBlock Text="{DynamicResource password.description}" Style="{StaticResource MutedText}"
+                    <TextBlock Text="{Binding PasswordDescription}" Style="{StaticResource MutedText}"
                                TextWrapping="Wrap" Margin="0,4,0,8" />
                     <Button Content="{DynamicResource password.change}" Command="{Binding StartChangePasswordCommand}"
-                            Padding="0,9" />
+                            Padding="0,9"
+                            Visibility="{Binding HasPassword, Converter={StaticResource BoolToVisibility}}" />
                     <TextBlock Text="{Binding PasswordMessage}" Foreground="{DynamicResource Brush.Income}"
                                TextWrapping="Wrap" Margin="0,8,0,0" />
                 </StackPanel>

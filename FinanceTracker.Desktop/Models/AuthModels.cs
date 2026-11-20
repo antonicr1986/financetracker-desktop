@@ -13,7 +13,12 @@ public record RegisterRequest(string Name, string Email, string Password, string
 public record GoogleLoginRequest(string IdToken, string Language, string? TrustedDeviceToken = null);
 
 /// <summary>MfaEnabled: si la cuenta tiene verificacion en dos pasos.</summary>
-public record UserInfo(int Id, string Name, string Email, bool MfaEnabled = false);
+/// <summary>
+/// HasPassword: false en cuentas solo de Google y en la de demostracion (ni
+/// cambiar contraseña ni activar el MFA). null si la API no lo manda (version
+/// anterior, o una sesion guardada antes de existir): entonces se asume que si.
+/// </summary>
+public record UserInfo(int Id, string Name, string Email, bool MfaEnabled = false, bool? HasPassword = null);
 
 /// <summary>Cuerpo de POST /api/users/password. Responde un LoginResponse con el token nuevo.</summary>
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);

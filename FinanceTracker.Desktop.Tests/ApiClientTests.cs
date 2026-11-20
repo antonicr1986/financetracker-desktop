@@ -71,6 +71,20 @@ public class ApiClientTests
     }
 
     [Fact]
+    public async Task Login_ReadsHasPassword_AndLeavesItNullWhenMissing()
+    {
+        var withField = await Client(new FakeHandler(_ => Json(
+            """{"token":"t","expiration":"2026-11-20T12:00:00Z","user":{"id":7,"name":"Ana","email":"a@correo.com","hasPassword":false}}""")))
+            .LoginAsync("a@correo.com", "una-clave-larga");
+        var withoutField = await Client(new FakeHandler(_ => Json(
+            """{"token":"t","expiration":"2026-11-20T12:00:00Z","user":{"id":7,"name":"Ana","email":"a@correo.com"}}""")))
+            .LoginAsync("a@correo.com", "una-clave-larga");
+
+        Assert.False(withField.User.HasPassword);
+        Assert.Null(withoutField.User.HasPassword);
+    }
+
+    [Fact]
     public async Task ChangePassword_PostsBothPasswords_AndReturnsTheNewToken()
     {
         var handler = new FakeHandler(_ => Json("""{"token":"new-jwt","expiration":"2026-11-20T12:00:00Z","user":{"id":7,"name":"Ana","email":"ana@correo.com"}}"""));

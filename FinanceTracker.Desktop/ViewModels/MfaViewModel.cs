@@ -41,6 +41,8 @@ public partial class MfaViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(IsShowingCodes))]
     [NotifyPropertyChangedFor(nameof(ShowDevices))]
     [NotifyPropertyChangedFor(nameof(IsChangingPassword))]
+    [NotifyPropertyChangedFor(nameof(ShowAction))]
+    [NotifyPropertyChangedFor(nameof(ShowMfaUnavailable))]
     private MfaStep step = MfaStep.Idle;
 
     /// <summary>"Olvidar todos los dispositivos": solo con el MFA activo y sin otro paso abierto.</summary>
@@ -54,6 +56,20 @@ public partial class MfaViewModel : ObservableObject, IDisposable
     public bool IsDisabling => Step == MfaStep.Disable;
     public bool IsShowingCodes => Step == MfaStep.Codes;
     public bool IsChangingPassword => Step == MfaStep.ChangePassword;
+
+    /// <summary>Si la cuenta tiene contraseña propia (no Google ni demo).</summary>
+    public bool HasPassword => session.User?.HasPassword != false;
+
+    /// <summary>
+    /// "Activar" solo con contraseña propia; "Desactivar" siempre que este
+    /// activo (una cuenta vinculada a Google despues puede tenerlo).
+    /// </summary>
+    public bool ShowAction => IsIdle && (IsEnabled || HasPassword);
+
+    public bool ShowMfaUnavailable => IsIdle && !IsEnabled && !HasPassword;
+
+    public string PasswordDescription =>
+        localizer.T(HasPassword ? "password.description" : "apiError.password_not_available");
 
     // Las PasswordBox no admiten binding: las rellena el code-behind.
     public string CurrentPassword { get; set; } = "";
@@ -277,6 +293,9 @@ public partial class MfaViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(Status));
         OnPropertyChanged(nameof(ActionText));
         OnPropertyChanged(nameof(ShowDevices));
+        OnPropertyChanged(nameof(ShowAction));
+        OnPropertyChanged(nameof(ShowMfaUnavailable));
+        OnPropertyChanged(nameof(PasswordDescription));
     }
 
     private void SetError(Func<string>? text)

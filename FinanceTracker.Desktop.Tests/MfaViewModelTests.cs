@@ -96,6 +96,45 @@ public class MfaViewModelTests
         Assert.Equal("jwt", session.Token);
     }
 
+    private static MfaViewModel VmFor(UserInfo user)
+    {
+        var session = new Session();
+        session.Start(new LoginResponse("jwt", DateTime.UtcNow.AddHours(1), user));
+        return new MfaViewModel(new FakeMfaService(), session, new Localizer(AppLanguage.Es), new FakeDialogService());
+    }
+
+    [Fact]
+    public void AccountWithoutPassword_CannotEnableMfaNorChangeThePassword()
+    {
+        var vm = VmFor(new UserInfo(7, "Ana", "ana@gmail.com", MfaEnabled: false, HasPassword: false));
+
+        Assert.False(vm.ShowAction);
+        Assert.True(vm.ShowMfaUnavailable);
+        Assert.False(vm.HasPassword);
+        Assert.Contains("Google", vm.PasswordDescription);
+    }
+
+    [Fact]
+    public void AccountWithoutPassword_CanStillDisableAnMfaItAlreadyHas()
+    {
+        var vm = VmFor(new UserInfo(7, "Ana", "ana@gmail.com", MfaEnabled: true, HasPassword: false));
+
+        Assert.True(vm.ShowAction);
+        Assert.False(vm.ShowMfaUnavailable);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(null)]
+    public void AccountWithPasswordOrUnknown_ShowsEverything(bool? hasPassword)
+    {
+        var vm = VmFor(new UserInfo(7, "Ana", "ana@correo.com", HasPassword: hasPassword));
+
+        Assert.True(vm.ShowAction);
+        Assert.False(vm.ShowMfaUnavailable);
+        Assert.True(vm.HasPassword);
+    }
+
     [Fact]
     public async Task SignOutEverywhere_DoesNothing_WhenTheUserCancels()
     {
