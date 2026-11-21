@@ -93,7 +93,10 @@
 
                     <TextBlock Text="{DynamicResource login.password}" Margin="0,0,0,4" />
                     <controls:RevealPasswordBox x:Name="PasswordInput" PasswordChanged="OnPasswordChanged"
-                                                HintText="{DynamicResource login.passwordPlaceholder}" Margin="0,0,0,12" />
+                                                HintText="{DynamicResource login.passwordPlaceholder}" Margin="0,0,0,4" />
+                    <Button Content="{DynamicResource login.forgotPassword}" Command="{Binding GoToForgotPasswordCommand}"
+                            Style="{StaticResource LinkButton}" Foreground="{DynamicResource Brush.Text}"
+                            HorizontalAlignment="Right" Margin="0,0,0,12" />
 
                     <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Brush.Error}"
                                TextWrapping="Wrap" Margin="0,0,0,12" />

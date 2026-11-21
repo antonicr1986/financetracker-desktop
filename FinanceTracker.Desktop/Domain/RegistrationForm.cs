@@ -24,6 +24,9 @@ public static partial class RegistrationForm
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
     private static partial Regex Email();
 
+    /// <summary>Si el correo (ya recortado) tiene forma de correo.</summary>
+    public static bool IsValidEmail(string email) => Email().IsMatch(email);
+
     /// <summary>null si es valido. Espera nombre y correo ya recortados.</summary>
     public static RegistrationProblem? Validate(string name, string email, string password, string confirmation)
     {

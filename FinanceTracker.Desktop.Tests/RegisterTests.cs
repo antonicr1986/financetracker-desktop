@@ -54,6 +54,12 @@ public class RegisterViewModelTests
         public Task ResendEmailCodeAsync(string verificationToken) =>
             throw new InvalidOperationException("Sin usar en estas pruebas");
 
+        public Task ForgotPasswordAsync(string email) =>
+            throw new InvalidOperationException("Sin usar en estas pruebas");
+
+        public Task ResetPasswordAsync(string email, string code, string newPassword) =>
+            throw new InvalidOperationException("Sin usar en estas pruebas");
+
         public List<string> Calls { get; } = [];
         public ApiException? RegisterError { get; set; }
         public ApiException? LoginError { get; set; }

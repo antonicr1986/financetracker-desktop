@@ -57,6 +57,12 @@ public class LoginViewModelTests
             return Task.CompletedTask;
         }
 
+        public Task ForgotPasswordAsync(string email) =>
+            throw new InvalidOperationException("El login no recupera contraseñas");
+
+        public Task ResetPasswordAsync(string email, string code, string newPassword) =>
+            throw new InvalidOperationException("El login no recupera contraseñas");
+
         public Task<LoginResponse> LoginAsync(string email, string password)
         {
             Calls++;

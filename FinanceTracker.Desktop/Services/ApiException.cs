@@ -22,6 +22,7 @@ public class ApiException(string code) : Exception(code)
     public const string MfaAlreadyEnabled = "mfa_already_enabled";
     public const string MfaNotEnabled = "mfa_not_enabled";
     public const string InvalidVerificationToken = "invalid_verification_token";
+    public const string ResetCodeExpired = "reset_code_expired";
     public const string Unknown = "unknown";
 
     public string Code { get; } = code;

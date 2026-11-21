@@ -116,6 +116,24 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
         using var response = await SendAsync(request, unauthorizedCode: null);
     }
 
+    public async Task ForgotPasswordAsync(string email)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/users/password/forgot")
+        {
+            Content = JsonContent.Create(new ForgotPasswordRequest(email)),
+        };
+        using var response = await SendAsync(request, unauthorizedCode: null);
+    }
+
+    public async Task ResetPasswordAsync(string email, string code, string newPassword)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "api/users/password/reset")
+        {
+            Content = JsonContent.Create(new ResetPasswordRequest(email, code, newPassword)),
+        };
+        using var response = await SendAsync(request, unauthorizedCode: null);
+    }
+
     public async Task<MfaSetupResponse> SetupMfaAsync()
     {
         using var request = Authorized(HttpMethod.Post, "api/users/mfa/setup");

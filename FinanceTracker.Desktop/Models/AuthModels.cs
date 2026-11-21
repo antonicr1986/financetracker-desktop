@@ -44,6 +44,12 @@ public record EmailVerifyRequest(string VerificationToken, string Code);
 /// <summary>Cuerpo de POST /api/users/email/resend.</summary>
 public record EmailResendRequest(string VerificationToken);
 
+/// <summary>Cuerpo de POST /api/users/password/forgot.</summary>
+public record ForgotPasswordRequest(string Email);
+
+/// <summary>Cuerpo de POST /api/users/password/reset: el codigo del correo y la contraseña nueva.</summary>
+public record ResetPasswordRequest(string Email, string Code, string NewPassword);
+
 /// <summary>Cuerpo de POST /api/users/mfa/verify: codigo TOTP o de recuperacion.</summary>
 /// <summary>RememberDevice: "no volver a pedir el codigo en este dispositivo durante 30 dias".</summary>
 public record MfaVerifyRequest(string MfaToken, string Code, bool RememberDevice = false);

@@ -39,4 +39,17 @@ public interface IAuthService
 
     /// <summary>Codigo nuevo; "email_code_recently_sent" si se pidio hace menos de un minuto.</summary>
     Task ResendEmailCodeAsync(string verificationToken);
+
+    /// <summary>
+    /// "¿Has olvidado tu contraseña?". La API responde igual exista o no la
+    /// cuenta, y solo envia el codigo a cuentas con contraseña propia.
+    /// </summary>
+    Task ForgotPasswordAsync(string email);
+
+    /// <summary>
+    /// Contraseña nueva con el codigo del correo. No inicia sesion: la API
+    /// cierra todas. Errores: "invalid_reset_code", "reset_code_expired" y
+    /// "password_breached".
+    /// </summary>
+    Task ResetPasswordAsync(string email, string code, string newPassword);
 }

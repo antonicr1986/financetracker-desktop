@@ -108,6 +108,42 @@ public class ApiClientTests
     }
 
     [Fact]
+    public async Task ForgotPassword_PostsTheEmail_WithoutASession()
+    {
+        var handler = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
+
+        await Client(handler).ForgotPasswordAsync("ana@correo.com");
+
+        var request = Assert.Single(handler.Requests);
+        Assert.Equal("https://api.test/api/users/password/forgot", request.RequestUri!.ToString());
+        Assert.Null(request.Headers.Authorization);
+        Assert.Contains("\"email\":\"ana@correo.com\"", handler.Body);
+    }
+
+    [Fact]
+    public async Task ResetPassword_PostsEmailCodeAndNewPassword()
+    {
+        var handler = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
+
+        await Client(handler).ResetPasswordAsync("ana@correo.com", "123456", "la-nueva-larga");
+
+        Assert.Equal("https://api.test/api/users/password/reset", Assert.Single(handler.Requests).RequestUri!.ToString());
+        Assert.Contains("\"code\":\"123456\"", handler.Body);
+        Assert.Contains("\"newPassword\":\"la-nueva-larga\"", handler.Body);
+    }
+
+    [Fact]
+    public async Task ResetPassword_ReadsTheErrorCode_OfAWrongCode()
+    {
+        var handler = new FakeHandler(_ => Json("""{"code":"invalid_reset_code"}""", HttpStatusCode.BadRequest));
+
+        var error = await Assert.ThrowsAsync<ApiException>(
+            () => Client(handler).ResetPasswordAsync("ana@correo.com", "000000", "la-nueva-larga"));
+
+        Assert.Equal("invalid_reset_code", error.Code);
+    }
+
+    [Fact]
     public async Task RevokeSessions_PostsToItsEndpoint_AndKeepsTheTrustedDevice()
     {
         var store = new MemoryTrustedDeviceStore();

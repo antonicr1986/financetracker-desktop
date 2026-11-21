@@ -107,6 +107,12 @@ public partial class LoginViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void GoToRegister() => RegisterRequested?.Invoke(this, EventArgs.Empty);
 
+    /// <summary>"¿Has olvidado tu contraseña?": ir a la recuperacion por correo.</summary>
+    public event EventHandler? ForgotPasswordRequested;
+
+    [RelayCommand]
+    private void GoToForgotPassword() => ForgotPasswordRequested?.Invoke(this, EventArgs.Empty);
+
     /// <summary>Al volver del panel porque el token caduco.</summary>
     public void ShowSessionExpired() => SetError(() => localizer.ApiError(ApiException.SessionExpired));
 

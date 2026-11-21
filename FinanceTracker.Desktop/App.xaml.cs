@@ -88,6 +88,27 @@ public partial class App : Application
             ShowRegister();
             window.Close();
         };
+        viewModel.ForgotPasswordRequested += (_, _) =>
+        {
+            ShowForgotPassword();
+            window.Close();
+        };
+        MainWindow = window;
+        window.Show();
+    }
+
+    private void ShowForgotPassword()
+    {
+        var viewModel = new ForgotPasswordViewModel(api, localizer);
+        var window = new ForgotPasswordWindow(viewModel);
+        window.Closed += (_, _) => viewModel.Dispose();
+
+        // Hecho o "Iniciar sesion": de vuelta al acceso.
+        viewModel.SignInRequested += (_, _) =>
+        {
+            ShowLogin();
+            window.Close();
+        };
         MainWindow = window;
         window.Show();
     }

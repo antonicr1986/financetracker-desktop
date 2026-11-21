@@ -206,6 +206,12 @@ public class LanguageSwitchTests
         public Task ResendEmailCodeAsync(string verificationToken) =>
             throw new InvalidOperationException("Sin usar en estas pruebas");
 
+        public Task ForgotPasswordAsync(string email) =>
+            throw new InvalidOperationException("Sin usar en estas pruebas");
+
+        public Task ResetPasswordAsync(string email, string code, string newPassword) =>
+            throw new InvalidOperationException("Sin usar en estas pruebas");
+
         public Task<LoginResponse> LoginAsync(string email, string password) =>
             throw new InvalidOperationException("No deberia llamarse");
 
