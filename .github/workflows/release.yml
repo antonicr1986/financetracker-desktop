@@ -207,6 +207,11 @@ jobs:
           {
             echo "## FinanceTracker Desktop $VERSION"
             echo
+            echo '<details open>'
+            echo '<summary><b>🇬🇧 English</b> <sub>· 🇪🇸 Versión en español más abajo</sub></summary>'
+            echo
+            echo "The easiest way to install it, always up to date and without Windows warnings, is the [Microsoft Store](https://apps.microsoft.com/detail/9NT27R8DZ2DQ). The files below are the same app."
+            echo
             echo "### Download"
             echo
             echo "- **\`financetracker-desktop-v$VERSION-win-x64.zip\`** (recommended): unzip it and run \`FinanceTracker.Desktop.exe\` inside the folder."
@@ -224,6 +229,8 @@ jobs:
             echo "2. **Unblock the file before opening it.** Right-click the \`.zip\` (or the \`.exe\`) > **Properties** > tick **Unblock** > **OK**. Do it on the \`.zip\` *before* extracting, and every file inside comes out unblocked."
             echo "3. If SmartScreen still appears: **More info** > **Run anyway**."
             echo
+            echo "With Smart App Control turned on, Windows does not let you run it at all: install it from the Microsoft Store instead."
+            echo
             echo "### Verify the download"
             echo
             echo "Every file has a signed build provenance attestation: proof that it was built by this repository's release workflow from this tag. With the [GitHub CLI](https://cli.github.com/):"
@@ -232,11 +239,47 @@ jobs:
             echo "gh attestation verify financetracker-desktop-v$VERSION-win-x64.zip --repo $GITHUB_REPOSITORY"
             echo '```'
             echo
+            echo '</details>'
+            echo
+            echo '<details>'
+            echo '<summary><b>🇪🇸 Español</b></summary>'
+            echo
+            echo "La forma más fácil de instalarla, siempre actualizada y sin avisos de Windows, es la [Microsoft Store](https://apps.microsoft.com/detail/9NT27R8DZ2DQ). Los archivos de abajo son la misma app."
+            echo
+            echo "### Descarga"
+            echo
+            echo "- **\`financetracker-desktop-v$VERSION-win-x64.zip\`** (recomendado): descomprímelo y ejecuta \`FinanceTracker.Desktop.exe\` dentro de la carpeta."
+            echo "- \`financetracker-desktop-v$VERSION-win-x64.exe\`: la misma app en un solo archivo."
+            echo "- \`financetracker-desktop-v$VERSION-store.msixupload\`: el paquete de la Microsoft Store (x64 + ARM64), para subirlo en Partner Center. No es para instalarlo directamente."
+            echo "- \`financetracker-desktop-v$VERSION-sbom.cdx.json\`: el SBOM (CycloneDX), la lista de paquetes que lleva la app."
+            echo
+            echo "Windows 10 u 11, 64 bits. No hace falta instalar nada: lleva .NET incluido. Entra con un clic en la cuenta demo o con la tuya."
+            echo
+            echo "### Si Windows la bloquea"
+            echo
+            echo "La app no está firmada y es nueva, así que el navegador y SmartScreen pueden avisar. Es normal:"
+            echo
+            echo "1. **Conserva la descarga.** En Edge: **…** > **Conservar** > **Mostrar más** > **Conservar de todos modos**. En Chrome: **Conservar**."
+            echo "2. **Desbloquea el archivo antes de abrirlo.** Clic derecho en el \`.zip\` (o el \`.exe\`) > **Propiedades** > marca **Desbloquear** > **Aceptar**. Hazlo en el \`.zip\` *antes* de descomprimir y todo lo de dentro saldrá desbloqueado."
+            echo "3. Si aún aparece SmartScreen: **Más información** > **Ejecutar de todas formas**."
+            echo
+            echo "Con el Control inteligente de aplicaciones (Smart App Control) activado, Windows no deja ejecutarla: instálala desde la Microsoft Store."
+            echo
+            echo "### Comprobar la descarga"
+            echo
+            echo "Cada archivo lleva una atestación de procedencia firmada: la prueba de que lo ha compilado el workflow de release de este repositorio a partir de este tag. Con la [CLI de GitHub](https://cli.github.com/):"
+            echo
+            echo '```'
+            echo "gh attestation verify financetracker-desktop-v$VERSION-win-x64.zip --repo $GITHUB_REPOSITORY"
+            echo '```'
+            echo
+            echo '</details>'
+            echo
             if [ -n "$previous" ]; then
-              echo "### Changes since $previous"
+              echo "## Changes since $previous · Cambios desde $previous"
               range="$previous..$GITHUB_REF_NAME"
             else
-              echo "### Changes"
+              echo "## Changes · Cambios"
               range="$GITHUB_REF_NAME"
             fi
             echo
