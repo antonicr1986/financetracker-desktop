@@ -18,3 +18,9 @@ con `[x]` y se anota la fecha o el commit.
 ## Hecho
 
 - [x] `permissions` globales de solo lectura y `timeout-minutes` en todos los jobs.
+
+## Cobertura de tests
+
+- [ ] **Medir la cobertura en el CI** con coverlet (como la API): informe en el resumen del
+  job y un % mínimo, excluyendo el código generado (XAML, `*.g.cs`). Fijar el mínimo con la
+  cobertura medida menos 5 puntos.

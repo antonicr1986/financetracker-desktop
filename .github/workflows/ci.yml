@@ -93,6 +93,36 @@ jobs:
         run: >
           dotnet test FinanceTracker.Desktop.slnx --configuration Release --no-build
           --logger "trx;LogFileName=results.trx" --results-directory TestResults
+          --collect "XPlat Code Coverage"
+
+      # % de lineas cubiertas por los tests (coverlet, sin el codigo generado:
+      # ver coverage.runsettings), en el resumen de la ejecucion. Si COVERAGE_MIN
+      # tiene valor, falla por debajo de ese minimo.
+      - name: Coverage
+        if: always()
+        shell: pwsh
+        env:
+          # Vacio de momento: primero se mide y despues se fija (la medida menos
+          # 5 puntos, redondeada a multiplo de 5).
+          COVERAGE_MIN: ""
+        run: |
+          $file = Get-ChildItem TestResults -Filter coverage.cobertura.xml -Recurse | Select-Object -First 1
+          if (-not $file) {
+            echo "::warning::No coverage report was produced"
+            exit 0
+          }
+          [xml]$report = Get-Content $file.FullName
+          $covered = [int]$report.coverage.'lines-covered'
+          $total = [int]$report.coverage.'lines-valid'
+          $pct = if ($total) { 100 * $covered / $total } else { 0 }
+          $line = "Cobertura de lineas: {0:N1} % ({1} / {2})" -f $pct, $covered, $total
+          if ($env:COVERAGE_MIN) { $line += " (minimo: $($env:COVERAGE_MIN) %)" }
+          echo $line
+          "### Cobertura de tests`n`n$line" >> $env:GITHUB_STEP_SUMMARY
+          if ($env:COVERAGE_MIN -and $pct -lt [double]$env:COVERAGE_MIN) {
+            echo "::error::Cobertura por debajo del minimo $($env:COVERAGE_MIN) %"
+            exit 1
+          }
 
       # "dotnet test" termina bien tanto si las pruebas pasan como si no se
       # encontro ninguna. Esto cuenta lo que dice el informe y lo escribe en el

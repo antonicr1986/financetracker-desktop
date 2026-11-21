@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cobertura de los tests (coverlet), como en la API. dotnet test lo lee solo:
+  lo enlaza RunSettingsFilePath en FinanceTracker.Desktop.Tests.csproj.
+
+  Solo se mide la aplicacion (no los tests) y sin el codigo generado: el que
+  sale del XAML (*.g.cs, *.g.i.cs) y el de los generadores de fuente, como las
+  propiedades y comandos de CommunityToolkit.Mvvm, que llevan [GeneratedCode].
+-->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Include>[FinanceTracker.Desktop]*</Include>
+          <ExcludeByFile>**/*.g.cs,**/*.g.i.cs</ExcludeByFile>
+          <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
