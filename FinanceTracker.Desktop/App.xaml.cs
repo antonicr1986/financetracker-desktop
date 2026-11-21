@@ -38,6 +38,10 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Antes de la primera ventana: todas se vuelven a pintar enteras al
+        // mostrarse (ver WindowRepaint).
+        WindowRepaint.Register();
+
         // Antes de abrir ninguna ventana, para que la primera ya salga con su
         // tema y su idioma.
         Theme = new ThemeManager(new ThemePreference(settings, ThemeManager.SystemPrefersDark));
