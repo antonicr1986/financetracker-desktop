@@ -21,6 +21,6 @@ con `[x]` y se anota la fecha o el commit.
 
 ## Cobertura de tests
 
-- [ ] **Medir la cobertura en el CI** con coverlet (como la API): informe en el resumen del
+- [x] **Medir la cobertura en el CI** con coverlet (como la API): informe en el resumen del
   job y un % mínimo, excluyendo el código generado (XAML, `*.g.cs`). Fijar el mínimo con la
-  cobertura medida menos 5 puntos.
+  cobertura medida menos 5 puntos. Hecho (nov 2026): 67,0 % de líneas, mínimo 60 %.

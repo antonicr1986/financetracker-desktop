@@ -102,9 +102,9 @@ jobs:
         if: always()
         shell: pwsh
         env:
-          # Vacio de momento: primero se mide y despues se fija (la medida menos
-          # 5 puntos, redondeada a multiplo de 5).
-          COVERAGE_MIN: ""
+          # La medida al activarla (67,0 %) menos 5 puntos, redondeada a
+          # multiplo de 5.
+          COVERAGE_MIN: "60"
         run: |
           $file = Get-ChildItem TestResults -Filter coverage.cobertura.xml -Recurse | Select-Object -First 1
           if (-not $file) {
