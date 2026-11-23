@@ -37,8 +37,47 @@ public class ApiClientTests
         return $$"""{"items":[{{items}}],"totalCount":0,"pageNumber":{{pageNumber}},"pageSize":100,"totalPages":{{totalPages}}}""";
     }
 
-    private static ApiClient Client(FakeHandler handler, ITrustedDeviceStore? trustedDevices = null) =>
-        new(LoggedInSession(), new HttpClient(handler) { BaseAddress = new Uri("https://api.test/") }, trustedDevices);
+    private static ApiClient Client(FakeHandler handler, ITrustedDeviceStore? trustedDevices = null, string? appVersion = null) =>
+        new(LoggedInSession(), new HttpClient(handler) { BaseAddress = new Uri("https://api.test/") }, trustedDevices, appVersion);
+
+    private static HttpResponseMessage UpgradeRequired() => Json(
+        """{"status":426,"code":"client_version_unsupported","minimumVersion":"1.12.0"}""",
+        HttpStatusCode.UpgradeRequired);
+
+    [Fact]
+    public async Task EveryRequest_ShouldSendDesktopPlatformAndVersion()
+    {
+        var handler = new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.NoContent));
+
+        await Client(handler, appVersion: "1.11.6").ForgetDevicesAsync();
+
+        var request = Assert.Single(handler.Requests);
+        Assert.Equal("desktop", Assert.Single(request.Headers.GetValues("X-Client-Platform")));
+        Assert.Equal("1.11.6", Assert.Single(request.Headers.GetValues("X-Client-Version")));
+    }
+
+    [Fact]
+    public async Task Response426_ShouldThrowClientVersionUnsupported()
+    {
+        var handler = new FakeHandler(_ => UpgradeRequired());
+
+        var error = await Assert.ThrowsAsync<ApiException>(() => Client(handler).GetCategoriesAsync());
+
+        Assert.Equal("client_version_unsupported", error.Code);
+    }
+
+    [Fact]
+    public async Task Response426_ShouldRaiseUpgradeRequired_OnlyOnce()
+    {
+        var client = Client(new FakeHandler(_ => UpgradeRequired()));
+        var raised = 0;
+        client.UpgradeRequired += (_, _) => raised++;
+
+        await Assert.ThrowsAsync<ApiException>(() => client.GetCategoriesAsync());
+        await Assert.ThrowsAsync<ApiException>(() => client.GetBudgetsAsync());
+
+        Assert.Equal(1, raised);
+    }
 
     [Fact]
     public async Task VerifyMfa_RememberingTheDevice_SavesItsToken_AndLoginSendsIt()

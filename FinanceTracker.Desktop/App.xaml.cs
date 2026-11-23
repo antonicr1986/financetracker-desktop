@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using FinanceTracker.Desktop.Localization;
@@ -32,6 +33,21 @@ public partial class App : Application
     public App()
     {
         api = new ApiClient(session, trustedDevices: new DpapiTrustedDeviceStore());
+
+        // 426 de la API: esta version ya no esta soportada (ver ApiClient.UpgradeRequired).
+        // Un solo dialogo para toda la app; las pantallas muestran ademas su error.
+        api.UpgradeRequired += (_, _) => Dispatcher.BeginInvoke(new Action(ShowUpgradeRequired));
+    }
+
+    private void ShowUpgradeRequired()
+    {
+        if (dialogs.Confirm(localizer.T("update.title"), localizer.T("update.message"), localizer.T("update.openStore")))
+        {
+            Process.Start(new ProcessStartInfo($"ms-windows-store://pdp/?productid={AppInfo.StoreProductId}")
+            {
+                UseShellExecute = true,
+            });
+        }
     }
 
     protected override void OnStartup(StartupEventArgs e)

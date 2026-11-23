@@ -1,5 +1,5 @@
-using System.Reflection;
 using System.Windows;
+using FinanceTracker.Desktop.Services;
 using FinanceTracker.Desktop.ViewModels;
 
 namespace FinanceTracker.Desktop.Views;
@@ -24,17 +24,7 @@ public partial class LoginWindow : Window
             if (e.PropertyName == nameof(LoginViewModel.IsEmailStep) && viewModel.IsEmailStep)
                 Dispatcher.BeginInvoke(new Action(() => EmailCodeInput.Focus()));
         };
-        VersionText.Text = $"v{AppVersion()}";
-    }
-
-    // La version sale de la etiqueta del release (-p:Version en el pipeline).
-    // .NET le anade "+<commit>" al final; solo se muestra la parte de antes.
-    private static string AppVersion()
-    {
-        var version = Assembly.GetEntryAssembly()?
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion ?? "?";
-        return version.Split('+')[0];
+        VersionText.Text = $"v{AppInfo.Version}";
     }
 
     // Excepcion a "nada de logica en el code-behind": WPF no deja

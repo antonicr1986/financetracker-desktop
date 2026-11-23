@@ -19,7 +19,19 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
     private readonly Session session;
     private readonly ITrustedDeviceStore? trustedDevices;
 
-    public ApiClient(Session session, HttpClient? http = null, ITrustedDeviceStore? trustedDevices = null)
+    /// <summary>
+    /// La API ha respondido 426: esta version ya no esta soportada. Se avisa una
+    /// sola vez; la app muestra el dialogo para abrir la Microsoft Store.
+    /// </summary>
+    public event EventHandler? UpgradeRequired;
+
+    private bool upgradeNotified;
+
+    public ApiClient(
+        Session session,
+        HttpClient? http = null,
+        ITrustedDeviceStore? trustedDevices = null,
+        string? appVersion = null)
     {
         this.session = session;
         this.trustedDevices = trustedDevices;
@@ -31,6 +43,11 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
             BaseAddress = new Uri(BaseUrl),
             Timeout = TimeSpan.FromSeconds(120),
         };
+
+        // Todas las peticiones dicen que app y que version son, para que la API
+        // pueda exigir una version minima (426) cuando un cambio lo requiera.
+        this.http.DefaultRequestHeaders.Add("X-Client-Platform", "desktop");
+        this.http.DefaultRequestHeaders.Add("X-Client-Version", appVersion ?? AppInfo.Version);
     }
 
     /// <summary>
@@ -319,6 +336,17 @@ public class ApiClient : IAuthService, IMfaService, ITransactionService, ICatego
 
         using (response)
         {
+            if (response.StatusCode == HttpStatusCode.UpgradeRequired)
+            {
+                if (!upgradeNotified)
+                {
+                    upgradeNotified = true;
+                    UpgradeRequired?.Invoke(this, EventArgs.Empty);
+                }
+
+                throw new ApiException(ApiException.ClientVersionUnsupported);
+            }
+
             // Sin codigo fijo (null), el 401 se lee del cuerpo como cualquier otro error.
             if (response.StatusCode == HttpStatusCode.Unauthorized && unauthorizedCode is not null)
                 throw new ApiException(unauthorizedCode);

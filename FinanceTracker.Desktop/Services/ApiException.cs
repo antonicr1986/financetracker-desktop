@@ -16,6 +16,7 @@ public class ApiException(string code) : Exception(code)
     public const string CategoryHasTransactions = "category_has_transactions";
     public const string NetworkError = "network_error";
     public const string TooManyRequests = "too_many_requests";
+    public const string ClientVersionUnsupported = "client_version_unsupported";
     public const string PasswordBreached = "password_breached";
     public const string InvalidMfaCode = "invalid_mfa_code";
     public const string InvalidMfaToken = "invalid_mfa_token";

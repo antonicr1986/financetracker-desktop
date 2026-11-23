@@ -85,6 +85,17 @@ public class LocalizerTests
         Assert.Equal("no.such.key", en.T("no.such.key"));
     }
 
+    [Theory]
+    [InlineData("apiError.client_version_unsupported")]
+    [InlineData("update.title")]
+    [InlineData("update.message")]
+    [InlineData("update.openStore")]
+    public void ClientVersionUnsupported_ShouldHaveTextInBothLanguages(string key)
+    {
+        Assert.True(Strings.Es.ContainsKey(key), $"Falta '{key}' en Strings.Es");
+        Assert.True(Strings.En.ContainsKey(key), $"Falta '{key}' en Strings.En");
+    }
+
     [Fact]
     public void ApiError_UsesTheCodesText_OrAGenericOne()
     {
