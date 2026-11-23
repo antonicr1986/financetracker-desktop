@@ -1,2 +1,1 @@
-Correcciones y mejoras.
-Automatización del despliegue en Microsoft Store.
+La app ahora avisa cuando hace falta actualizar y abre la Microsoft Store por ti.
