@@ -349,15 +349,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # Sube el paquete a un envio nuevo, sin enviarlo todavia (--noCommit):
-      # antes hay que poner las Novedades. El paquete va en su propia carpeta
-      # para que la CLI no intente detectar y compilar el proyecto.
+      # antes hay que poner las Novedades. Se le pasa la ruta del .msixupload
+      # directamente: asi la CLI lo trata como paquete MSIX ya hecho y no
+      # intenta detectar ni compilar el proyecto.
+      # --uploadTimeout: el paquete pesa mas de 100 MB y los 100 s por defecto no bastan.
       - name: Upload the package to the Microsoft Store
         shell: pwsh
         run: |
-          New-Item -ItemType Directory store-upload | Out-Null
-          Copy-Item "financetracker-desktop-v$env:VERSION-store.msixupload" store-upload/
-          # --uploadTimeout: el paquete pesa mas de 100 MB y los 100 s por defecto no bastan.
-          msstore publish store-upload --inputDirectory store-upload --appId $env:STORE_PRODUCT_ID --noCommit --uploadTimeout 1200
+          msstore publish "financetracker-desktop-v$env:VERSION-store.msixupload" `
+            --appId $env:STORE_PRODUCT_ID --noCommit --uploadTimeout 1200
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # Pone las Novedades de cada idioma en el envio y lo manda a
