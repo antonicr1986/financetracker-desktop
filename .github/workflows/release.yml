@@ -355,9 +355,9 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory store-upload | Out-Null
-          $package = "store-upload/financetracker-desktop-v$env:VERSION-store.msixupload"
-          Copy-Item "financetracker-desktop-v$env:VERSION-store.msixupload" $package
-          msstore publish store-upload --inputFile $package --appId $env:STORE_PRODUCT_ID --noCommit
+          Copy-Item "financetracker-desktop-v$env:VERSION-store.msixupload" store-upload/
+          # --uploadTimeout: el paquete pesa mas de 100 MB y los 100 s por defecto no bastan.
+          msstore publish store-upload --inputDirectory store-upload --appId $env:STORE_PRODUCT_ID --noCommit --uploadTimeout 1200
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # Pone las Novedades de cada idioma en el envio y lo manda a
