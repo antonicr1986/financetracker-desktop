@@ -11,3 +11,7 @@ indent_size = 4
 
 [*.{json,yml,yaml,csproj,props,targets,slnx}]
 indent_size = 2
+
+# Novedades de la Store: en UTF-8 o las tildes llegan rotas.
+[store/whats-new/*.txt]
+charset = utf-8

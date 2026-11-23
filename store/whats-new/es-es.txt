@@ -1,2 +1,2 @@
 Correcciones y mejoras.
-Automatización del despliegue en Microsoft Store.
+AutomatizaciÃ³n del despliegue en Microsoft Store.

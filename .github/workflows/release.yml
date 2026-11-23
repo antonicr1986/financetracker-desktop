@@ -72,6 +72,11 @@ jobs:
               echo "::error::$f is missing or empty"
               exit 1
             fi
+            # Guardado en ANSI (Windows-1252), las tildes salen como "?" en la Store.
+            if ! iconv -f UTF-8 -t UTF-8 "$f" > /dev/null 2>&1; then
+              echo "::error::$f is not UTF-8: save it as UTF-8"
+              exit 1
+            fi
             if [ -n "$previous" ] && git diff --quiet "$previous" "$GITHUB_REF_NAME" -- "$f"; then
               echo "::error::$f has not changed since $previous: write the notes for this version"
               exit 1
