@@ -467,6 +467,13 @@ password" or "session expired" depending on the call.
   signs it on publishing. CI uses `FinanceTracker.Desktop.slnx`, without that
   project, because it only builds with Visual Studio's MSBuild, not with
   `dotnet build`.
+- **Continuous delivery to the Microsoft Store**: the same release workflow
+  uploads the package with the Microsoft Store Developer CLI (`msstore`), fills
+  in the "What's new" notes in English and Spanish from `store/whats-new/`, and
+  submits it for certification. A version tag is all it takes to ship; Partner
+  Center is never touched by hand. It authenticates with a dedicated Entra ID
+  app that only has the Manager role in Partner Center, and the release fails
+  early if the notes were not updated since the previous tag.
 - **Secret scanning** with gitleaks across the full history, with the same
   configuration as the other repositories in this project plus a rule for
   credentials written by hand in C#. The gitleaks binary is checked against its

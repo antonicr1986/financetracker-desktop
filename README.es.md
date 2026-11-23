@@ -492,6 +492,13 @@ incorrecta" o "sesión caducada" según la llamada.
   genera el paquete para x64 y ARM64 con un solo comando de MSBuild; la Store lo
   firma al publicarlo. El CI usa `FinanceTracker.Desktop.slnx`, sin ese proyecto,
   porque solo compila con el MSBuild de Visual Studio, no con `dotnet build`.
+- **Entrega continua a Microsoft Store**: el mismo workflow de release sube el
+  paquete con la Microsoft Store Developer CLI (`msstore`), rellena las
+  "Novedades" en inglés y en español desde `store/whats-new/` y lo envía a
+  certificación. Basta una etiqueta de versión para publicar; el Partner Center
+  no se toca a mano. Se autentica con una app de Entra ID propia que solo tiene
+  el rol Manager en Partner Center, y la release falla al principio si las notas
+  no han cambiado desde la etiqueta anterior.
 - **Escaneo de secretos** con gitleaks sobre todo el historial, con la misma
   configuración que el resto de repositorios del proyecto y una regla más para
   credenciales escritas a mano en C#. El binario de gitleaks se comprueba con su
