@@ -24,3 +24,13 @@ con `[x]` y se anota la fecha o el commit.
 - [x] **Medir la cobertura en el CI** con coverlet (como la API): informe en el resumen del
   job y un % mínimo, excluyendo el código generado (XAML, `*.g.cs`). Fijar el mínimo con la
   cobertura medida menos 5 puntos. Hecho (nov 2026): 67,0 % de líneas, mínimo 60 %.
+
+## Publicación en Microsoft Store
+
+- [] **Automatizar la subida a la Store desde `release.yml`** con la Microsoft Store Developer CLI (`msstore`), para que un `git tag` publique sin tocar Partner Center.
+  - Notas de "Novedades" en inglés y español: reutilizar las que ya genera `release.yml` y meterlas en el `releaseNotes` de cada ficha (`en-us` y `es-es`).
+  - Flujo: obtener el JSON de metadatos del envío (`msstore submission get`), rellenar los dos `releaseNotes`, `msstore submission updateMetadata` y `msstore submission publish`.
+    Ref.: https://learn.microsoft.com/windows/apps/publish/msstore-dev-cli/github-actions
+  - Primer paso: registrar una app en Entra ID y asociarla a Partner Center (secretos en GitHub: tenant, seller, client id y secret).
+  - Coste: ninguno (registro en Entra ID, API/CLI de la Store y Actions en repo público son gratis).
+  - Ojo: el secreto de la app caduca (máx. 24 meses); apuntar la fecha y renovarlo.

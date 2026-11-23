@@ -25,12 +25,15 @@ jobs:
     name: release
     # WPF solo compila en Windows.
     runs-on: windows-latest
-    # Publica tres veces (carpeta, exe unico y paquete MSIX x64 + ARM64)
-    timeout-minutes: 45
+    # Publica tres veces (carpeta, exe unico y paquete MSIX x64 + ARM64) y
+    # sube el paquete a la Microsoft Store, que tarda en procesarlo.
+    timeout-minutes: 60
     env:
       # MSBuild lo lee como propiedad y lo incrusta en el ejecutable para el
       # inicio de sesion con Google (ver GoogleSignIn.cs). No esta en el repo.
       GOOGLE_DESKTOP_CLIENT_SECRET: ${{ secrets.GOOGLE_DESKTOP_CLIENT_SECRET }}
+      # ID de la app en la Microsoft Store (es publico: sale en su URL).
+      STORE_PRODUCT_ID: 9NT27R8DZ2DQ
     defaults:
       run:
         # Git Bash, que viene en el runner de Windows: los mismos scripts que
@@ -55,6 +58,30 @@ jobs:
             exit 1
           fi
           echo "VERSION=${tag#v}" >> "$GITHUB_ENV"
+
+      # Las "Novedades" de la Store, en ingles y en espanol, salen de
+      # store/whats-new/. Se comprueban al principio para no compilar nada si
+      # faltan: tienen que existir, haber cambiado desde la etiqueta anterior
+      # (asi no se publican las de la version pasada) y caber en el limite de
+      # la Store (1500 caracteres).
+      - name: Check the Store release notes
+        run: |
+          previous=$(git describe --tags --abbrev=0 "$GITHUB_REF_NAME^" 2>/dev/null || true)
+          for f in store/whats-new/en-us.txt store/whats-new/es-es.txt; do
+            if [ ! -s "$f" ]; then
+              echo "::error::$f is missing or empty"
+              exit 1
+            fi
+            if [ -n "$previous" ] && git diff --quiet "$previous" "$GITHUB_REF_NAME" -- "$f"; then
+              echo "::error::$f has not changed since $previous: write the notes for this version"
+              exit 1
+            fi
+            chars=$(wc -m < "$f")
+            if [ "$chars" -gt 1500 ]; then
+              echo "::error::$f has $chars characters (Store limit: 1500)"
+              exit 1
+            fi
+          done
 
       # Nada se publica si las pruebas fallan.
       - name: Test
@@ -298,3 +325,71 @@ jobs:
             "financetracker-desktop-v$VERSION-sbom.cdx.json" \
             --title "FinanceTracker Desktop $VERSION" \
             --notes-file release-notes.md
+
+      # --- Microsoft Store ---
+      # Va despues de la Release de GitHub: si la Store falla, los instalables
+      # ya estan publicados. Se autentica con la app de Entra ID
+      # financetracker-store-publisher (rol Manager en Partner Center).
+      # Su secreto caduca: renovarlo en Partner Center y en STORE_CLIENT_SECRET.
+      - uses: microsoft/microsoft-store-apppublisher@cc9910a8d59f2eb55cbb83df0a3800cf3b5300e0 # v1.4
+
+      - name: Configure the Microsoft Store CLI
+        shell: pwsh
+        env:
+          STORE_TENANT_ID: ${{ secrets.STORE_TENANT_ID }}
+          STORE_SELLER_ID: ${{ secrets.STORE_SELLER_ID }}
+          STORE_CLIENT_ID: ${{ secrets.STORE_CLIENT_ID }}
+          STORE_CLIENT_SECRET: ${{ secrets.STORE_CLIENT_SECRET }}
+        run: |
+          msstore reconfigure `
+            --tenantId $env:STORE_TENANT_ID `
+            --sellerId $env:STORE_SELLER_ID `
+            --clientId $env:STORE_CLIENT_ID `
+            --clientSecret $env:STORE_CLIENT_SECRET
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # Sube el paquete a un envio nuevo, sin enviarlo todavia (--noCommit):
+      # antes hay que poner las Novedades. El paquete va en su propia carpeta
+      # para que la CLI no intente detectar y compilar el proyecto.
+      - name: Upload the package to the Microsoft Store
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory store-upload | Out-Null
+          $package = "store-upload/financetracker-desktop-v$env:VERSION-store.msixupload"
+          Copy-Item "financetracker-desktop-v$env:VERSION-store.msixupload" $package
+          msstore publish store-upload --inputFile $package --appId $env:STORE_PRODUCT_ID --noCommit
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # Pone las Novedades de cada idioma en el envio y lo manda a
+      # certificacion. "submission update" sustituye el envio entero, asi que
+      # se parte del JSON actual y solo se cambian las ReleaseNotes.
+      - name: Set the Store release notes and submit
+        shell: pwsh
+        run: |
+          $output = (msstore submission get $env:STORE_PRODUCT_ID) -join "`n"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # La CLI puede escribir avisos antes del JSON: se queda solo con el JSON.
+          $start = $output.IndexOf('{'); $end = $output.LastIndexOf('}')
+          if ($start -lt 0 -or $end -le $start) {
+            echo "::error::Could not read the submission JSON"
+            exit 1
+          }
+          $submission = $output.Substring($start, $end - $start + 1) | ConvertFrom-Json
+          $notes = [ordered]@{ 'en-us' = 'store/whats-new/en-us.txt'; 'es-es' = 'store/whats-new/es-es.txt' }
+          foreach ($lang in $notes.Keys) {
+            $listing = $submission.Listings.PSObject.Properties |
+              Where-Object { $_.Name -ieq $lang } | Select-Object -First 1
+            if (-not $listing) {
+              echo "::error::The submission has no '$lang' listing"
+              exit 1
+            }
+            $text = (Get-Content -Raw -Encoding utf8 $notes[$lang]).Trim()
+            $listing.Value.BaseListing |
+              Add-Member -NotePropertyName ReleaseNotes -NotePropertyValue $text -Force
+            echo "$lang release notes: $($text.Length) characters"
+          }
+          $updated = $submission | ConvertTo-Json -Depth 100 -Compress
+          msstore submission update $env:STORE_PRODUCT_ID $updated
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          msstore submission publish $env:STORE_PRODUCT_ID
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

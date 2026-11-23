@@ -1,0 +1,2 @@
+Correcciones y mejoras.
+Automatización del despliegue en Microsoft Store.
