@@ -312,7 +312,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Todo el historico, no solo el mes elegido; el mes elegido va resaltado.
+    /// Los ultimos meses, no solo el mes elegido; el mes elegido va resaltado
+    /// si esta entre ellos. El tope del eje sale solo de los meses dibujados.
     /// Se rehace al cambiar de mes: son pocos meses y asi no hay dos caminos.
     /// </summary>
     private void ShowTrend()

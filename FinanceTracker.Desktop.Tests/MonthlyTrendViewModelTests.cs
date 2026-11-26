@@ -89,6 +89,26 @@ public class MonthlyTrendViewModelTests
     }
 
     [Fact]
+    public async Task Trend_AxisIgnoresMonthsOutsideTheChart()
+    {
+        // 13 meses: el primero (fuera del grafico) con 9000; el resto, 1000.
+        var api = new FakeTransactionService
+        {
+            Handler = () => Enumerable.Range(0, 13)
+                .Select(i => Tx(i + 1, new DateTime(2025, 1, 15).AddMonths(i).ToString("s"),
+                    i == 0 ? 9000 : 1000, Income))
+                .ToList(),
+        };
+        var vm = Vm(api);
+
+        await vm.LoadCommand.ExecuteAsync(null);
+
+        Assert.Equal(12, vm.TrendBars.Count);
+        Assert.Equal(1000m.ToString("C0", Es.Culture), vm.TrendTicks[0]);
+        Assert.Equal("Feb 25 – Ene 26", vm.TrendSummary);
+    }
+
+    [Fact]
     public async Task SwitchingLanguage_RewritesTrendLabels()
     {
         var localizer = Es;

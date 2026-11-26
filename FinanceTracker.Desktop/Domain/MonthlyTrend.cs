@@ -6,15 +6,22 @@ namespace FinanceTracker.Desktop.Domain;
 public record MonthlyPoint(MonthKey Month, decimal Income, decimal Expense);
 
 /// <summary>
-/// Evolucion mensual de todo el historico, como el grafico de la web. C# puro:
+/// Evolucion mensual de los ultimos meses, como el grafico de la web. C# puro:
 /// la vista solo dibuja lo que se calcula aqui.
 /// </summary>
 public static class MonthlyTrend
 {
     /// <summary>
-    /// Un punto por mes, del mas antiguo al mas reciente. Los meses sin
-    /// movimientos entre el primero y el ultimo salen a 0: si no, dos meses
-    /// separados se verian seguidos en el grafico.
+    /// Meses que caben en el grafico. Con mas, a lo ancho minimo de la ventana
+    /// las barras y las etiquetas del eje se pisan.
+    /// </summary>
+    public const int MaxMonths = 12;
+
+    /// <summary>
+    /// Un punto por mes, del mas antiguo al mas reciente, de los ultimos
+    /// <see cref="MaxMonths"/> meses hasta el mas reciente con datos. Los meses
+    /// sin movimientos salen a 0: si no, dos meses separados se verian seguidos
+    /// en el grafico.
     /// </summary>
     public static List<MonthlyPoint> Series(IEnumerable<TransactionDto> transactions)
     {
@@ -31,7 +38,7 @@ public static class MonthlyTrend
             var summary = byMonth.GetValueOrDefault(month) ?? new MonthSummary(0, 0);
             points.Add(new MonthlyPoint(month, summary.Income, summary.Expense));
         }
-        return points;
+        return points.TakeLast(MaxMonths).ToList();
     }
 
     private static MonthKey Next(MonthKey month) =>

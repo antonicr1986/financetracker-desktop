@@ -48,6 +48,21 @@ public class MonthlyTrendTests
     }
 
     [Fact]
+    public void Series_KeepsOnlyTheLast12Months()
+    {
+        // 14 meses seguidos: de enero de 2025 a febrero de 2026.
+        var all = Enumerable.Range(0, 14)
+            .Select(i => Tx(i + 1, new DateTime(2025, 1, 15).AddMonths(i).ToString("s"), 100, Income))
+            .ToArray();
+
+        var series = MonthlyTrend.Series(all);
+
+        Assert.Equal(MonthlyTrend.MaxMonths, series.Count);
+        Assert.Equal(new MonthKey(2025, 3), series[0].Month);
+        Assert.Equal(new MonthKey(2026, 2), series[^1].Month);
+    }
+
+    [Fact]
     public void Series_IsEmpty_WithoutTransactions()
     {
         Assert.Empty(MonthlyTrend.Series([]));

@@ -296,7 +296,7 @@
                     </Grid>
 
                     <!-- ===== Evolucion mensual =====
-                         Todo el historico, con el mes elegido resaltado. Dibujado con
+                         Los ultimos 12 meses, con el mes elegido resaltado. Dibujado con
                          controles WPF, como la web y las barras del desglose: sin
                          libreria de graficos. -->
                     <Border Style="{StaticResource Card}" Padding="0" Margin="0,0,0,16">
