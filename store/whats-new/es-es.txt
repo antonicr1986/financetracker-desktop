@@ -1,1 +1,1 @@
-La app ahora avisa cuando hace falta actualizar y abre la Microsoft Store por ti.
+Nuevo gráfico de evolución mensual en el panel: ingresos y gastos de los últimos 12 meses, con el mes elegido resaltado. También aparecen los meses sin movimientos, para que se vean los huecos.
