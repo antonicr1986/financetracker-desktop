@@ -13,10 +13,15 @@ on:
   # sube nada a la Store. Deja el .msixupload como artefacto del run para
   # subirlo a mano a un "package flight" (solo testers) en Partner Center.
   #   gh workflow run release.yml -f version=1.12.1
+  # OJO: la version del flight queda gastada. Partner Center no acepta dos
+  # paquetes con la misma version, aunque uno fuera a un flight. Si pruebas
+  # con 1.12.1, la siguiente etiqueta tiene que ser mayor (v1.12.2 o v1.13.0):
+  # con v1.12.1 la subida a la Store fallaria DESPUES de publicar la Release
+  # de GitHub.
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version of the test package (MAJOR.MINOR.PATCH, higher than the Store one)'
+        description: 'Test package version (MAJOR.MINOR.PATCH, higher than the Store one). It is used up: the next release tag must be higher.'
         required: true
 
 # Crear la Release necesita escribir en el repo. Solo este workflow lo pide.
@@ -184,9 +189,9 @@ jobs:
 
       # StoreUpload genera el .msixupload que se sube al Partner Center. No se
       # firma: la Store firma el paquete al publicarlo. Sin autoincremento de
-      # version (la manda la etiqueta) ni paquete de prueba (necesitaria un
-      # certificado). /p:Version llega tambien a la app, que la muestra en la
-      # pantalla de acceso.
+      # version (la manda la etiqueta) ni paquete sideload firmado para instalar
+      # a mano (necesitaria un certificado). /p:Version llega tambien a la app,
+      # que la muestra en la pantalla de acceso.
       - name: Build the Microsoft Store package
         shell: pwsh
         run: |
