@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:FinanceTracker.Desktop.ViewModels"
         xmlns:views="clr-namespace:FinanceTracker.Desktop.Views"
+        xmlns:controls="clr-namespace:FinanceTracker.Desktop.Controls"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
         Title="FinanceTracker" Height="680" Width="960" MinWidth="720" MinHeight="480"
@@ -18,6 +19,10 @@
          (arrastrar, doble clic, ajustar a los bordes). GlassFrameThickness con
          1 abajo: Windows sigue dibujando la sombra de la ventana.
          UseAeroCaptionButtons=False: los botones los pone TopBar. -->
+    <Window.Resources>
+        <controls:PercentToHeightConverter x:Key="PercentToHeight" />
+    </Window.Resources>
+
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="56" ResizeBorderThickness="6" GlassFrameThickness="0,0,0,1"
                       UseAeroCaptionButtons="False" CornerRadius="0" />
@@ -289,6 +294,140 @@
                             </StackPanel>
                         </Border>
                     </Grid>
+
+                    <!-- ===== Evolucion mensual =====
+                         Todo el historico, con el mes elegido resaltado. Dibujado con
+                         controles WPF, como la web y las barras del desglose: sin
+                         libreria de graficos. -->
+                    <Border Style="{StaticResource Card}" Padding="0" Margin="0,0,0,16">
+                        <StackPanel>
+                            <Button Style="{StaticResource SectionHeader}" Command="{Binding ToggleTrendCommand}"
+                                    ToolTip="{DynamicResource section.toggle}">
+                                <DockPanel>
+                                    <Path DockPanel.Dock="Right" Data="M0,0 L5,5 L10,0" VerticalAlignment="Center"
+                                          Stroke="{DynamicResource Brush.TextMuted}" StrokeThickness="1.5"
+                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" RenderTransformOrigin="0.5,0.5">
+                                        <Path.Style>
+                                            <Style TargetType="Path">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsTrendExpanded}" Value="True">
+                                                        <Setter Property="RenderTransform">
+                                                            <Setter.Value><RotateTransform Angle="180" /></Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Path.Style>
+                                    </Path>
+                                    <StackPanel>
+                                        <TextBlock Text="{DynamicResource dashboard.monthlyTrend}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding TrendSummary}" Style="{StaticResource MutedText}"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </DockPanel>
+                            </Button>
+
+                            <StackPanel Margin="16,0,16,16"
+                                        Visibility="{Binding IsTrendExpanded, Converter={StaticResource BoolToVisibility}}">
+                                <!-- Leyenda -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                    <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" VerticalAlignment="Center"
+                                               Fill="{DynamicResource Brush.Income}" />
+                                    <TextBlock Text="{DynamicResource dashboard.income}" Style="{StaticResource MutedText}"
+                                               Margin="6,0,16,0" />
+                                    <Rectangle Width="10" Height="10" RadiusX="2" RadiusY="2" VerticalAlignment="Center"
+                                               Fill="{DynamicResource Brush.Expense}" />
+                                    <TextBlock Text="{DynamicResource dashboard.expenses}" Style="{StaticResource MutedText}"
+                                               Margin="6,0,0,0" />
+                                </StackPanel>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="160" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Eje vertical: tope, mitad y 0 -->
+                                    <Grid Margin="0,0,8,0">
+                                        <TextBlock Text="{Binding TrendTicks[0]}" Style="{StaticResource MutedText}" FontSize="11"
+                                                   VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-7,0,0" />
+                                        <TextBlock Text="{Binding TrendTicks[1]}" Style="{StaticResource MutedText}" FontSize="11"
+                                                   VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                        <TextBlock Text="{Binding TrendTicks[2]}" Style="{StaticResource MutedText}" FontSize="11"
+                                                   VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,0,-7" />
+                                    </Grid>
+
+                                    <!-- Lineas de referencia -->
+                                    <Border Grid.Column="1" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,1,0,1" />
+                                    <Border Grid.Column="1" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,1,0,0"
+                                            VerticalAlignment="Center" />
+
+                                    <!-- Barras: un hueco por mes; el raton encima muestra los importes. -->
+                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding TrendBars}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type vm:TrendBar}">
+                                                <Border ToolTip="{Binding Tooltip}" ToolTipService.InitialShowDelay="150">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="Transparent" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                    <Setter Property="Background" Value="{DynamicResource Brush.Hover}" />
+                                                                </DataTrigger>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="{DynamicResource Brush.Selected}" />
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                                                VerticalAlignment="Bottom">
+                                                        <Border Width="12" Margin="0,0,3,0" CornerRadius="3,3,0,0"
+                                                                Background="{DynamicResource Brush.Income}"
+                                                                Height="{Binding IncomeHeight, Converter={StaticResource PercentToHeight}, ConverterParameter=160}" />
+                                                        <Border Width="12" CornerRadius="3,3,0,0"
+                                                                Background="{DynamicResource Brush.Expense}"
+                                                                Height="{Binding ExpenseHeight, Converter={StaticResource PercentToHeight}, ConverterParameter=160}" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <!-- Eje horizontal: el mes elegido en negrita -->
+                                    <ItemsControl Grid.Row="1" Grid.Column="1" ItemsSource="{Binding TrendBars}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type vm:TrendBar}">
+                                                <TextBlock Text="{Binding Label}" FontSize="11" Margin="0,6,0,0"
+                                                           HorizontalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource MutedText}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Text}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
                     <!-- Movimientos del mes -->
                     <Border Style="{StaticResource Card}" Padding="0">

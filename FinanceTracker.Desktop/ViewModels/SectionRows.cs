@@ -43,3 +43,9 @@ public record BudgetRow(
 
 /// <summary>Una categoria del desglose, lista para pintar.</summary>
 public record BreakdownRow(string Name, string AmountText, int BarValue);
+
+/// <summary>
+/// Un mes del grafico de evolucion: alto de cada barra (0-100 % del tope del
+/// eje), si es el mes elegido y el texto al pasar el raton.
+/// </summary>
+public record TrendBar(string Label, int IncomeHeight, int ExpenseHeight, bool IsSelected, string Tooltip);

@@ -17,6 +17,13 @@ public readonly record struct MonthKey(int Year, int Month) : IComparable<MonthK
         var text = new DateTime(Year, Month, 1).ToString("MMMM yyyy", culture);
         return culture.TextInfo.ToTitleCase(text);
     }
+
+    /// <summary>"dic. 25" -> "Dic 25": para el eje del grafico, que se queda corto.</summary>
+    public string ShortLabel(CultureInfo culture)
+    {
+        var text = new DateTime(Year, Month, 1).ToString("MMM yy", culture).Replace(".", "");
+        return char.ToUpper(text[0], culture) + text[1..];
+    }
 }
 
 public record MonthSummary(decimal Income, decimal Expense)

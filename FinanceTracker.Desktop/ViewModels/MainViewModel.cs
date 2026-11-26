@@ -48,6 +48,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var saved = this.settings.Load();
         IsBudgetsExpanded = saved.BudgetsExpanded ?? false;
         IsBreakdownExpanded = saved.BreakdownExpanded ?? false;
+        IsTrendExpanded = saved.TrendExpanded ?? false;
 
         this.budgets = budgets;
         this.session = session;
@@ -73,6 +74,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public ObservableCollection<BudgetRow> BudgetRows { get; } = [];
     public ObservableCollection<BreakdownRow> BreakdownRows { get; } = [];
 
+    /// <summary>Evolucion mensual: un mes por barra y las marcas del eje (tope, mitad, 0).</summary>
+    public ObservableCollection<TrendBar> TrendBars { get; } = [];
+    public ObservableCollection<string> TrendTicks { get; } = [];
+
     // Secciones plegables. El resumen de la cabecera se ve siempre, plegada o
     // no, asi que plegadas ya dicen lo importante sin ocupar sitio.
     [ObservableProperty] private bool isBudgetsExpanded;
@@ -81,6 +86,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string breakdownSummary = "";
     [ObservableProperty] private bool hasBudgets;
     [ObservableProperty] private bool hasExpenses;
+    [ObservableProperty] private bool isTrendExpanded;
+    [ObservableProperty] private string trendSummary = "";
+
+    [RelayCommand]
+    private void ToggleTrend()
+    {
+        IsTrendExpanded = !IsTrendExpanded;
+        SaveSections();
+    }
 
     [RelayCommand]
     private void ToggleBudgets()
@@ -102,6 +116,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         var current = settings.Load();
         current.BudgetsExpanded = IsBudgetsExpanded;
         current.BreakdownExpanded = IsBreakdownExpanded;
+        current.TrendExpanded = IsTrendExpanded;
         settings.Save(current);
     }
 
@@ -263,6 +278,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         ShowBudgets();
         ShowBreakdown(ofMonth);
+        ShowTrend();
     }
 
     private void ShowBudgets()
@@ -293,6 +309,41 @@ public partial class MainViewModel : ObservableObject, IDisposable
         BreakdownSummary = HasExpenses
             ? localizer.T("dashboard.byCategorySummary", totals[0].Name, totals[0].Amount.ToString("C", localizer.Culture))
             : localizer.T("dashboard.noExpenses");
+    }
+
+    /// <summary>
+    /// Todo el historico, no solo el mes elegido; el mes elegido va resaltado.
+    /// Se rehace al cambiar de mes: son pocos meses y asi no hay dos caminos.
+    /// </summary>
+    private void ShowTrend()
+    {
+        TrendBars.Clear();
+        TrendTicks.Clear();
+        var series = Domain.MonthlyTrend.Series(all);
+        if (series.Count == 0)
+        {
+            TrendSummary = "";
+            return;
+        }
+
+        var culture = localizer.Culture;
+        var axisMax = Domain.MonthlyTrend.AxisMax(series.Max(p => Math.Max(p.Income, p.Expense)));
+        foreach (var tick in new[] { axisMax, axisMax / 2, 0m })
+            TrendTicks.Add(tick.ToString("C0", culture));
+
+        foreach (var point in series)
+            TrendBars.Add(new TrendBar(
+                point.Month.ShortLabel(culture),
+                Domain.Breakdown.BarPercent(point.Income, axisMax),
+                Domain.Breakdown.BarPercent(point.Expense, axisMax),
+                point.Month == SelectedMonth?.Key,
+                $"{point.Month.Label(culture)}\n" +
+                $"{localizer.T("dashboard.income")}: {point.Income.ToString("C", culture)}\n" +
+                $"{localizer.T("dashboard.expenses")}: {point.Expense.ToString("C", culture)}"));
+
+        TrendSummary = TrendBars.Count == 1
+            ? TrendBars[0].Label
+            : $"{TrendBars[0].Label} – {TrendBars[^1].Label}";
     }
 
     [RelayCommand(CanExecute = nameof(CanLoad))]

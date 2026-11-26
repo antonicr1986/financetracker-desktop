@@ -15,6 +15,7 @@ public class AppSettings
     /// <summary>Secciones del panel abiertas. Sin valor, plegadas: asi se entra la primera vez.</summary>
     public bool? BudgetsExpanded { get; set; }
     public bool? BreakdownExpanded { get; set; }
+    public bool? TrendExpanded { get; set; }
 }
 
 /// <summary>Ajustes solo en memoria, para cuando no se quiere tocar el disco (tests).</summary>
