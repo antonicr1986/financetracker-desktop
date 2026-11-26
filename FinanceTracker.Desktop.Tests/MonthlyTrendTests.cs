@@ -28,6 +28,26 @@ public class MonthlyTrendTests
     }
 
     [Fact]
+    public void Series_FillsMonthsWithoutTransactionsWithZero()
+    {
+        var all = new[]
+        {
+            Tx(1, "2025-11-03T00:00:00", 500, Income),
+            Tx(2, "2026-02-14T00:00:00", 80, Expense),
+        };
+
+        var series = MonthlyTrend.Series(all);
+
+        Assert.Equal(new[]
+        {
+            new MonthlyPoint(new MonthKey(2025, 11), 500, 0),
+            new MonthlyPoint(new MonthKey(2025, 12), 0, 0),
+            new MonthlyPoint(new MonthKey(2026, 1), 0, 0),
+            new MonthlyPoint(new MonthKey(2026, 2), 0, 80),
+        }, series);
+    }
+
+    [Fact]
     public void Series_IsEmpty_WithoutTransactions()
     {
         Assert.Empty(MonthlyTrend.Series([]));

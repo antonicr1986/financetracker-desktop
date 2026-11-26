@@ -11,19 +11,31 @@ public record MonthlyPoint(MonthKey Month, decimal Income, decimal Expense);
 /// </summary>
 public static class MonthlyTrend
 {
-    /// <summary>Un punto por mes con datos, del mas antiguo al mas reciente.</summary>
+    /// <summary>
+    /// Un punto por mes, del mas antiguo al mas reciente. Los meses sin
+    /// movimientos entre el primero y el ultimo salen a 0: si no, dos meses
+    /// separados se verian seguidos en el grafico.
+    /// </summary>
     public static List<MonthlyPoint> Series(IEnumerable<TransactionDto> transactions)
     {
-        var list = transactions.ToList();
-        return Months.Available(list)
-            .Order()
-            .Select(month =>
-            {
-                var summary = Months.Summary(Months.Of(list, month));
-                return new MonthlyPoint(month, summary.Income, summary.Expense);
-            })
-            .ToList();
+        var byMonth = transactions
+            .GroupBy(t => MonthKey.Of(t.Date))
+            .ToDictionary(g => g.Key, g => Months.Summary(g));
+        if (byMonth.Count == 0)
+            return [];
+
+        var points = new List<MonthlyPoint>();
+        var last = byMonth.Keys.Max();
+        for (var month = byMonth.Keys.Min(); month.CompareTo(last) <= 0; month = Next(month))
+        {
+            var summary = byMonth.GetValueOrDefault(month) ?? new MonthSummary(0, 0);
+            points.Add(new MonthlyPoint(month, summary.Income, summary.Expense));
+        }
+        return points;
     }
+
+    private static MonthKey Next(MonthKey month) =>
+        month.Month == 12 ? new MonthKey(month.Year + 1, 1) : new MonthKey(month.Year, month.Month + 1);
 
     /// <summary>Tope del eje: el valor redondeado hacia arriba a un numero "redondo".</summary>
     public static decimal AxisMax(decimal value)
